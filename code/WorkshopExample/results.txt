@@ -1,0 +1,595 @@
+ python three_hinged_frame.py                                                                                                                               
+Node B displacement: [-0.2019150759738438, -0.00790263948158672, -0.0003524474179597844]                                                                     
+                                                                                                                                                             
+ Node: 1                                                                                                                                                     
+        Coordinates  : 0 0 
+        Disps: 0 0 0.000304606
+         unbalanced Load: 0 0 0
+        ID : -1 -1 0
+
+
+ Node: 2
+        Coordinates  : 0 666.667
+        Disps: -0.190262 -0.00263421 0.000246969
+         unbalanced Load: 2000 0 0
+        ID : 1 2 3
+
+
+ Node: 3
+        Coordinates  : 0 2000
+        Disps: -0.201915 -0.00790264 -0.000352447
+         unbalanced Load: 0 0 0
+        ID : 4 5 6
+
+
+ Node: 4
+        Coordinates  : 2000 2000
+        Disps: -0.210947 -1.68109 -0.00107866
+         unbalanced Load: 0 0 0
+        ID : 7 8 9
+
+
+ Node: 5
+        Coordinates  : 2000 2000
+        Disps: -0.210947 -1.68109 0.000715169
+         unbalanced Load: 0 0 0
+        ID : 7 8 10
+
+
+ Node: 6
+        Coordinates  : 3000 2000
+        Disps: -0.215462 -0.905399 0.000896724
+         unbalanced Load: 0 -20000 0
+        ID : 11 12 13
+
+
+ Node: 7
+        Coordinates  : 4000 2000
+        Disps: -0.219978 -0.0259658 0.000663297
+         unbalanced Load: 0 0 0
+        ID : 14 15 16
+
+
+ Node: 8
+        Coordinates  : 4000 0
+        Disps: 0 0 -0.000166665
+         unbalanced Load: 0 0 0
+        ID : -1 -1 17
+
+
+ElasticBeam2d: 1
+        Connected Nodes: 1 2
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 4666.67 -3333.33 -8.3819e-09
+        End 2 Forces (P V M): -4666.67 3333.33 -2.22222e+06
+
+ElasticBeam2d: 2
+        Connected Nodes: 2 3
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 4666.67 -5333.33 2.22222e+06
+        End 2 Forces (P V M): -4666.67 5333.33 -9.33333e+06
+
+ElasticBeam2d: 3
+        Connected Nodes: 3 4
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 5333.33 4666.67 9.33333e+06
+        End 2 Forces (P V M): -5333.33 -4666.67 -2.79397e-09
+
+ElasticBeam2d: 4
+        Connected Nodes: 5 6
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 5333.33 4666.67 1.67638e-08
+        End 2 Forces (P V M): -5333.33 -4666.67 4.66667e+06
+
+ElasticBeam2d: 5
+        Connected Nodes: 6 7
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 5333.33 -15333.3 -4.66667e+06
+        End 2 Forces (P V M): -5333.33 15333.3 -1.06667e+07
+
+ElasticBeam2d: 6
+        Connected Nodes: 7 8 
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 15333.3 5333.33 1.06667e+07
+        End 2 Forces (P V M): -15333.3 -5333.33 0
+ ls
+                                                                                                                                                                                                                                                                                                                              Directory: C:\Users\Vishal\Downloads\Opensees\Code\WorkshopExample                                                                                       
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        16-05-2025     11:56           3334 portal_frame.py
+-a----        16-05-2025     11:56          11666 three_hinged_frame.py
+-a----        16-05-2025     11:56          11750 three_hinged_frame_with_triangular_load.py
+-a----        16-05-2025     11:18           3105 Truss.py
+-a----        16-05-2025     11:56           2979 truss_.py
+
+
+ python three_hinged_frame_with_triangular_load.py                                                                                                          
+Node B displacement: [1.262987814587299, -0.0028280159859111007, -0.0005628145837123886]                                                                     
+Current Domain Information                                                                                                                                           Current Time: 1                                                                                                                                      
+        Committed Time: 1
+NODE DATA: NumNodes: 7
+
+numComponents: 7
+
+ Node: 1
+        Coordinates  : 0 0
+        Disps: 0 0 -0.000821399
+         unbalanced Load: 0 0 0
+        ID : -1 -1 0
+
+
+ Node: 3
+        Coordinates  : 0 2000
+        Disps: 1.26299 -0.00282802 -0.000562815
+         unbalanced Load: 0 0 0
+        ID : 1 2 3
+
+
+ Node: 4
+        Coordinates  : 2000 2000
+        Disps: 1.24888 -1.47497 -0.000822696
+         unbalanced Load: 0 0 0
+        ID : 4 5 6
+
+
+ Node: 5
+        Coordinates  : 2000 2000
+        Disps: 1.24888 -1.47497 0.000765017
+         unbalanced Load: 0 0 0
+        ID : 4 5 7
+
+
+ Node: 6
+        Coordinates  : 3000 2000
+        Disps: 1.24183 -0.688292 0.000829988
+         unbalanced Load: 0 -20000 0
+        ID : 8 9 10
+
+
+ Node: 7
+        Coordinates  : 4000 2000
+        Disps: 1.23478 -0.0310404 0.00024681
+         unbalanced Load: 0 0 0
+        ID : 11 12 13
+
+
+ Node: 8
+        Coordinates  : 4000 0
+        Disps: 0 0 -0.00104949
+         unbalanced Load: 0 0 0
+        ID : -1 -1 14
+
+ELEMENT DATA: NumEle: 5
+
+numComponents: 5
+
+ElasticBeam2d: 1
+        Connected Nodes: 1 3
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 1670 11660 2.32831e-09
+        End 2 Forces (P V M): -1670 8330 -3.34e+06
+
+ElasticBeam2d: 3
+        Connected Nodes: 3 4
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 8330 1670 3.34e+06
+        End 2 Forces (P V M): -8330 -1670 4.19095e-09
+
+ElasticBeam2d: 4
+        Connected Nodes: 5 6
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 8330 1670 -8.3819e-09
+        End 2 Forces (P V M): -8330 -1670 1.67e+06
+
+ElasticBeam2d: 5
+        Connected Nodes: 6 7
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 8330 -18330 -1.67e+06
+        End 2 Forces (P V M): -8330 18330 -1.666e+07
+
+ElasticBeam2d: 6
+        Connected Nodes: 7 8
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 18330 8330 1.666e+07
+        End 2 Forces (P V M): -18330 -8330 0
+
+SP_Constraints: numConstraints: 4
+
+numComponents: 4
+SP_Constraint: 0         Node: 1 DOF: 1 ref value: 0 current value: 0
+SP_Constraint: 1         Node: 1 DOF: 2 ref value: 0 current value: 0
+SP_Constraint: 2         Node: 8 DOF: 1 ref value: 0 current value: 0
+SP_Constraint: 3         Node: 8 DOF: 2 ref value: 0 current value: 0
+
+Pressure_Constraints: numConstraints: 0
+
+numComponents: 0
+
+MP_Constraints: numConstraints: 1
+
+numComponents: 1
+MP_Constraint: 0
+        Node Constrained: 5 node Retained: 4
+ constrained dof: 1 2
+ retained dof: 1 2
+ constraint matrix:
+1 0
+0 1
+
+
+
+LOAD PATTERNS: numPatterns: 1
+
+
+numComponents: 1
+Load Pattern: 1
+  Scale Factor: 1
+Linear Series: constant factor: 1
+  Nodal Loads:
+
+numComponents: 1
+Nodal Load: 6 load : 0 -20000 0
+
+  Elemental Loads:
+
+numComponents: 1
+Beam2dPartialUniformLoad - tag 0
+  Transverse: -20 0.01
+  Axial:      0 0
+  Region:     0 to 1
+  Element acted on: 1
+
+  Single Point Constraints:
+
+numComponents: 0
+
+PARAMETERS: numParameters: 0
+
+
+numComponents: 0
+ ls
+                                                                                                                                                                                                                                                                                                                              Directory: C:\Users\Vishal\Downloads\Opensees\Code\WorkshopExample                                                                                       
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        16-05-2025     11:56           3334 portal_frame.py
+-a----        16-05-2025     11:56          11666 three_hinged_frame.py
+-a----        16-05-2025     11:56          11750 three_hinged_frame_with_triangular_load.py
+-a----        16-05-2025     11:18           3105 Truss.py
+-a----        16-05-2025     11:56           2979 truss_.py
+
+
+ python truss_.py                                                                                                                                           
+Node displacements at node 7: [0.014880952380952479, -0.05029611588277306]                                                                                   
+                                                                                                                                                             
+ Node: 1                                                                                                                                                     
+        Coordinates  : 0 0
+        Disps: 0 0
+        Velocities   : 0 0
+         unbalanced Load: 0 0
+        ID : -1 -1
+
+
+ Node: 2
+        Coordinates  : 0 500
+        Disps: 0.0292513 0
+        Velocities   : 0 0
+         unbalanced Load: 5000 0
+        ID : 0 1
+
+
+ Node: 3
+        Coordinates  : 500 500
+        Disps: 0.0232989 -0.0443437
+        Velocities   : 0 0
+         unbalanced Load: 0 -10000
+        ID : 2 3
+
+
+ Node: 4
+        Coordinates  : 1000 500
+        Disps: 0.0232989 -0.00595238
+        Velocities   : 0 0
+         unbalanced Load: 0 -5000
+        ID : 4 5
+
+
+ Node: 5
+        Coordinates  : 1000 0
+        Disps: 0.0297619 0
+        Velocities   : 0 0
+         unbalanced Load: 0 0
+        ID : 6 -1
+
+
+ Node: 6
+        Coordinates  : 750 0
+        Disps: 0.0223214 -0.0481916
+        Velocities   : 0 0
+         unbalanced Load: 0 -5000
+        ID : 7 8
+
+
+ Node: 7
+        Coordinates  : 500 0
+        Disps: 0.014881 -0.0502961
+        Velocities   : 0 0
+         unbalanced Load: 0 0
+        ID : 9 10
+
+
+ Node: 8
+        Coordinates  : 250 0
+        Disps: 0.00744048 -0.0439827
+        Velocities   : 0 0
+         unbalanced Load: 0 -5000
+        ID : 11 12
+
+
+ Node: 9
+        Coordinates  : 250 250
+        Disps: 0.0283796 -0.0410065
+        Velocities   : 0 0
+         unbalanced Load: 0 0
+        ID : 13 14
+
+
+ Node: 10
+        Coordinates  : 750 250
+        Disps: 0.00559131 -0.0452154
+        Velocities   : 0 0
+         unbalanced Load: 0 0
+        ID : 15 16
+
+Element: 1 type: Truss  iNode: 1 jNode: 2 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 0 axial load: 0
+         unbalanced load: -0 -0 0 0
+         Material:
+Element: 2 type: Truss  iNode: 2 jNode: 3 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -1.19048e-05 axial load: -5000
+         unbalanced load: 5000 0 -5000 -0
+         Material:
+Element: 3 type: Truss  iNode: 3 jNode: 4 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 0 axial load: 0
+         unbalanced load: -0 -0 0 0
+         Material:
+Element: 4 type: Truss  iNode: 4 jNode: 5 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -1.19048e-05 axial load: -5000
+         unbalanced load: 0 -5000 -0 5000
+         Material:
+Element: 5 type: Truss  iNode: 1 jNode: 8 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 2.97619e-05 axial load: 12500
+         unbalanced load: -12500 -0 12500 0
+         Material:
+Element: 6 type: Truss  iNode: 8 jNode: 7 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 2.97619e-05 axial load: 12500
+         unbalanced load: -12500 -0 12500 0
+         Material:
+Element: 7 type: Truss  iNode: 7 jNode: 6 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 2.97619e-05 axial load: 12500
+         unbalanced load: -12500 -0 12500 0
+         Material:
+Element: 8 type: Truss  iNode: 6 jNode: 5 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 2.97619e-05 axial load: 12500
+         unbalanced load: -12500 -0 12500 0
+         Material:
+Element: 9 type: Truss  iNode: 1 jNode: 9 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -2.52538e-05 axial load: -10606.6
+         unbalanced load: 7500 7500 -7500 -7500
+         Material:
+Element: 10 type: Truss  iNode: 8 jNode: 9 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 1.19048e-05 axial load: 5000
+         unbalanced load: -0 -5000 0 5000
+         Material:
+Element: 11 type: Truss  iNode: 7 jNode: 9 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -8.41794e-06 axial load: -3535.53
+         unbalanced load: -2500 2500 2500 -2500
+         Material:
+Element: 12 type: Truss  iNode: 7 jNode: 3 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 1.19048e-05 axial load: 5000
+         unbalanced load: -0 -5000 0 5000
+         Material:
+Element: 13 type: Truss  iNode: 7 jNode: 10 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -8.41794e-06 axial load: -3535.53
+         unbalanced load: 2500 2500 -2500 -2500
+         Material:
+Element: 14 type: Truss  iNode: 6 jNode: 10 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: 1.19048e-05 axial load: 5000
+         unbalanced load: -0 -5000 0 5000
+         Material:
+Element: 15 type: Truss  iNode: 5 jNode: 10 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -4.20897e-05 axial load: -17677.7
+         unbalanced load: -12500 12500 12500 -12500
+         Material:
+Element: 16 type: Truss  iNode: 9 jNode: 3 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -1.68359e-05 axial load: -7071.07
+         unbalanced load: 5000 5000 -5000 -5000
+         Material:
+Element: 17 type: Truss  iNode: 10 jNode: 3 Area: 2000 Mass/Length: 0 cMass: 0
+         strain: -3.36718e-05 axial load: -14142.1
+         unbalanced load: -10000 10000 10000 -10000
+         Material:
+ python three_hinged_frame_with_triangular_load.py                                                                                                          
+Node B displacement: [1.262987814587299, -0.0028280159859111007, -0.0005628145837123886]                                                                     
+Current Domain Information                                                                                                                                   
+        Current Time: 1                                                                                                                                      
+        Committed Time: 1
+NODE DATA: NumNodes: 7
+
+numComponents: 7
+
+ Node: 1
+        Coordinates  : 0 0
+        Disps: 0 0 -0.000821399
+         unbalanced Load: 0 0 0
+        ID : -1 -1 0
+
+
+ Node: 3
+        Coordinates  : 0 2000
+        Disps: 1.26299 -0.00282802 -0.000562815
+         unbalanced Load: 0 0 0
+        ID : 1 2 3
+
+
+ Node: 4
+        Coordinates  : 2000 2000
+        Disps: 1.24888 -1.47497 -0.000822696
+         unbalanced Load: 0 0 0
+        ID : 4 5 6
+
+
+ Node: 5
+        Coordinates  : 2000 2000
+        Disps: 1.24888 -1.47497 0.000765017
+         unbalanced Load: 0 0 0
+        ID : 4 5 7
+
+
+ Node: 6
+        Coordinates  : 3000 2000
+        Disps: 1.24183 -0.688292 0.000829988
+         unbalanced Load: 0 -20000 0
+        ID : 8 9 10
+
+
+ Node: 7
+        Coordinates  : 4000 2000
+        Disps: 1.23478 -0.0310404 0.00024681
+         unbalanced Load: 0 0 0
+        ID : 11 12 13
+
+
+ Node: 8
+        Coordinates  : 4000 0
+        Disps: 0 0 -0.00104949
+         unbalanced Load: 0 0 0
+        ID : -1 -1 14
+
+ELEMENT DATA: NumEle: 5
+
+numComponents: 5
+
+ElasticBeam2d: 1
+        Connected Nodes: 1 3
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 1670 11660 2.32831e-09
+        End 2 Forces (P V M): -1670 8330 -3.34e+06
+
+ElasticBeam2d: 3
+        Connected Nodes: 3 4
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 8330 1670 3.34e+06
+        End 2 Forces (P V M): -8330 -1670 4.19095e-09
+
+ElasticBeam2d: 4
+        Connected Nodes: 5 6
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 8330 1670 -8.3819e-09
+        End 2 Forces (P V M): -8330 -1670 1.67e+06
+
+ElasticBeam2d: 5
+        Connected Nodes: 6 7
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 8330 -18330 -1.67e+06
+        End 2 Forces (P V M): -8330 18330 -1.666e+07
+
+ElasticBeam2d: 6
+        Connected Nodes: 7 8
+        CoordTransf: 1
+        mass density:  0, cMass: 0
+        release code:  0
+        End 1 Forces (P V M): 18330 8330 1.666e+07
+        End 2 Forces (P V M): -18330 -8330 0
+
+SP_Constraints: numConstraints: 4
+
+numComponents: 4
+SP_Constraint: 0         Node: 1 DOF: 1 ref value: 0 current value: 0
+SP_Constraint: 1         Node: 1 DOF: 2 ref value: 0 current value: 0
+SP_Constraint: 2         Node: 8 DOF: 1 ref value: 0 current value: 0
+SP_Constraint: 3         Node: 8 DOF: 2 ref value: 0 current value: 0
+
+Pressure_Constraints: numConstraints: 0
+
+numComponents: 0
+
+MP_Constraints: numConstraints: 1
+
+numComponents: 1
+MP_Constraint: 0
+        Node Constrained: 5 node Retained: 4
+ constrained dof: 1 2
+ retained dof: 1 2
+ constraint matrix:
+1 0
+0 1
+
+
+
+LOAD PATTERNS: numPatterns: 1
+
+
+numComponents: 1
+Load Pattern: 1
+  Scale Factor: 1
+Linear Series: constant factor: 1
+  Nodal Loads:
+
+numComponents: 1
+Nodal Load: 6 load : 0 -20000 0
+
+  Elemental Loads:
+
+numComponents: 1
+Beam2dPartialUniformLoad - tag 0
+  Transverse: -20 0.01
+  Axial:      0 0
+  Region:     0 to 1
+  Element acted on: 1
+
+  Single Point Constraints:
+
+numComponents: 0
+
+PARAMETERS: numParameters: 0
+
+
+numComponents: 0
+
+   pwsh MEM: 46% | 10/23GB   1s 570ms 
+╭─ ♥ 12:25 |             WorkshopExample
+╰─
