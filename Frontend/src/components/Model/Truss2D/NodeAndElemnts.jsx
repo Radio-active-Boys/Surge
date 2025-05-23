@@ -1,134 +1,154 @@
-// NodeElements.jsx
-
-import React, { useEffect, useState } from 'react';
+// NodeAndElements.jsx
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { useDataCentre, addNode, updateNode, addElement, updateElement, addForce, updateForce, addSupport, updateSupport } from '../../middleware/DataCentre'
 import './NodeElements.css';
-
-const NodeElements = ({ sceneRef }) => {
-  const [nodes, setNodes]       = useState([]);
-  const [elements, setElements] = useState([]);
-  const [forces, setForces]     = useState([]);
-  const [supports, setSupports] = useState([]);
-
-  const [newNode, setNewNode]       = useState({ tag: '', x: '', y: ''});
-  const [newElement, setNewElement] = useState({ tag: '', start: '', end: '',area: '',E: ''  });
-  const [newForce, setNewForce]     = useState({ node: '', xf: '', yf: '' });
+import sceneRef from '../../middleware/SceneRef.jsx';
+const NodeAndElements = () => {
+  const { data, setData } = useDataCentre();
+  const { nodes, elements, forces, supports } = data;
+  const [newNode, setNewNode] = useState({ tag: 1, x: '', y: '' });
+  const [newElement, setNewElement] = useState({ tag: 1, start: '', end: '', area: '', E: '' });
+  const [newForce, setNewForce] = useState({ node: '', xf: '', yf: '' });
   const [newSupport, setNewSupport] = useState({ node: '', xd: 0, yd: 0 });
-
-  const [activeTab, setActiveTab]       = useState('Nodes');
+  const [activeTab, setActiveTab] = useState('Nodes');
   const [editingIndex, setEditingIndex] = useState(null);
-  const [editItem, setEditItem]         = useState({});
-  const [showModal, setShowModal]       = useState(false);
+  const [editItem, setEditItem] = useState({});
+  const groupRef = useRef(new THREE.Group());
 
-  // Draw scene
+
   useEffect(() => {
     const scene = sceneRef.current;
-    while (scene.children.length > 7) scene.remove(scene.children[7]);
+    // add group once
+    if (!scene.getObjectById(groupRef.current.id)) {
+      scene.add(groupRef.current);
+    }
 
-    // Nodes
+    // clear previous dynamic objects
+    groupRef.current.clear();
+
+    // draw nodes
     nodes.forEach(n => {
-      const sph = new THREE.Mesh(
+      const sphere = new THREE.Mesh(
         new THREE.SphereGeometry(0.2),
         new THREE.MeshPhongMaterial({ color: 0xff0000 })
       );
-      sph.position.set(n.x, n.y, 0);
-      scene.add(sph);
+      sphere.position.set(n.x, n.y, 0);
+      groupRef.current.add(sphere);
     });
 
-    // Elements
+    // draw elements
     elements.forEach(el => {
-      const A = nodes.find(n => n.tag === el.start);
-      const B = nodes.find(n => n.tag === el.end);
-      if (A && B) {
-        const geo = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(A.x, A.y, 0),
-          new THREE.Vector3(B.x, B.y, 0),
-        ]);
-        scene.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x0000ff })));
-      }
+      const startNode = nodes.find(n => n.tag === el.start);
+      const endNode   = nodes.find(n => n.tag === el.end);
+      if (!startNode || !endNode) return;
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(startNode.x, startNode.y, 0),
+        new THREE.Vector3(endNode.x, endNode.y, 0)
+      ]);
+      const line = new THREE.Line(
+        geometry,
+        new THREE.LineBasicMaterial({ color: 0x0000ff })
+      );
+      groupRef.current.add(line);
     });
 
-    // Forces (X and Y separately, each length = 1)
+    // draw forces
     forces.forEach(f => {
-      const n = nodes.find(n => n.tag === f.node);
-      if (!n) return;
+      const node = nodes.find(n => n.tag === f.node);
+      if (!node) return;
       if (f.xf !== 0) {
         const dirX = new THREE.Vector3(Math.sign(f.xf), 0, 0);
         const arrowX = new THREE.ArrowHelper(
-          dirX, new THREE.Vector3(n.x, n.y, 0),
-          1, 0x00ff00, 0.2, 0.1
+          dirX,
+          new THREE.Vector3(node.x, node.y, 0),
+          1,
+          0xbd2b33,
+          0.2,
+          0.1
         );
-        scene.add(arrowX);
+        groupRef.current.add(arrowX);
       }
       if (f.yf !== 0) {
         const dirY = new THREE.Vector3(0, Math.sign(f.yf), 0);
         const arrowY = new THREE.ArrowHelper(
-          dirY, new THREE.Vector3(n.x, n.y, 0),
-          1, 0x00ff00, 0.2, 0.1
+          dirY,
+          new THREE.Vector3(node.x, node.y, 0),
+          1,
+          0x218838,
+          0.2,
+          0.1
         );
-        scene.add(arrowY);
+        groupRef.current.add(arrowY);
       }
     });
 
-    // Supports (cone for pinned, wheels for roller)
-    supports.forEach(su => {
-      const n = nodes.find(n => n.tag === su.node);
-      if (!n) return;
-      const offsetY = 0.3;
-      const basePos = new THREE.Vector3(n.x, n.y - offsetY, 0);
-
-      if (su.xd === 0 && su.yd === 0) {
-        // roller: two wheels
+    // draw supports
+    supports.forEach(s => {
+      const node = nodes.find(n => n.tag === s.node);
+      if (!node) return;
+      const base = new THREE.Vector3(node.x, node.y - 0.3, 0);
+      if ((s.xd === 1 && s.yd === 0) || (s.xd === 0 && s.yd === 1)) {
+        // roller support
         const wheelGeom = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 12);
         const wheelMat  = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        const left  = new THREE.Mesh(wheelGeom, wheelMat);
-        const right = left.clone();
-        left.position.set(n.x - 0.15, n.y - offsetY, 0);
-        right.position.set(n.x + 0.15, n.y - offsetY, 0);
-        left.rotation.x = Math.PI / 2;
-        right.rotation.x = Math.PI / 2;
-        scene.add(left, right);
-      } else {
-        // pinned: cone pointing down
+        [-0.15, 0.15].forEach(offsetX => {
+          const wheel = new THREE.Mesh(wheelGeom, wheelMat);
+          wheel.position.set(node.x + offsetX, node.y - 0.3, 0);
+          wheel.rotation.x = Math.PI / 2;
+          groupRef.current.add(wheel);
+        });
+      } else if (s.xd === 1 && s.yd === 1) {
+        // pinned support
         const cone = new THREE.Mesh(
           new THREE.ConeGeometry(0.6, 0.6, 8),
-          new THREE.MeshBasicMaterial({ color: 0x0000ff })
+          new THREE.MeshBasicMaterial({ color: 0xe00700 })
         );
-        // cone.rotation.x = Math.PI;
-        cone.position.copy(basePos);
-        scene.add(cone);
+        cone.position.copy(base);
+        groupRef.current.add(cone);
       }
     });
+
   }, [nodes, elements, forces, supports, sceneRef]);
 
-  // Add item
+  // Add new item
   const addItem = type => {
     switch (type) {
       case 'Nodes':
-        if (!newNode.tag || nodes.some(n => n.tag === newNode.tag)) return;
-        setNodes([...nodes, newNode]);
-        setNewNode({ tag: '', x: 0, y: 0 });
+        addNode(setData, {
+          tag: parseInt(newNode.tag, 10),
+          x:   parseFloat(newNode.x),
+          y:   parseFloat(newNode.y)
+        });
+        setNewNode({ tag: newNode.tag + 1, x: '', y: '' });
         break;
+
       case 'Elements':
-        if (!newElement.tag || elements.some(e => e.tag === newElement.tag)) return;
-        setElements([...elements, newElement]);
-        setNewElement({ tag: '', start: '', end: '',area: '',E: ''   });
+        addElement(setData, {
+          tag:   parseInt(newElement.tag, 10),
+          start: parseInt(newElement.start, 10),
+          end:   parseInt(newElement.end, 10),
+          area:  parseFloat(newElement.area) || 0,
+          E:     parseFloat(newElement.E)    || 0
+        });
+        setNewElement({ tag: newElement.tag + 1, start: '', end: '', area: '', E: '' });
         break;
+
       case 'Forces':
-        if (!newForce.node) return;
-        setForces([
-          ...forces,
-          {
-            node: newForce.node,
-            xf: parseFloat(newForce.xf) || 0,
-            yf: parseFloat(newForce.yf) || 0
-          }
-        ]);
+        addForce(setData, {
+          node: parseInt(newForce.node, 10),
+          xf:   parseFloat(newForce.xf) || 0,
+          yf:   parseFloat(newForce.yf) || 0
+        });
         setNewForce({ node: '', xf: '', yf: '' });
         break;
+
       case 'Supports':
-        if (!newSupport.node) return;
-        setSupports([...supports, newSupport]);
+        addSupport(setData, {
+          node: parseInt(newSupport.node, 10),
+          xd:   newSupport.xd,
+          yd:   newSupport.yd
+        });
         setNewSupport({ node: '', xd: 0, yd: 0 });
         break;
       default:
@@ -136,48 +156,62 @@ const NodeElements = ({ sceneRef }) => {
     }
   };
 
-  // Start editing
+  // Begin editing an item
   const startEdit = (type, idx) => {
     setActiveTab(type);
     setEditingIndex(idx);
-    const arrs = { Nodes: nodes, Elements: elements, Forces: forces, Supports: supports };
-    const raw = arrs[type][idx];
-    if (type === 'Forces') {
-      setEditItem({
-        node: raw.node,
-        xf: String(raw.xf),
-        yf: String(raw.yf)
-      });
-    } else {
-      setEditItem({ ...raw });
-    }
+    const item = { Nodes: nodes, Elements: elements, Forces: forces, Supports: supports }[type][idx];
+    setEditItem(type==='Forces'
+      ? { node: item.node, xf: String(item.xf), yf: String(item.yf) }
+      : { ...item }
+    );
   };
 
-  // Save edited
+  // Save the edited item
   const saveEdit = () => {
-    const map = {
-      Nodes:    [nodes, setNodes],
-      Elements: [elements, setElements],
-      Forces:   [forces, setForces],
-      Supports: [supports, setSupports],
-    };
-    const [arr, setter] = map[activeTab];
-    const upd = [...arr];
-    if (activeTab === 'Forces') {
-      upd[editingIndex] = {
-        node: editItem.node,
-        xf: parseFloat(editItem.xf) || 0,
-        yf: parseFloat(editItem.yf) || 0
-      };
-    } else {
-      upd[editingIndex] = editItem;
+    const item = { ...editItem };
+    switch (activeTab) {
+      case 'Nodes':
+        updateNode(setData, editingIndex, {
+          tag: parseInt(editItem.tag, 10),
+          x:   parseFloat(editItem.x),
+          y:   parseFloat(editItem.y),
+        });
+        break;
+
+      case 'Elements':
+        updateElement(setData, editingIndex, {
+          tag:   parseInt(editItem.tag, 10),
+          start: parseInt(editItem.start, 10),
+          end:   parseInt(editItem.end,   10),
+          area:  parseFloat(editItem.area) || 0,
+          E:     parseFloat(editItem.E)    || 0,
+        });
+        break;
+        case 'Forces':
+          updateForce(setData, editingIndex, {
+            node: parseInt(item.node, 10),
+            xf:   parseFloat(item.xf) || 0,
+            yf:   parseFloat(item.yf) || 0,
+          });
+          break;
+
+        case 'Supports':
+          updateSupport(setData, editingIndex, {
+            node: parseInt(item.node, 10),
+            xd:   item.xd,
+            yd:   item.yd,
+          });
+          break;
+
+        break;
+      default:
+        break;
     }
-    setter(upd);
     setEditingIndex(null);
     setEditItem({});
   };
 
-  // Render list
   const renderList = (type, items, keys) => (
     <ul className="item-list">
       {items.map((it, i) => (
@@ -189,8 +223,6 @@ const NodeElements = ({ sceneRef }) => {
     </ul>
   );
 
-  const jsonData = { nodes, elements, forces, supports };
-
   return (
     <div className="container">
       <div className="tabs">
@@ -201,11 +233,10 @@ const NodeElements = ({ sceneRef }) => {
             onClick={() => { setActiveTab(tab); setEditingIndex(null); }}
           >{tab}</button>
         ))}
-        <button className="preview-button" onClick={() => setShowModal(true)}>JSON</button>
       </div>
 
       <div className="content">
-        {/* Nodes Tab */}
+                {/* Nodes Tab */}
         {activeTab === 'Nodes' && (
           <section>
             {renderList('Nodes', nodes, ['tag','x','y'])}
@@ -309,19 +340,8 @@ const NodeElements = ({ sceneRef }) => {
           </section>
         )}
       </div>
-
-      {/* JSON Modal */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>JSON Data</h3>
-            <pre className="modal-content">{JSON.stringify(jsonData, null, 2)}</pre>
-            <button className="close-button" onClick={() => setShowModal(false)}>Close</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default NodeElements;
+export default NodeAndElements;

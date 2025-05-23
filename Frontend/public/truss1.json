@@ -1,0 +1,23 @@
+{
+  "nodes": [
+    { "tag": 1, "x": 0, "y": 0 },
+    { "tag": 2, "x": 10, "y": 0 },
+    { "tag": 3, "x": 5, "y": 8 },
+    { "tag": 4, "x": 15, "y": 8 }
+  ],
+  "elements": [
+    { "tag": 1, "start": 1, "end": 2, "area": 1, "E": 1 },
+    { "tag": 2, "start": 1, "end": 3, "area": 1, "E": 1 },
+    { "tag": 3, "start": 2, "end": 3, "area": 1, "E": 1 },
+    { "tag": 4, "start": 2, "end": 4, "area": 1, "E": 1 },
+    { "tag": 5, "start": 3, "end": 4, "area": 1, "E": 1 }
+  ],
+  "forces": [
+    { "node": 3, "xf": 0, "yf": -200 },
+    { "node": 4, "xf": 0, "yf": -200 }
+  ],
+  "supports": [
+    { "node": 1, "xd": 1, "yd": 1 },
+    { "node": 2, "xd": 0, "yd": 1 }
+  ]
+}

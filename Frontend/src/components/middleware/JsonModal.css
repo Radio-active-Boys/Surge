@@ -1,0 +1,70 @@
+
+/* Modal */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 6px;
+  width: 80%;
+  max-width: 500px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.modal-content {
+  background: #f4f4f4;
+  padding: 0.5rem;
+  max-height: 300px;
+  overflow: auto;
+  margin-bottom: 1rem;
+}
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.close-button {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background: #c9302c;
+}
+
+.export-button {
+  background: #d9d24f;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.export-button:hover {
+  background: #c6c92c;
+}
+
+.import-button {
+  background: #88d94f;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.import-button:hover {
+  background: #7ac92c;
+}

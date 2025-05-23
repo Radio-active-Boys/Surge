@@ -2,12 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
-import NodeElements from './Model/Truss2D/NodeAndElemnts';
+import sceneRef from './SceneRef.jsx';
 
 const Trail = () => {
  
   const mountRef = useRef();
-  const sceneRef = useRef(new THREE.Scene());
   const cameraRef = useRef();
   const rendererRef = useRef();
   const labelRendererRef = useRef();
@@ -101,15 +100,10 @@ const Trail = () => {
 
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', height: '100vh' }}>
-      <div style={{ padding: '1rem', overflowY: 'auto' }}>
-        <NodeElements sceneRef={sceneRef} />
-      </div>
       <div
         ref={mountRef}
         style={{ width: '100%', height: '100%', position: 'relative' }}
       />
-    </div>
   );
 };
 

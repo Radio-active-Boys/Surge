@@ -1,0 +1,40 @@
+{
+  "nodes": [
+    { "tag": 1, "x": 0, "y": 0 },
+    { "tag": 2, "x": 5, "y": 0 },
+    { "tag": 3, "x": 10, "y": 0 },
+    { "tag": 4, "x": 15, "y": 0 },
+    { "tag": 5, "x": 20, "y": 0 },
+    { "tag": 6, "x": 2.5, "y": 5 },
+    { "tag": 7, "x": 7.5, "y": 5 },
+    { "tag": 8, "x": 12.5, "y": 5 },
+    { "tag": 9, "x": 17.5, "y": 5 },
+    { "tag": 10, "x": 10, "y": 10 }
+  ],
+  "elements": [
+    { "tag": 1, "start": 1, "end": 2, "area": 1, "E": 1 },
+    { "tag": 2, "start": 2, "end": 3, "area": 1, "E": 1 },
+    { "tag": 3, "start": 3, "end": 4, "area": 1, "E": 1 },
+    { "tag": 4, "start": 4, "end": 5, "area": 1, "E": 1 },
+    { "tag": 5, "start": 1, "end": 6, "area": 1, "E": 1 },
+    { "tag": 6, "start": 2, "end": 6, "area": 1, "E": 1 },
+    { "tag": 7, "start": 2, "end": 7, "area": 1, "E": 1 },
+    { "tag": 8, "start": 3, "end": 7, "area": 1, "E": 1 },
+    { "tag": 9, "start": 3, "end": 8, "area": 1, "E": 1 },
+    { "tag": 10, "start": 4, "end": 8, "area": 1, "E": 1 },
+    { "tag": 11, "start": 4, "end": 9, "area": 1, "E": 1 },
+    { "tag": 12, "start": 5, "end": 9, "area": 1, "E": 1 },
+    { "tag": 13, "start": 6, "end": 7, "area": 1, "E": 1 },
+    { "tag": 14, "start": 7, "end": 8, "area": 1, "E": 1 },
+    { "tag": 15, "start": 8, "end": 9, "area": 1, "E": 1 },
+    { "tag": 16, "start": 6, "end": 10, "area": 1, "E": 1 },
+    { "tag": 17, "start": 9, "end": 10, "area": 1, "E": 1 }
+  ],
+  "forces": [
+    { "node": 10, "xf": 0, "yf": -500 }
+  ],
+  "supports": [
+    { "node": 1, "xd": 1, "yd": 1 },
+    { "node": 5, "xd": 1, "yd": 1 }
+  ]
+}
