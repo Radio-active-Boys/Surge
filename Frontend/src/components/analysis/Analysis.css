@@ -1,0 +1,111 @@
+/* Analysis.css */
+
+/* ========================================================== */
+/*  The flex container that holds both Analysis form and the  */
+/*  SocketConnect component side by side.                     */
+/* ========================================================== */
+.analysis-wrapper {
+  display: flex;
+  flex-wrap: wrap;       /* Allow wrapping on small screens */
+  justify-content: space-between;
+  gap: 1rem;             /* Space between the two components */
+  margin: 1rem auto;
+  max-width: 1000px;     /* or whatever max you prefer */
+  padding: 0 1rem;       /* optional horizontal padding */
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------- */
+/*  Container for the Analysis Settings form                  */
+/* ---------------------------------------------------------- */
+.analysis-container {
+  flex: 1 1 45%;         /* Grow/shrink, base width 45% of the wrapper */
+  min-width: 280px;      /* Don’t get narrower than this */
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.analysis-container h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.analysis-container label {
+  display: block;
+  margin-top: 0.75rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.analysis-container select,
+.analysis-container input[type="number"] {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 1rem;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #222;
+  width: 5rem;
+}
+
+.analysis-container select {
+  width: 8rem;
+}
+
+.save-button {
+  display: block;
+  margin: 1.5rem auto 0;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save-button:hover {
+  background: #0056b3;
+}
+
+/* ---------------------------------------------------------- */
+/*  Wrapper around SocketConnect, so it can take ~45% width   */
+/* ---------------------------------------------------------- */
+.socket-wrapper {
+  flex: 1 1 45%;
+  min-width: 280px;
+  box-sizing: border-box;
+}
+
+/* ========================================================== */
+/*  (Optional) If you want to add a border or background      */
+/*  around SocketConnect’s own container, you can override    */
+/*  styles in SocketConnect.css, or add them here:            */
+/*                                                            */
+/* .socket-wrapper > .socket-container {                      */
+/*   border: 1px solid #ddd;                                  */
+/*   border-radius: 6px;                                       */
+/*   background-color: #fff;                                   */
+/*   box-shadow: 0 1px 3px rgba(0,0,0,0.1);                     */
+/* }                                                           */
+/* ========================================================== */
+
+/* Optional: style for smaller screens (stack vertically) */
+@media (max-width: 700px) {
+  .analysis-wrapper {
+    flex-direction: column;
+  }
+
+  .analysis-container,
+  .socket-wrapper {
+    flex: 1 1 100%;
+  }
+}

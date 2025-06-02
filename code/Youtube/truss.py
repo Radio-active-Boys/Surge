@@ -1,7 +1,7 @@
 
 from matplotlib import image as img
 from matplotlib import pyplot as plt
-
+from opensees.openseespy import *
 # %%
 # image = img.imread("image.png")
 
@@ -148,6 +148,7 @@ for e in elements:
     plt.plot([uxi,uxj],[uyi,uyj],'-r')
 for n in nodes:
     plt.plot(n[0],n[1],'bo')
+#%%
 plt.grid(True)
 plt.show()
 
@@ -190,6 +191,6 @@ axes.grid()
 plt.show()
 
 # %%
-
+# %%
 
 

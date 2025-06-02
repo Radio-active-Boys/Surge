@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "title": "2D Truss Analysis Model",
+    "units": "kN-m"
+  },
+  "nodes": [
+    {"tag": 1, "x": 0, "y": 0},
+    {"tag": 2, "x": 5, "y": 0}
+ 
+  ],
+  "materials": [
+    {
+      "tag": 1,
+      "type": "Elastic",
+      "E": 200000,
+      "nu": 0.3
+    }
+  ],
+  "elements": [
+    {
+      "tag": 1,
+      "type": "Truss",
+      "start_node": 1,
+      "end_node": 2,
+      "area": 0.005,
+      "material": 1
+    } 
+  ],
+  "supports": [
+    { "node": 1, "xd": 1, "yd": 1 }
+  ],
+  "forces": [
+    { "node": 3, "xf": 50, "yf": -100 }
+  ],
+  "load_patterns": [
+    {
+      "tag": 1,
+      "type": "static",
+      "time_series": {"type": "Constant", "tag": 1}
+    }
+  ],
+  "analysis_settings": {
+    "constraints": "Plain",
+    "system": "BandSPD",
+    "numberer": "RCM",
+    "integrator": {"type": "LoadControl", "incr": 1.0},
+    "algorithm": "Linear",
+    "analysis": {"type": "Static", "steps": 1}
+  }
+}

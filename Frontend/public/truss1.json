@@ -1,23 +1,132 @@
 {
+  "metadata": {
+    "title": "10-Member 4-Panel Pratt Truss",
+    "units": "kN-m"
+  },
   "nodes": [
-    { "tag": 1, "x": 0, "y": 0 },
-    { "tag": 2, "x": 10, "y": 0 },
-    { "tag": 3, "x": 5, "y": 8 },
-    { "tag": 4, "x": 15, "y": 8 }
+    { "tag": 1, "x": 0.0, "y": 0.0 },
+    { "tag": 2, "x": 4.0, "y": 0.0 },
+    { "tag": 3, "x": 8.0, "y": 0.0 },
+    { "tag": 4, "x": 12.0, "y": 0.0 },
+    { "tag": 5, "x": 16.0, "y": 0.0 },
+    { "tag": 6, "x": 4.0, "y": 4.0 },
+    { "tag": 7, "x": 8.0, "y": 4.0 },
+    { "tag": 8, "x": 12.0, "y": 4.0 }
+  ],
+  "materials": [
+    {
+      "tag": 1,
+      "type": "Elastic",
+      "E": 210000,
+      "nu": 0.3
+    }
   ],
   "elements": [
-    { "tag": 1, "start": 1, "end": 2, "area": 1, "E": 1 },
-    { "tag": 2, "start": 1, "end": 3, "area": 1, "E": 1 },
-    { "tag": 3, "start": 2, "end": 3, "area": 1, "E": 1 },
-    { "tag": 4, "start": 2, "end": 4, "area": 1, "E": 1 },
-    { "tag": 5, "start": 3, "end": 4, "area": 1, "E": 1 }
-  ],
-  "forces": [
-    { "node": 3, "xf": 0, "yf": -200 },
-    { "node": 4, "xf": 0, "yf": -200 }
+    {
+      "tag": 1,
+      "type": "Truss",
+      "start": 1,
+      "end": 2,
+      "area": 0.012,
+      "material": 1
+    },
+    {
+      "tag": 2,
+      "type": "Truss",
+      "start": 2,
+      "end": 3,
+      "area": 0.012,
+      "material": 1
+    },
+    {
+      "tag": 3,
+      "type": "Truss",
+      "start": 3,
+      "end": 4,
+      "area": 0.012,
+      "material": 1
+    },
+    {
+      "tag": 4,
+      "type": "Truss",
+      "start": 4,
+      "end": 5,
+      "area": 0.012,
+      "material": 1
+    },
+    {
+      "tag": 5,
+      "type": "Truss",
+      "start": 1,
+      "end": 6,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 6,
+      "type": "Truss",
+      "start": 2,
+      "end": 6,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 7,
+      "type": "Truss",
+      "start": 2,
+      "end": 7,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 8,
+      "type": "Truss",
+      "start": 3,
+      "end": 7,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 9,
+      "type": "Truss",
+      "start": 3,
+      "end": 8,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 10,
+      "type": "Truss",
+      "start": 4,
+      "end": 8,
+      "area": 0.008,
+      "material": 1
+    }
   ],
   "supports": [
     { "node": 1, "xd": 1, "yd": 1 },
-    { "node": 2, "xd": 0, "yd": 1 }
-  ]
+    { "node": 5, "xd": 0, "yd": 1 }
+  ],
+  "forces": [
+    { "node": 2, "xf": 0.0, "yf": -50.0 },
+    { "node": 3, "xf": 0.0, "yf": -80.0 },
+    { "node": 4, "xf": 0.0, "yf": -50.0 },
+    { "node": 6, "xf": 0.0, "yf": -30.0 },
+    { "node": 8, "xf": 0.0, "yf": -30.0 }
+  ],
+  "load_patterns": [
+    {
+      "tag": 1,
+      "type": "static",
+      "time_series": { "type": "Constant", "tag": 1 }
+    }
+  ],
+  "analysis_settings": {
+    "constraints": "Plain",
+    "system": "BandSPD",
+    "numberer": "RCM",
+    "integrator": { "type": "LoadControl", "incr": 1.0 },
+    "algorithm": "Linear",
+    "analysis": { "type": "Static", "steps": 1 }
+  }
 }

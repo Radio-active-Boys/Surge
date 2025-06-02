@@ -1,28 +1,67 @@
 {
+  "metadata": {
+    "title": "3-Member Triangular Truss",
+    "units": "kN-m"
+  },
   "nodes": [
-    { "tag": 1, "x": 0, "y": 0 },
-    { "tag": 2, "x": 5, "y": 5 },
-    { "tag": 3, "x": 10, "y": 0 },
-    { "tag": 4, "x": 15, "y": 5 },
-    { "tag": 5, "x": 20, "y": 0 },
-    { "tag": 6, "x": 25, "y": 5 }
+    { "tag": 1, "x": 0.0, "y": 0.0 },
+    { "tag": 2, "x": 5.0, "y": 0.0 },
+    { "tag": 3, "x": 5.0, "y": 3.0 }
+  ],
+  "materials": [
+    {
+      "tag": 1,
+      "type": "Elastic",
+      "E": 210000,
+      "nu": 0.3
+    }
   ],
   "elements": [
-    { "tag": 1, "start": 1, "end": 2, "area": 1, "E": 1 },
-    { "tag": 2, "start": 2, "end": 3, "area": 1, "E": 1 },
-    { "tag": 3, "start": 3, "end": 4, "area": 1, "E": 1 },
-    { "tag": 4, "start": 4, "end": 5, "area": 1, "E": 1 },
-    { "tag": 5, "start": 5, "end": 6, "area": 1, "E": 1 },
-    { "tag": 6, "start": 2, "end": 4, "area": 1, "E": 1 },
-    { "tag": 7, "start": 4, "end": 6, "area": 1, "E": 1 }
-  ],
-  "forces": [
-    { "node": 2, "xf": 0, "yf": -100 },
-    { "node": 4, "xf": 0, "yf": -150 },
-    { "node": 6, "xf": 0, "yf": -100 }
+    {
+      "tag": 1,
+      "type": "Truss",
+      "start": 1,
+      "end": 2,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 2,
+      "type": "Truss",
+      "start": 2,
+      "end": 3,
+      "area": 0.008,
+      "material": 1
+    },
+    {
+      "tag": 3,
+      "type": "Truss",
+      "start": 1,
+      "end": 3,
+      "area": 0.005,
+      "material": 1
+    }
   ],
   "supports": [
     { "node": 1, "xd": 1, "yd": 1 },
-    { "node": 5, "xd": 0, "yd": 1 }
-  ]
+    { "node": 2, "xd": 0, "yd": 1 }
+  ],
+  "forces": [
+    { "node": 3, "xf": 0.0, "yf": -50.0 }
+  ],
+  "load_patterns": [
+    {
+      "tag": 1,
+      "type": "static",
+      "time_series": { "type": "Constant", "tag": 1 }
+    }
+  ],
+  "analysis_settings": {
+    "constraints": "Plain",
+    "system": "BandSPD",
+    "numberer": "RCM",
+    "integrator": { "type": "LoadControl", "incr": 1.0 },
+    "algorithm": "Linear",
+    "analysis": { "type": "Static", "steps": 1 }
+  }
 }

@@ -4,10 +4,26 @@
     "units": "kN-m"
   },
   "nodes": [
-    { "tag": 1, "x": 0.0, "y": 0.0 },
-    { "tag": 2, "x": 4.0, "y": 0.0 },
-    { "tag": 3, "x": 4.0, "y": 3.0 },
-    { "tag": 4, "x": 0.0, "y": 3.0 }
+    {
+      "tag": 1,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "tag": 2,
+      "x": 4,
+      "y": 0
+    },
+    {
+      "tag": 3,
+      "x": 4,
+      "y": 3
+    },
+    {
+      "tag": 4,
+      "x": 0,
+      "y": 3
+    }
   ],
   "materials": [
     {
@@ -23,7 +39,7 @@
       "type": "Truss",
       "start": 1,
       "end": 2,
-      "area": 0.010,
+      "area": 0.01,
       "material": 1
     },
     {
@@ -31,7 +47,7 @@
       "type": "Truss",
       "start": 2,
       "end": 3,
-      "area": 0.010,
+      "area": 0.01,
       "material": 1
     },
     {
@@ -39,7 +55,7 @@
       "type": "Truss",
       "start": 3,
       "end": 4,
-      "area": 0.010,
+      "area": 0.01,
       "material": 1
     },
     {
@@ -47,7 +63,7 @@
       "type": "Truss",
       "start": 4,
       "end": 1,
-      "area": 0.010,
+      "area": 0.01,
       "material": 1
     },
     {
@@ -60,26 +76,51 @@
     }
   ],
   "supports": [
-    { "node": 1, "xd": 1, "yd": 1 },
-    { "node": 2, "xd": 0, "yd": 1 }
+    {
+      "node": 1,
+      "xd": 1,
+      "yd": 1
+    },
+    {
+      "node": 2,
+      "xd": 0,
+      "yd": 1
+    }
   ],
   "forces": [
-    { "node": 3, "xf": 0.0, "yf": -60.0 },
-    { "node": 4, "xf": 20.0, "yf": 0.0 }
+    {
+      "node": 3,
+      "xf": 0,
+      "yf": -60
+    },
+    {
+      "node": 4,
+      "xf": 20,
+      "yf": 0
+    }
   ],
   "load_patterns": [
     {
       "tag": 1,
       "type": "static",
-      "time_series": { "type": "Constant", "tag": 1 }
+      "time_series": {
+        "type": "Constant",
+        "tag": 1
+      }
     }
   ],
   "analysis_settings": {
     "constraints": "Plain",
     "system": "BandSPD",
     "numberer": "RCM",
-    "integrator": { "type": "LoadControl", "incr": 1.0 },
+    "integrator": {
+      "type": "LoadControl",
+      "incr": 1
+    },
     "algorithm": "Linear",
-    "analysis": { "type": "Static", "steps": 1 }
+    "analysis": {
+      "type": "Static",
+      "steps": 1
+    }
   }
 }

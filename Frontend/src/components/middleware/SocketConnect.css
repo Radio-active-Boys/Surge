@@ -1,0 +1,83 @@
+/* SocketConnect.css */
+
+/* Outer container for the entire component */
+.socket-container {
+  max-width: 600px;
+ 
+  margin: 1.5rem auto;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fafafa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-family: Arial, sans-serif;
+}
+
+/* Group of buttons (Connect / Send Message / Send JSON File) */
+.button-group {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.button-group button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #007bff;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.button-group button:hover:not(:disabled) {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.button-group button:disabled {
+  background-color: #cccccc;
+  border-color: #cccccc;
+  cursor: not-allowed;
+  color: #666666;
+}
+
+/* Connection status line */
+.status-line {
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Error message block (red text) */
+.error-block {
+  color: #c0392b;
+  background-color: #fdecea;
+  border: 1px solid #e74c3c;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+}
+
+/* Header above the events log */
+.events-header {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+/* Scrollable log of WebSocket events */
+.events-log {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  color: #2c3e50;
+  white-space: pre-wrap; /* preserve formatting */
+  border: 1px solid #ddd;
+}
