@@ -1,7 +1,7 @@
 
 from matplotlib import image as img
 from matplotlib import pyplot as plt
-from opensees.openseespy import *
+from openseespy.opensees import *
 # %%
 # image = img.imread("image.png")
 

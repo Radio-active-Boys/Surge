@@ -1,0 +1,272 @@
+.results-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab:hover {
+  color: #3b82f6;
+}
+
+.tab.active {
+  color: #3b82f6;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #3b82f6;
+}
+
+.tab-content {
+  padding: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+/* Recorders styling */
+.recorders-container {
+  padding: 0;
+}
+
+.recorders-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+}
+
+.recorders-list {
+  background-color: #f9fafb;
+  border-radius: 6px;
+  padding: 1rem;
+  height: 100%;
+}
+
+.recorders-list-container {
+  height: 100%;
+}
+
+.list-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.75rem;
+}
+
+.recorders-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.recorder-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recorder-item:hover {
+  border-color: #93c5fd;
+}
+
+.recorder-item.selected {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.recorder-filename {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recorder-type {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.recorder-detail-container {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem;
+  height: 100%;
+}
+
+.recorder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.recorder-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0;
+}
+
+.recorder-type-label {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.close-button {
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.close-button:hover {
+  color: #6b7280;
+}
+
+.close-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.recorder-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.placeholder-content svg {
+  width: 3rem;
+  height: 3rem;
+  color: #d1d5db;
+  margin-bottom: 1rem;
+}
+
+.placeholder-content h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: #374151;
+}
+
+.placeholder-content p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Recorder table styling */
+.recorder-table-container {
+  overflow-x: auto;
+}
+
+.recorder-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.recorder-table th {
+  background-color: #f3f4f6;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.recorder-table td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  font-family: monospace;
+}
+
+.even-row {
+  background-color: white;
+}
+
+.odd-row {
+  background-color: #f9fafb;
+}
+
+.raw-recorder-data {
+  background-color: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 4px;
+  max-height: 400px;
+  overflow: auto;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+/* Model state styling */
+.model-state-viewer {
+  background-color: #f9fafb;
+  padding: 1rem;
+  border-radius: 4px;
+  max-height: 500px;
+  overflow: auto;
+  font-size: 0.875rem;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+/* Empty state messages */
+.no-recorders, .no-recorder-data, .no-model-data {
+  color: #6b7280;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 4px;
+  text-align: center;
+}

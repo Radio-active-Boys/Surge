@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <OpenSees
+  xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation = "http://OpenSees.berkeley.edu/xml-schema/xmlns/OpenSees.xsd">
+    <TimeOutput>
+        <ResponseType>time</ResponseType>
+    </TimeOutput>
+    <NodeOutput nodeTag="3" coord1="0" coord2="144" coord3="0">
+        <ResponseType>D1</ResponseType>
+        <ResponseType>D2</ResponseType>
+        <ResponseType>D3</ResponseType>
+    </NodeOutput>
+    <NodeOutput nodeTag="4" coord1="360" coord2="144" coord3="0">
+        <ResponseType>D1</ResponseType>
+        <ResponseType>D2</ResponseType>
+        <ResponseType>D3</ResponseType>
+    </NodeOutput>
+    <Data>
+        0.1 -6.9651e-19 -0.00361446 9.61225e-21 -6.96489e-19 -0.00361446 9.6977e-21 
+        0.2 -2.30852e-18 -0.00725831 3.08204e-20 -2.31805e-18 -0.00725831 2.89326e-20 
+        0.3 -4.42234e-18 -0.0109323 4.02052e-20 -4.43608e-18 -0.0109323 5.88186e-20 
+        0.4 -2.17744e-18 -0.0146371 8.26862e-21 -2.16318e-18 -0.0146371 3.2004e-20 
+        0.5 -4.60195e-18 -0.0183736 4.7573e-20 -4.59757e-18 -0.0183736 6.47707e-20 
+        0.6 -3.38783e-18 -0.0221426 3.1717e-20 -3.38467e-18 -0.0221426 4.43441e-20 
+        0.7 -5.60356e-18 -0.025945 6.24291e-20 -5.60162e-18 -0.025945 7.01829e-20 
+        0.8 -3.27388e-18 -0.0297816 4.34755e-20 -3.26789e-18 -0.0297816 6.44113e-20 
+        0.9 -7.23222e-18 -0.0336535 9.45116e-20 -7.2287e-18 -0.0336535 1.08566e-19 
+        1 -1.66937e-18 -0.0375615 1.58706e-20 -1.6668e-18 -0.0375615 2.61455e-20 
+        </Data>
+</OpenSees>

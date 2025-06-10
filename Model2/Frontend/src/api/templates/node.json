@@ -1,0 +1,28 @@
+[{
+"category": "node",
+  "name": "node2D",
+  "defaultParams": {
+    "id": 0,
+    "x": 0,
+    "y": 0
+  },
+  "command": {
+    "name": "node",
+    "args": ["$id", "$x", "$y"]
+  }
+},
+{
+    "category": "node",
+  "name": "node3D",
+  "defaultParams": {
+    "id": 0,
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "command": {
+    "name": "node",
+    "args": ["$id", "$x", "$y", "$z"]
+  }
+}
+]

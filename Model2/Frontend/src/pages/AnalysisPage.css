@@ -1,0 +1,60 @@
+.model-builder {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f7f9fb;
+}
+
+/* Left Panel */
+.editors-panel {
+  width: 40%;
+  min-width: 400px;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background-color: #ffffff;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tabs button {
+  padding: 8px 12px;
+  border: 1px solid #0077cc;
+  background-color: white;
+  color: #0077cc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.tabs button.active {
+  background-color: #0077cc;
+  color: white;
+}
+
+.tabs button:hover {
+  background-color: #005fa3;
+  color: white;
+}
+
+/* Editor Container */
+.editor-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 10px;
+}
+
+/* Right Panel */
+.analysis-panel {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #f0f2f5;
+}

@@ -1,0 +1,118 @@
+[
+  {
+    "category": "uniaxialMaterial",
+    "name": "Elastic",
+    "defaultParams": {
+      "matTag": 1,
+      "E": 200000000000,
+      "eta": 0.0,
+      "Eneg": 200000000000
+    },
+    "command": {
+      "name": "uniaxialMaterial",
+      "args": ["Elastic", "$matTag", "$E", "$eta", "$Eneg"]
+    }
+  },
+  {
+    "category": "uniaxialMaterial",
+    "name": "ElasticPP",
+    "defaultParams": {
+      "matTag": 2,
+      "E": 200000000000,
+      "epsyP": 0.002,
+      "epsyN": 0.002,
+      "eps0": 0.0
+    },
+    "command": {
+      "name": "uniaxialMaterial",
+      "args": ["ElasticPP", "$matTag", "$E", "$epsyP", "$epsyN", "$eps0"]
+    }
+  },
+  {
+    "category": "uniaxialMaterial",
+    "name": "ElasticPPGap",
+    "defaultParams": {
+      "matTag": 3,
+      "E": 200000000000,
+      "Fy": 300000000,
+      "gap": 0.001,
+      "eta": 0.0,
+      "damage": "noDamage"
+    },
+    "command": {
+      "name": "uniaxialMaterial",
+      "args": ["ElasticPPGap", "$matTag", "$E", "$Fy", "$gap", "$eta", "$damage"]
+    }
+  },
+  {
+    "category": "uniaxialMaterial",
+    "name": "ENT",
+    "defaultParams": {
+      "matTag": 4,
+      "E": 200000000000
+    },
+    "command": {
+      "name": "uniaxialMaterial",
+      "args": ["ENT", "$matTag", "$E"]
+    }
+  } , 
+
+  {
+    "category": "uniaxialMaterial",
+    "name": "Steel01",
+    "defaultParams": {
+      "matTag": 1,
+      "Fy": 300000000,
+      "E": 200000000000,
+      "b": 0.02
+    },
+    "command": {
+      "name": "uniaxialMaterial",
+      "args": ["Steel01", "$matTag", "$Fy", "$E", "$b"]
+    }
+  },
+  {
+    "category": "uniaxialMaterial",
+    "name": "Steel02",
+    "defaultParams": {
+        "matTag": 3,
+        "Fy": 300000000,
+        "E0": 200000000000,
+        "b": 0.02,
+        "R0": 18,
+        "cR1": 0.925,
+        "cR2": 0.15
+    },
+    "command": {
+        "name": "uniaxialMaterial",
+        "args": [
+        "Steel02",
+        "$matTag",
+        "$Fy",
+        "$E0",
+        "$b",
+        "$R0",
+        "$cR1",
+        "$cR2"
+        ]
+    }
+  },
+  {
+    "category": "uniaxialMaterial",
+    "name": "Concrete02",
+    "defaultParams": {
+      "matTag": 2,
+      "fpc": -30000000,
+      "epsc0": -0.002,
+      "fpcu": -2000000,
+      "epsU": -0.01,
+      "lambda": 0.1,
+      "ft": 2000000,
+      "Ets": 2000000000
+    },
+    "command": {
+      "name": "uniaxialMaterial",
+      "args": ["Concrete02", "$matTag", "$fpc", "$epsc0", "$fpcu", "$epsU", "$lambda", "$ft", "$Ets"]
+    }
+  }
+]

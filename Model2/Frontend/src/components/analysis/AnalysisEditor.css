@@ -1,0 +1,109 @@
+.param-editor {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.param-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 10px;
+}
+
+.param-header select {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.params {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.param-row label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.param-row input {
+  flex: 2;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.array-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.array-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.array-row input {
+  padding: 6px;
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.remove-btn,
+.add-btn,
+.submit-btn {
+  padding: 6px 12px;
+  border: none;
+  background-color: #005bbb;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.remove-btn {
+  background-color: #d9534f;
+}
+
+.remove-btn:hover {
+  background-color: #c9302c;
+}
+
+.add-btn {
+  align-self: flex-start;
+  background-color: #5cb85c;
+}
+
+.add-btn:hover {
+  background-color: #4cae4c;
+}
+
+.submit-btn {
+  margin-top: 20px;
+  width: 100%;
+  font-size: 16px;
+}
+
+.submit-btn:hover {
+  background-color: #004a9f;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: #777;
+}

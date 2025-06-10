@@ -1,0 +1,156 @@
+[
+  {
+    "category": "pattern",
+    "name": "Plain ",
+    "defaultParams": {
+      "patternTag": 1,
+      "tsTag": 1,
+      "fact": 1.0
+    },
+    "command": {
+      "name": "pattern",
+      "args": ["Plain", "$patternTag", "$tsTag", "-fact", "$fact"]
+    }
+  },
+  {
+    "category": "load",
+    "name": "load",
+    "defaultParams": {
+      "nodeTag": 1,
+      "loadValues": [0.0, -1000.0, 0.0]
+    },
+    "command": {
+      "name": "load",
+      "args": ["$nodeTag", "*$loadValues"]
+    }
+  },
+  {
+    "category": "eleLoad",
+    "name": "eleLoad",
+    "defaultParams": {
+      "eleTags": [1],
+      "eleTag1": 1,
+      "eleTag2": 1,
+      "Wy": 1000.0,
+      "Wz": 0.0,
+      "Wx": 0.0,
+      "Py": 0.0,
+      "Pz": 0.0,
+      "xL": 0.5,
+      "tempPts": []
+    },
+    "command": {
+      "name": "eleLoad",
+      "args": [
+        "-ele", "*$eleTags",
+        "-range", "$eleTag1", "$eleTag2",
+        "-type", "-beamUniform", "$Wy", "$Wz", "$Wx"
+      ]
+    }
+  },
+  {
+    "category": "sp",
+    "name": "sp",
+    "defaultParams": {
+      "nodeTag": 1,
+      "dof": 2,
+      "dofValue": 0.0
+    },
+    "command": {
+      "name": "sp",
+      "args": ["$nodeTag", "$dof", "$dofValue"]
+    }
+  },
+  {
+    "category": "pattern",
+    "name": "UniformExcitation",
+    "defaultParams": {
+      "patternTag": 2,
+      "dir": 1,
+      "dispSeriesTag": null,
+      "velSeriesTag": null,
+      "accelSeriesTag": 3,
+      "vel0": 0.0,
+      "fact": 1.0
+    },
+    "command": {
+      "name": "pattern",
+      "args": [
+        "UniformExcitation",
+        "$patternTag",
+        "$dir",
+        "-disp", "$dispSeriesTag",
+        "-vel", "$velSeriesTag",
+        "-accel", "$accelSeriesTag",
+        "-vel0", "$vel0",
+        "-fact", "$fact"
+      ]
+    }
+  },
+  {
+    "category": "pattern",
+    "name": "MultipleSupport",
+    "defaultParams": {
+      "patternTag": 3
+    },
+    "command": {
+      "name": "pattern",
+      "args": ["MultipleSupport", "$patternTag"]
+    }
+  },
+  {
+    "category": "groundMotion",
+    "name": "Plain",
+    "defaultParams": {
+      "gmTag": 1,
+      "dispSeriesTag": null,
+      "velSeriesTag": null,
+      "accelSeriesTag": 3,
+      "tsInt": "Trapezoidal",
+      "fact": 1.0
+    },
+    "command": {
+      "name": "groundMotion",
+      "args": [
+        "$gmTag",
+        "Plain",
+        "-disp", "$dispSeriesTag",
+        "-vel", "$velSeriesTag",
+        "-accel", "$accelSeriesTag",
+        "-int", "$tsInt",
+        "-fact", "$fact"
+      ]
+    }
+  },
+  {
+    "category": "groundMotion",
+    "name": "Interpolated",
+    "defaultParams": {
+      "gmTag": 2,
+      "gmTags": [1, 2],
+      "facts": [0.5, 0.5]
+    },
+    "command": {
+      "name": "groundMotion",
+      "args": [
+        "$gmTag",
+        "Interpolated",
+        "*$gmTags",
+        "-fact", "*$facts"
+      ]
+    }
+  },
+  {
+    "category": "imposedMotion",
+    "name": "imposedMotion",
+    "defaultParams": {
+      "nodeTag": 1,
+      "dof": 1,
+      "gmTag": 1
+    },
+    "command": {
+      "name": "imposedMotion",
+      "args": ["$nodeTag", "$dof", "$gmTag"]
+    }
+  }
+]

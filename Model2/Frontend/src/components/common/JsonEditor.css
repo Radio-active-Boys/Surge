@@ -1,0 +1,66 @@
+.json-editor {
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.category-card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.category-header {
+  background: #f8f8f8;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  text-transform: capitalize;
+  font-size: 16px;
+}
+
+.category-header:hover {
+  background: #e8e8e8;
+}
+
+.empty-msg {
+  padding: 12px;
+  font-style: italic;
+  color: #888;
+}
+
+.category-content {
+  padding: 12px 16px;
+  background: #fcfcfc;
+}
+
+.command-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  padding: 10px;
+}
+
+.command-title {
+  margin-bottom: 6px;
+}
+
+.command-id {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.arg-input {
+  margin: 4px 6px;
+  padding: 4px;
+  min-width: 50px;
+  font-family: monospace;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

@@ -1,0 +1,108 @@
+[
+  {
+    "name": "NodeRecorder",
+    "category": "recorder",
+    "defaultParams": {
+      "type": "Node",
+      "format": "-file",
+      "filename": "node_disp.out",
+      "precision": 6,
+      "deltaT": 0.0,
+      "dofs": [1],
+      "response": ["disp"],
+      "nodeTags": [1, 2, 3],
+      "includeTime": true
+    },
+    "command": {
+      "name": "recorder",
+      "args": [
+        "Node",
+        "-file", "node_disp.out",
+        "-precision", 6,
+        "-time",
+        "-dT", 0.0,
+        "-node", 1, 2, 3,
+        "-dof", 1,
+        "disp"
+      ]
+    }
+  },
+  {
+    "name": "EnvelopeNodeRecorder",
+    "category": "recorder",
+    "defaultParams": {
+      "type": "EnvelopeNode",
+      "format": "-file",
+      "filename": "envelope_node_disp.out",
+      "precision": 6,
+      "deltaT": 0.0,
+      "dofs": [1],
+      "response": ["disp"],
+      "nodeTags": [1, 2, 3],
+      "includeTime": true
+    },
+    "command": {
+      "name": "recorder",
+      "args": [
+        "EnvelopeNode",
+        "-file", "envelope_node_disp.out",
+        "-precision", 6,
+        "-time",
+        "-dT", 0.0,
+        "-node", 1, 2, 3,
+        "-dof", 1,
+        "disp"
+      ]
+    }
+  },
+  {
+    "name": "ElementRecorder",
+    "category": "recorder",
+    "defaultParams": {
+      "type": "Element",
+      "format": "-file",
+      "filename": "element_force.out",
+      "precision": 6,
+      "deltaT": 0.0,
+      "elementTags": [1, 2],
+      "args": ["force"]
+    },
+    "command": {
+      "name": "recorder",
+      "args": [
+        "Element",
+        "-file", "element_force.out",
+        "-precision", 6,
+        "-time",
+        "-dT", 0.0,
+        "-ele", 1, 2,
+        "force"
+      ]
+    }
+  },
+  {
+    "name": "EnvelopeElementRecorder",
+    "category": "recorder",
+    "defaultParams": {
+      "type": "EnvelopeElement",
+      "format": "-file",
+      "filename": "envelope_element_stress.out",
+      "precision": 6,
+      "deltaT": 0.0,
+      "elementTags": [1, 2],
+      "args": ["stress"]
+    },
+    "command": {
+      "name": "recorder",
+      "args": [
+        "EnvelopeElement",
+        "-file", "envelope_element_stress.out",
+        "-precision", 6,
+        "-time",
+        "-dT", 0.0,
+        "-ele", 1, 2,
+        "stress"
+      ]
+    }
+  }
+]

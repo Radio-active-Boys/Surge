@@ -1,0 +1,477 @@
+[
+  {
+    "category": "element",
+    "name": "zeroLength",
+    "defaultParams": {
+      "eleTag": 1,
+      "eleNodes": [1, 2],
+      "matTags": [1, 2],
+      "dirs": [1, 2],
+      "rFlag": 0,
+      "vecx": null,
+      "vecyp": null
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLength",
+        "$eleTag",
+        "*$eleNodes",
+        "-mat", "*$matTags",
+        "-dir", "*$dirs",
+        "-doRayleigh", "$rFlag",
+        "-orient", "$vecx", "$vecyp"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthND ",
+    "defaultParams": {
+      "eleTag": 2,
+      "eleNodes": [3, 4],
+      "matTag": 3,
+      "uniTag": null,
+      "vecx": null,
+      "vecyp": null
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthND",
+        "$eleTag",
+        "*$eleNodes",
+        "$matTag",
+        "$uniTag",
+        "-orient", "$vecx", "$vecyp"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthSection",
+    "defaultParams": {
+      "eleTag": 3,
+      "eleNodes": [5, 6],
+      "secTag": 1,
+      "vecx": null,
+      "vecyp": null,
+      "rFlag": 0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthSection",
+        "$eleTag",
+        "*$eleNodes",
+        "$secTag",
+        "-orient", "$vecx", "$vecyp",
+        "-doRayleigh", "$rFlag"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "CoupledZeroLength",
+    "defaultParams": {
+      "eleTag": 4,
+      "eleNodes": [7, 8],
+      "dirn1": 1,
+      "dirn2": 2,
+      "matTag": 1,
+      "rFlag": 0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "CoupledZeroLength",
+        "$eleTag",
+        "*$eleNodes",
+        "$dirn1",
+        "$dirn2",
+        "$matTag",
+        "$rFlag"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthContact2D",
+    "defaultParams": {
+      "eleTag": 5,
+      "eleNodes": [9, 10],
+      "Kn": 1e6,
+      "Kt": 1e5,
+      "mu": 0.3,
+      "Nx": 1,
+      "Ny": 0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthContact2D",
+        "$eleTag",
+        "*$eleNodes",
+        "$Kn", "$Kt", "$mu",
+        "-normal", "$Nx", "$Ny"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthContact3D",
+    "defaultParams": {
+      "eleTag": 6,
+      "eleNodes": [11, 12],
+      "Kn": 1e6,
+      "Kt": 1e5,
+      "mu": 0.3,
+      "c": 0.0,
+      "dir": 3
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthContact3D",
+        "$eleTag",
+        "*$eleNodes",
+        "$Kn", "$Kt", "$mu", "$c", "$dir"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthContactNTS2D",
+    "defaultParams": {
+      "eleTag": 7,
+      "sNdNum": 2,
+      "mNdNum": 2,
+      "NodesTags": [13, 14, 15, 16],
+      "kn": 1e6,
+      "kt": 1e5,
+      "phi": 30
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthContactNTS2D",
+        "$eleTag",
+        "-sNdNum", "$sNdNum",
+        "-mNdNum", "$mNdNum",
+        "-Nodes", "*$NodesTags",
+        "$kn", "$kt", "$phi"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthInterface2D",
+    "defaultParams": {
+      "eleTag": 8,
+      "sNdNum": 2,
+      "mNdNum": 2,
+      "sdof": 1,
+      "mdof": 1,
+      "NodesTags": [17, 18, 19, 20],
+      "kn": 1e6,
+      "kt": 1e5,
+      "phi": 30
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthInterface2D",
+        "$eleTag",
+        "-sNdNum", "$sNdNum",
+        "-mNdNum", "$mNdNum",
+        "-dof", "$sdof", "$mdof",
+        "-Nodes", "*$NodesTags",
+        "$kn", "$kt", "$phi"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "zeroLengthImpact3D",
+    "defaultParams": {
+      "eleTag": 9,
+      "eleNodes": [21, 22],
+      "direction": 3,
+      "initGap": 0.0,
+      "frictionRatio": 0.2,
+      "Kt": 1e5,
+      "Kn": 1e6,
+      "Kn2": 5e5,
+      "Delta_y": 0.001,
+      "cohesion": 0.0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "zeroLengthImpact3D",
+        "$eleTag",
+        "*$eleNodes",
+        "$direction",
+        "$initGap",
+        "$frictionRatio",
+        "$Kt",
+        "$Kn",
+        "$Kn2",
+        "$Delta_y",
+        "$cohesion"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "Truss",
+    "defaultParams": {
+      "eleTag": 10,
+      "eleNodes": [1, 2],
+      "A": 0.001,
+      "matTag": 1,
+      "rho": 0.0,
+      "cFlag": 0,
+      "rFlag": 0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "Truss",
+        "$eleTag",
+        "*$eleNodes",
+        "$A",
+        "$matTag",
+        "-rho", "$rho",
+        "-cMass", "$cFlag",
+        "-doRayleigh", "$rFlag"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "corotTruss",
+    "defaultParams": {
+      "eleTag": 11,
+      "eleNodes": [3, 4],
+      "A": 0.001,
+      "matTag": 2,
+      "rho": 0.0,
+      "cFlag": 0,
+      "rFlag": 0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "corotTruss",
+        "$eleTag",
+        "*$eleNodes",
+        "$A",
+        "$matTag",
+        "-rho", "$rho",
+        "-cMass", "$cFlag",
+        "-doRayleigh", "$rFlag"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "elasticBeamColumn2D",
+    "defaultParams": {
+      "eleTag": 12,
+      "eleNodes": [5, 6],
+      "Area": 0.001,
+      "E_mod": 200e9,
+      "Iz": 1e-6,
+      "transfTag": 1,
+      "mass": 0.0,
+      "cMass": false,
+      "release": 0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "elasticBeamColumn",
+        "$eleTag",
+        "*$eleNodes",
+        "$Area",
+        "$E_mod",
+        "$Iz",
+        "$transfTag",
+        "-mass", "$mass",
+        "-cMass",
+        "-release", "$release"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "ModElasticBeam2d",
+    "defaultParams": {
+      "eleTag": 13,
+      "eleNodes": [7, 8],
+      "Area": 0.001,
+      "E_mod": 200e9,
+      "Iz": 1e-6,
+      "K11": 1e3,
+      "K33": 1e3,
+      "K44": 1e3,
+      "transfTag": 1,
+      "massDens": 0.0,
+      "cMass": false
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "ModElasticBeam2d",
+        "$eleTag",
+        "*$eleNodes",
+        "$Area",
+        "$E_mod",
+        "$Iz",
+        "$K11",
+        "$K33",
+        "$K44",
+        "$transfTag",
+        "-mass", "$massDens",
+        "-cMass"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "ElasticTimoshenkoBeam2D",
+    "defaultParams": {
+      "eleTag": 14,
+      "eleNodes": [9, 10],
+      "E_mod": 200e9,
+      "G_mod": 80e9,
+      "Area": 0.001,
+      "Iz": 1e-6,
+      "Avy": 0.8,
+      "transfTag": 1,
+      "massDens": 0.0,
+      "cMass": false
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "ElasticTimoshenkoBeam",
+        "$eleTag",
+        "*$eleNodes",
+        "$E_mod",
+        "$G_mod",
+        "$Area",
+        "$Iz",
+        "$Avy",
+        "$transfTag",
+        "-mass", "$massDens",
+        "-cMass"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "dispBeamColumn",
+    "defaultParams": {
+      "eleTag": 15,
+      "eleNodes": [11, 12],
+      "transfTag": 1,
+      "integrationTag": 7,
+      "cMass": false,
+      "mass": 0.0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "dispBeamColumn",
+        "$eleTag",
+        "*$eleNodes",
+        "$transfTag",
+        "$integrationTag",
+        "-cMass",
+        "-mass", "$mass"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "forceBeamColumn",
+    "defaultParams": {
+      "eleTag": 16,
+      "eleNodes": [13, 14],
+      "transfTag": 1,
+      "integrationTag": 7,
+      "maxIter": 10,
+      "tol": 1e-12,
+      "mass": 0.0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "forceBeamColumn",
+        "$eleTag",
+        "*$eleNodes",
+        "$transfTag",
+        "$integrationTag",
+        "-iter", "$maxIter", "$tol",
+        "-mass", "$mass"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "nonlinearBeamColumn",
+    "defaultParams": {
+      "eleTag": 17,
+      "eleNodes": [15, 16],
+      "numIntgrPts": 5,
+      "secTag": 1,
+      "transfTag": 1,
+      "maxIter": 10,
+      "tol": 1e-12,
+      "mass": 0.0,
+      "intType": "Lobatto"
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "nonlinearBeamColumn",
+        "$eleTag",
+        "*$eleNodes",
+        "$numIntgrPts",
+        "$secTag",
+        "$transfTag",
+        "-iter", "$maxIter", "$tol",
+        "-mass", "$mass",
+        "-integration", "$intType"
+      ]
+    }
+  },
+  {
+    "category": "element",
+    "name": "dispBeamColumnInt",
+    "defaultParams": {
+      "eleTag": 18,
+      "eleNodes": [17, 18],
+      "numIntgrPts": 5,
+      "secTag": 1,
+      "transfTag": 1,
+      "cRot": 0.5,
+      "massDens": 0.0
+    },
+    "command": {
+      "name": "element",
+      "args": [
+        "dispBeamColumnInt",
+        "$eleTag",
+        "*$eleNodes",
+        "$numIntgrPts",
+        "$secTag",
+        "$transfTag",
+        "$cRot",
+        "-mass", "$massDens"
+      ]
+    }
+  }
+]

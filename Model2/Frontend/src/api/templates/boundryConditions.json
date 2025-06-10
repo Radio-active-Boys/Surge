@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Fix",
+    "category": "constraint",
+    "defaultParams": {
+      "nodeTag": 1,
+      "constrValues": [1, 1, 1]
+    },
+    "command": {
+      "name": "fix",
+      "args": [
+        "$nodeTag",
+        "*$constrValues"
+      ]
+    }
+  },
+  {
+    "name": "FixX",
+    "category": "constraint",
+    "defaultParams": {
+      "x": 0.0,
+      "constrValues": [1, 1, 1],
+      "tol": 1e-10
+    },
+    "command": {
+      "name": "fixX",
+      "args": [
+        "$x",
+        "*$constrValues",
+        "-tol", "$tol"
+      ]
+    }
+  },
+  {
+    "name": "FixY",
+    "category": "constraint",
+    "defaultParams": {
+      "y": 0.0,
+      "constrValues": [1, 1, 1],
+      "tol": 1e-10
+    },
+    "command": {
+      "name": "fixY",
+      "args": [
+        "$y",
+        "*$constrValues",
+        "-tol", "$tol"
+      ]
+    }
+  },
+  {
+    "name": "FixZ",
+    "category": "constraint",
+    "defaultParams": {
+      "z": 0.0,
+      "constrValues": [1, 1, 1],
+      "tol": 1e-10
+    },
+    "command": {
+      "name": "fixZ",
+      "args": [
+        "$z",
+        "*$constrValues",
+        "-tol", "$tol"
+      ]
+    }
+  }
+]

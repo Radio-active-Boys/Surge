@@ -1,0 +1,208 @@
+[
+  {
+    "category": "section",
+    "name": "Elastic2D",
+    "defaultParams": {
+      "secTag": 1,
+      "E": 200000000000,
+      "A": 0.01,
+      "Iz": 8.33e-6,
+      "G": null,
+      "alphaY": null
+    },
+    "command": {
+      "name": "section",
+      "args": ["Elastic", "$secTag", "$E", "$A", "$Iz", "$G", "$alphaY"]
+    }
+  },
+  {
+    "category": "section",
+    "name": "Elastic3D",
+    "defaultParams": {
+      "secTag": 2,
+      "E": 200000000000,
+      "A": 0.01,
+      "Iz": 8.33e-6,
+      "Iy": 6.66e-6,
+      "G": 76900000000,
+      "Jxx": 1e-6,
+      "alphaY": null,
+      "alphaZ": null
+    },
+    "command": {
+      "name": "section",
+      "args": ["Elastic", "$secTag", "$E", "$A", "$Iz", "$Iy", "$G", "$Jxx", "$alphaY", "$alphaZ"]
+    }
+  },
+  {
+    "category": "section",
+    "name": "FiberSectionGJ",
+    "defaultParams": {
+      "secTag": 3,
+      "GJ": 1e6
+    },
+    "command": {
+      "name": "section",
+      "args": ["Fiber", "$secTag", "-GJ", "$GJ"]
+    }
+  },
+  {
+    "category": "section",
+    "name": "FiberSectionTorsionMat",
+    "defaultParams": {
+      "secTag": 4,
+      "torsionMatTag": 1
+    },
+    "command": {
+      "name": "section",
+      "args": ["Fiber", "$secTag", "-torsion", "$torsionMatTag"]
+    }
+  },
+  {
+    "category": "fiber",
+    "name": "SingleFiber",
+    "defaultParams": {
+      "y": 0.0,
+      "z": 0.0,
+      "A": 0.0001,
+      "matTag": 1
+    },
+    "command": {
+      "name": "fiber",
+      "args": ["$y", "$z", "$A", "$matTag"]
+    }
+  },
+  {
+    "category": "patch",
+    "name": "RectPatch",
+    "defaultParams": {
+      "type": "rect",
+      "matTag": 2,
+      "numSubdivY": 4,
+      "numSubdivZ": 3,
+      "crdsI": [-0.05, -0.05],
+      "crdsJ": [0.05, 0.05]
+    },
+    "command": {
+      "name": "patch",
+      "args": ["rect", "$matTag", "$numSubdivY", "$numSubdivZ", "$crdsI[0]", "$crdsI[1]", "$crdsJ[0]", "$crdsJ[1]"]
+    }
+  },
+  {
+    "category": "patch",
+    "name": "QuadPatch",
+    "defaultParams": {
+      "type": "quad",
+      "matTag": 2,
+      "numSubdivIJ": 4,
+      "numSubdivJK": 4,
+      "crdsI": [-0.05, -0.05],
+      "crdsJ": [0.05, -0.05],
+      "crdsK": [0.05, 0.05],
+      "crdsL": [-0.05, 0.05]
+    },
+    "command": {
+      "name": "patch",
+      "args": ["quad", "$matTag", "$numSubdivIJ", "$numSubdivJK", "$crdsI[0]", "$crdsI[1]", "$crdsJ[0]", "$crdsJ[1]", "$crdsK[0]", "$crdsK[1]", "$crdsL[0]", "$crdsL[1]"]
+    }
+  },
+  {
+    "category": "patch",
+    "name": "CircPatch",
+    "defaultParams": {
+      "type": "circ",
+      "matTag": 2,
+      "numSubdivCirc": 8,
+      "numSubdivRad": 2,
+      "center": [0.0, 0.0],
+      "rad": [0.01, 0.05],
+      "ang": [0.0, 360.0]
+    },
+    "command": {
+      "name": "patch",
+      "args": ["circ", "$matTag", "$numSubdivCirc", "$numSubdivRad", "$center[0]", "$center[1]", "$rad[0]", "$rad[1]", "$ang[0]", "$ang[1]"]
+    }
+  },
+  {
+    "category": "layer",
+    "name": "StraightLayer",
+    "defaultParams": {
+      "type": "straight",
+      "matTag": 3,
+      "numFiber": 5,
+      "areaFiber": 1e-5,
+      "start": [-0.04, 0.04],
+      "end": [0.04, 0.04]
+    },
+    "command": {
+      "name": "layer",
+      "args": ["straight", "$matTag", "$numFiber", "$areaFiber", "$start[0]", "$start[1]", "$end[0]", "$end[1]"]
+    }
+  },
+  {
+    "category": "layer",
+    "name": "CircLayer",
+    "defaultParams": {
+      "type": "circ",
+      "matTag": 3,
+      "numFiber": 6,
+      "areaFiber": 1e-5,
+      "center": [0.0, 0.0],
+      "radius": 0.05,
+      "ang": [0.0, 300.0]
+    },
+    "command": {
+      "name": "layer",
+      "args": ["circ", "$matTag", "$numFiber", "$areaFiber", "$center[0]", "$center[1]", "$radius", "$ang[0]", "$ang[1]"]
+    }
+  },
+  {
+    "category": "layer",
+    "name": "RectLayer",
+    "defaultParams": {
+      "type": "rect",
+      "matTag": 3,
+      "numFiberY": 1,
+      "numFiberZ": 2,
+      "areaFiber": 1e-5,
+      "center": [0.0, 0.0],
+      "distY": 0.1,
+      "distZ": 0.2
+    },
+    "command": {
+      "name": "layer",
+      "args": ["rect", "$matTag", "$numFiberY", "$numFiberZ", "$areaFiber", "$center[0]", "$center[1]", "$distY", "$distZ"]
+    }
+  },
+  {
+    "category": "section",
+    "name": "WFSection2d",
+    "defaultParams": {
+      "secTag": 5,
+      "matTag": 1,
+      "d": 0.3,
+      "tw": 0.01,
+      "bf": 0.15,
+      "tf": 0.02,
+      "Nfw": 10,
+      "Nff": 5
+    },
+    "command": {
+      "name": "section",
+      "args": ["WFSection2d", "$secTag", "$matTag", "$d", "$tw", "$bf", "$tf", "$Nfw", "$Nff"]
+    }
+  },
+  {
+    "category": "section",
+    "name": "UniaxialSection",
+    "defaultParams": {
+      "secTag": 6,
+      "matTag": 1,
+      "quantity": "Mz"
+    },
+    "command": {
+      "name": "section",
+      "args": ["Uniaxial", "$secTag", "$matTag", "$quantity"]
+    }
+  }
+]

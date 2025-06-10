@@ -1,0 +1,89 @@
+{
+  "model_config": {
+    "ndm": 2,
+    "ndf": 2
+  },
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 5.0, 0.0] },
+    { "command": "node", "args": [3, 2.5, 4.33] }
+  ],
+  "boundary_conditions": [
+    { "command": "fix", "args": [1, 1, 1] },
+    { "command": "fix", "args": [2, 0, 1] }
+  ],
+  "materials": [
+    {
+      "command": "uniaxialMaterial",
+      "name": "Steel01",
+      "args": [1, 300e6, 200e9, 0.01]
+    }
+  ],
+  "elements": [
+    { "command": "element", "name": "truss", "args": [1, 1, 3, 0.01, 1] },
+    { "command": "element", "name": "truss", "args": [2, 2, 3, 0.01, 1] },
+    { "command": "element", "name": "truss", "args": [3, 1, 2, 0.01, 1] }
+  ],
+  "time_series": [
+    { "command": "timeSeries", "name": "Linear", "args": [1] }
+  ],
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": [1, 1],
+      "loads": [
+        { "command": "load", "args": [3, 1.0, 0.0] }
+      ]
+    }
+  ],
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Plain"] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["UmfPack"] },
+    { "command": "test", "args": ["NormDispIncr", 1e-6, 20] },
+    { "command": "algorithm", "args": ["Newton"] },
+    { "command": "integrator", "name": "DisplacementControl", "args": [2, 1, 0.1] },
+    { "command": "analysis", "args": ["Static"] },
+    { "command": "analyze", "args": [10] }
+  ],
+  "monitoring": {
+    "capture_during_analysis": true,
+    "nodes": [2, 3],
+    "responses": ["disp"],
+    "elements": [1, 2, 3],
+    "responses": ["force"]
+  },
+  "recorders": [
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node2_disp.txt", "-node", 2, "-dof", 1, "disp", "-dof", 2, "disp"]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node3_disp.txt", "-node", 3, "-dof", 1, "disp", "-dof", 2, "disp"]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node1_reaction.txt", "-node", 1, "-dof", 1, "reaction", "-dof", 2, "reaction"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem1_end_forces.txt", "-ele", 1, "force"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem2_end_forces.txt", "-ele", 2, "force"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem3_end_forces.txt", "-ele", 3, "force"]
+    }
+  ]
+}

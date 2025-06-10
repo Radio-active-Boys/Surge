@@ -1,0 +1,76 @@
+{
+  "model_config": {
+    "ndm": 2,
+    "ndf": 3
+  },
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 0.0, 4.0] },
+    { "command": "node", "args": [3, 6.0, 4.0] },
+    { "command": "node", "args": [4, 6.0, 0.0] }
+  ],
+  "boundary_conditions": [
+     { "command": "fix", "args": [1, 1, 1, 1] },
+    { "command": "fix", "args": [4, 1, 1, 1] }
+  ],
+  "materials": [
+    { "command": "uniaxialMaterial", "name": "Elastic", "args": [1, 200e9] }
+  ],
+  "sections": [
+    
+  ],
+  "transformations": [
+ 
+    { "command": "geomTransf", "name": "Linear", "args": [1] }
+  ],
+  "integrations": [
+ 
+  ],
+  "elements": [
+ 
+    { "command": "element", "name": "elasticBeamColumn", "args": [1, 1, 2, 0.02, 200e9, 8.333e-3, 1] },
+ 
+    { "command": "element", "name": "elasticBeamColumn", "args": [2, 4, 3, 0.02, 200e9, 8.333e-3, 1] },
+ 
+    { "command": "element", "name": "elasticBeamColumn", "args": [3, 2, 3, 0.015, 200e9, 5e-3, 1] }
+  ],
+  "time_series": [
+ 
+    { "command": "timeSeries", "name": "Linear", "args": [1] }
+  ],
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": [1, 1],
+      "loads": [
+         { "command": "load", "args": [2, 50000.0, 0.0, 0.0] },
+        { "command": "load", "args": [3, 50000.0, 0.0, 0.0] }
+      ]
+    }
+  ],
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Plain"] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["UmfPack"] },
+    { "command": "test", "args": ["NormDispIncr", 1e-6, 20] },
+    { "command": "algorithm", "args": ["Newton"] },
+     { "command": "integrator", "name": "LoadControl", "args": [1.0] },
+    { "command": "analysis", "args": ["Static"] },
+    { "command": "analyze", "args": [1] }
+  ],
+ 
+  "recorders": [
+ 
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node2_dispX.txt", "-node", 2, "-dof", 1, "disp"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "beam_end_forces.txt", "-ele", 3, "force"]
+    }
+  ]
+}

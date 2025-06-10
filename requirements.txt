@@ -1,0 +1,9 @@
+daphne 
+openseespy 
+numpy 
+matplotlib
+django
+channels 
+channels_redis
+django-cors-headers
+opsvis

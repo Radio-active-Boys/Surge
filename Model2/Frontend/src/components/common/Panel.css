@@ -1,0 +1,59 @@
+
+.panel-wrapper {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  z-index: 1000; 
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.panel-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  justify-content: flex-end;
+}
+
+.panel-toggle-btn {
+  padding: 8px 14px;
+  border: none;
+  background: #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.panel-toggle-btn:hover {
+  background-color: #ddd;
+}
+
+.panel-toggle-btn.active {
+  background-color: #6dea81bc;
+}
+
+.panel-box {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  width: 400px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.panel-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #ef0808;
+  cursor: pointer;
+}
+
+.panel-close-btn:hover {
+  color: #0902d2;
+}

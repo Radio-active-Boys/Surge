@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Plain",
+    "category": "constraints",
+    "defaultParams": {},
+    "command": {
+      "name": "constraints",
+      "args": [
+        "Plain"
+      ]
+    }
+  },
+  {
+    "name": "Lagrange",
+    "category": "constraints",
+    "defaultParams": {
+      "alphaS": 1.0,
+      "alphaM": 1.0
+    },
+    "command": {
+      "name": "constraints",
+      "args": [
+        "Lagrange",
+        "$alphaS",
+        "$alphaM"
+      ]
+    }
+  },
+  {
+    "name": "Penalty",
+    "category": "constraints",
+    "defaultParams": {
+      "alphaS": 1.0,
+      "alphaM": 1.0
+    },
+    "command": {
+      "name": "constraints",
+      "args": [
+        "Penalty",
+        "$alphaS",
+        "$alphaM"
+      ]
+    }
+  },
+  {
+    "name": "Transformation",
+    "category": "constraints",
+    "defaultParams": {},
+    "command": {
+      "name": "constraints",
+      "args": [
+        "Transformation"
+      ]
+    }
+  }
+]

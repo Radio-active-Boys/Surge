@@ -1,0 +1,168 @@
+{
+  "model_config": { "ndm": 2, "ndf": 3 },
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 0.0, 4.0] }
+  ],
+  "boundary_conditions": [
+    { "command": "fix", "args": [1, 1, 1, 1] }
+  ],
+  "materials": [
+    {
+      "command": "uniaxialMaterial",
+      "name": "Concrete01",
+      "args": [1, -30e6, -0.002, -20e6, -0.006]
+    },
+    {
+      "command": "uniaxialMaterial",
+      "name": "Steel01",
+      "args": [2, 400e6, 200e9, 0.01]
+    }
+  ],
+  "sections": [
+    {
+      "command": "section",
+      "name": "Fiber",
+      "args": [1],
+      "fibers": [
+        {
+          "command": "patch",
+          "name": "quad",
+          "args": [
+            1,
+            10,
+            10,
+            -0.15,
+            -0.25,
+            0.15,
+            -0.25,
+            0.15,
+            0.25,
+            -0.15,
+            0.25
+          ]
+        },
+        {
+          "command": "layer",
+          "name": "straight",
+          "args": [
+            2,
+            2,
+            2.01e-4,
+            -0.12,
+            -0.23,
+            0.12,
+            -0.23
+          ]
+        },
+        {
+          "command": "layer",
+          "name": "straight",
+          "args": [
+            2,
+            2,
+            2.01e-4,
+            -0.12,
+            0.23,
+            0.12,
+            0.23
+          ]
+        }
+      ]
+    }
+  ],
+  "transformations": [
+    { "command": "geomTransf", "name": "Linear", "args": [1] }
+  ],
+  "integrations": [
+    { "command": "beamIntegration", "name": "Lobatto", "args": [1, 1, 5] }
+  ],
+  "elements": [
+    { "command": "element", "name": "forceBeamColumn", "args": [1, 1, 2, 1, 1] }
+  ],
+  "time_series": [
+    { "command": "timeSeries", "name": "Linear", "args": [1] }
+  ],
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": [1, 1],
+      "loads": [
+        { "command": "load", "args": [2, 1.0, 0.0, 0.0] }
+      ]
+    }
+  ],
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Plain"] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["UmfPack"] },
+    { "command": "test", "args": ["NormDispIncr", 1e-6, 20] },
+    { "command": "algorithm", "args": ["Newton"] },
+    { "command": "integrator", "name": "DisplacementControl", "args": [2, 1, 0.02] },
+    { "command": "analysis", "args": ["Static"] },
+    { "command": "analyze", "args": [10] }
+  ],
+  "monitoring": {
+    "capture_during_analysis": true,
+    "nodes": [2],
+    "responses": ["disp"],
+    "elements": [1],
+    "responses": ["forces", "deformation"]
+  },
+  "recorders": [
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": [
+        "-file",
+        "node2_disp.txt",
+        "-node",
+        2,
+        "-dof",
+        1,
+        "disp",
+        "-dof",
+        2,
+        "disp",
+        "-dof",
+        3,
+        "disp"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": [
+        "-file",
+        "node1_reaction.txt",
+        "-node",
+        1,
+        "-dof",
+        1,
+        "reaction",
+        "-dof",
+        2,
+        "reaction",
+        "-dof",
+        3,
+        "reaction"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem1_end_forces.txt", "-ele", 1, "force"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem1_section_forces.txt", "-ele", 1, "section", "forces"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem1_section_deformations.txt", "-ele", 1, "section", "deformation"]
+    }
+  ]
+}

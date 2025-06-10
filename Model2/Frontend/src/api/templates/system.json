@@ -1,0 +1,95 @@
+[
+  {
+    "name": "BandGen",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "BandGen"
+      ]
+    }
+  },
+  {
+    "name": "BandSPD",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "BandSPD"
+      ]
+    }
+  },
+  {
+    "name": "ProfileSPD",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "ProfileSPD"
+      ]
+    }
+  },
+  {
+    "name": "SuperLU",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "SuperLU"
+      ]
+    }
+  },
+  {
+    "name": "UmfPack",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "UmfPack"
+      ]
+    }
+  },
+  {
+    "name": "FullGeneral",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "FullGeneral"
+      ]
+    }
+  },
+  {
+    "name": "SparseSYM",
+    "category": "system",
+    "defaultParams": {},
+    "command": {
+      "name": "system",
+      "args": [
+        "SparseSYM"
+      ]
+    }
+  },
+  {
+    "name": "Mumps",
+    "category": "system",
+    "defaultParams": {
+      "ICNTL14": 20.0,
+      "ICNTL7": 7
+    },
+    "command": {
+      "name": "system",
+      "args": [
+        "Mumps",
+        "-ICNTL14", "$ICNTL14",
+        "-ICNTL7", "$ICNTL7"
+      ]
+    }
+  }
+]

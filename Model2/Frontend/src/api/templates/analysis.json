@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Static",
+    "category": "analysis",
+    "defaultParams": {},
+    "command": {
+      "name": "analysis",
+      "args": ["Static"]
+    }
+  },
+  {
+    "name": "Transient",
+    "category": "analysis",
+    "defaultParams": {},
+    "command": {
+      "name": "analysis",
+      "args": ["Transient"]
+    }
+  },
+  {
+    "name": "VariableTransient",
+    "category": "analysis",
+    "defaultParams": {},
+    "command": {
+      "name": "analysis",
+      "args": ["VariableTransient"]
+    }
+  },
+  {
+    "name": "PFEM",
+    "category": "analysis",
+    "defaultParams": {},
+    "command": {
+      "name": "analysis",
+      "args": ["PFEM"]
+    }
+  }
+]

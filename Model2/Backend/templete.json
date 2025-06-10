@@ -1,0 +1,139 @@
+{
+  "model_config": {
+    "ndm": 2,
+    "ndf": 3
+  },
+  "nodes": [
+    {
+      "command": "node",
+      "args": [1, 0, 0],
+      "mass": [1000, 1000, 0]   
+    },
+    {
+      "command": "node",
+      "args": [2, 5, 0]
+    }
+  ],
+  "boundary_conditions": [
+    {
+      "command": "fix",
+      "args": [1, 1, 1, 1]
+    }
+  ],
+  "materials": [
+    {
+      "command": "uniaxialMaterial",
+      "name": "Elastic",
+      "args": [1, 200e9]
+    }
+  ],
+  "sections": [
+    {
+      "command": "section",
+      "name": "Elastic",
+      "args": [1],
+      "params": {
+        "matTag": 1,
+        "A": 0.01,
+        "Iz": 0.001
+      }
+    }
+  ],
+  "transformations": [
+    {
+      "command": "geomTransf",
+      "name": "Linear",
+      "args": [1],
+      "params": {
+        "vecxz": [0, 0, 1]
+      }
+    }
+  ],
+  "integrations": [
+    {
+      "command": "beamIntegration",
+      "name": "Lobatto",
+      "args": [1, 1, 5]
+    }
+  ],
+  "elements": [
+    {
+      "command": "element",
+      "name": "forceBeamColumn",
+      "args": [1, 1, 2],
+      "params": {
+        "transfTag": 1,
+        "integrationTag": 1
+      }
+    }
+  ],
+  "time_series": [
+    {
+      "command": "timeSeries",
+      "name": "Constant",
+      "args": [1]
+    }
+  ],
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": [1, 1],
+      "loads": [
+        {
+          "command": "load",
+          "args": [2, 0, -10000, 0]
+        }
+      ]
+    }
+  ],
+  "analysis_sequence": [
+    {
+      "command": "constraints",
+      "args": ["Transformation"]
+    },
+    {
+      "command": "numberer",
+      "args": ["RCM"]
+    },
+    {
+      "command": "system",
+      "args": ["UmfPack"]
+    },
+    {
+      "command": "test",
+      "args": ["NormDispIncr", 1e-6, 10]
+    },
+    {
+      "command": "algorithm",
+      "args": ["Newton"]
+    },
+    {
+      "command": "integrator",
+      "name": "LoadControl",
+      "args": [0.1]
+    },
+    {
+      "command": "analysis",
+      "args": ["Static"]
+    },
+    {
+      "command": "analyze",
+      "args": [10],
+      "optional": true
+    }
+  ],
+  "recorders": [
+    {
+      "command": "recorder",
+      "type": "Node",
+      "args": ["-file", "node_disp.txt", "-node", 2, "-dof", 1, 2, 3, "disp"]
+    }
+  ],
+  "monitoring": {
+    "nodes": [1, 2],
+    "elements": [1],
+    "responses": ["disp", "forces"],
+    "capture_during_analysis": true
+  }
+}

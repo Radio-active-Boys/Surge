@@ -1,0 +1,4 @@
+Flask 
+openseespy 
+numpy 
+gunicorn

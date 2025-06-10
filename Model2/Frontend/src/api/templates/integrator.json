@@ -1,0 +1,46 @@
+[
+  {
+    "name": "LoadControl",
+    "category": "staticIntegrator",
+    "defaultParams": {
+      "incr": 0.1,
+      "numIter": 1,
+      "minIncr": 0.1,
+      "maxIncr": 0.1
+    },
+    "command": {
+      "name": "integrator",
+      "args": [
+        "LoadControl",
+        "$incr",
+        "$numIter",
+        "$minIncr",
+        "$maxIncr"
+      ]
+    }
+  },
+  {
+    "name": "DisplacementControl",
+    "category": "staticIntegrator",
+    "defaultParams": {
+      "nodeTag": 1,
+      "dof": 1,
+      "incr": 0.1,
+      "numIter": 1,
+      "dUmin": 0.1,
+      "dUmax": 0.1
+    },
+    "command": {
+      "name": "integrator",
+      "args": [
+        "DisplacementControl",
+        "$nodeTag",
+        "$dof",
+        "$incr",
+        "$numIter",
+        "$dUmin",
+        "$dUmax"
+      ]
+    }
+  }
+]

@@ -1,0 +1,57 @@
+.analysis-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analysis-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analysis-button:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.analysis-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
