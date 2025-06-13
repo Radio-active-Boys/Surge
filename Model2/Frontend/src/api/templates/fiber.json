@@ -1,0 +1,16 @@
+[
+  {
+    "category": "fiber",
+    "name": "SingleFiber",
+    "defaultParams": {
+      "y": 0.0,
+      "z": 0.0,
+      "A": 0.0001,
+      "matTag": 1
+    },
+    "command": {
+      "name": "fiber",
+      "args": ["$y", "$z", "$A", "$matTag"]
+    }
+  }
+]

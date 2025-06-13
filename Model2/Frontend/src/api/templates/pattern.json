@@ -1,7 +1,7 @@
 [
   {
     "category": "pattern",
-    "name": "Plain ",
+    "name": "Plain",
     "defaultParams": {
       "patternTag": 1,
       "tsTag": 1,
@@ -14,7 +14,7 @@
   },
   {
     "category": "load",
-    "name": "load",
+    "name": "PointLoad",
     "defaultParams": {
       "nodeTag": 1,
       "loadValues": [0.0, -1000.0, 0.0]
@@ -25,8 +25,20 @@
     }
   },
   {
+    "category": "load",
+    "name": "GravityLoad",
+    "defaultParams": {
+      "nodeTag": 1,
+      "loadValues": [0.0, -9.81, 0.0]
+    },
+    "command": {
+      "name": "load",
+      "args": ["$nodeTag", "*$loadValues"]
+    }
+  },
+  {
     "category": "eleLoad",
-    "name": "eleLoad",
+    "name": "BeamUniformLoad",
     "defaultParams": {
       "eleTags": [1],
       "eleTag1": 1,
@@ -50,7 +62,7 @@
   },
   {
     "category": "sp",
-    "name": "sp",
+    "name": "SPConstraint",
     "defaultParams": {
       "nodeTag": 1,
       "dof": 2,
@@ -97,60 +109,6 @@
       "name": "pattern",
       "args": ["MultipleSupport", "$patternTag"]
     }
-  },
-  {
-    "category": "groundMotion",
-    "name": "Plain",
-    "defaultParams": {
-      "gmTag": 1,
-      "dispSeriesTag": null,
-      "velSeriesTag": null,
-      "accelSeriesTag": 3,
-      "tsInt": "Trapezoidal",
-      "fact": 1.0
-    },
-    "command": {
-      "name": "groundMotion",
-      "args": [
-        "$gmTag",
-        "Plain",
-        "-disp", "$dispSeriesTag",
-        "-vel", "$velSeriesTag",
-        "-accel", "$accelSeriesTag",
-        "-int", "$tsInt",
-        "-fact", "$fact"
-      ]
-    }
-  },
-  {
-    "category": "groundMotion",
-    "name": "Interpolated",
-    "defaultParams": {
-      "gmTag": 2,
-      "gmTags": [1, 2],
-      "facts": [0.5, 0.5]
-    },
-    "command": {
-      "name": "groundMotion",
-      "args": [
-        "$gmTag",
-        "Interpolated",
-        "*$gmTags",
-        "-fact", "*$facts"
-      ]
-    }
-  },
-  {
-    "category": "imposedMotion",
-    "name": "imposedMotion",
-    "defaultParams": {
-      "nodeTag": 1,
-      "dof": 1,
-      "gmTag": 1
-    },
-    "command": {
-      "name": "imposedMotion",
-      "args": ["$nodeTag", "$dof", "$gmTag"]
-    }
   }
+
 ]

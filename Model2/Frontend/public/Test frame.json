@@ -57,7 +57,7 @@
     { "command": "algorithm", "args": ["Newton"] },
      { "command": "integrator", "name": "LoadControl", "args": [1.0] },
     { "command": "analysis", "args": ["Static"] },
-    { "command": "analyze", "args": [1] }
+    { "command": "analyze", "args": [10] }
   ],
  
   "recorders": [

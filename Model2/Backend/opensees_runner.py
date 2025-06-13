@@ -277,11 +277,16 @@ class OpenSeesRunner:
                 return cols
 
             if resp == "localForce":
+                ndf = self.data.get("model_config", {}).get("ndf", 2)
                 for e in eles:
-                    cols += [
-                        f"ele{e}_axial_i", f"ele{e}_shear_i",
-                        f"ele{e}_axial_j", f"ele{e}_shear_j"
-                    ]
+                    cols.append(f"ele{e}_FX_i")
+                    cols.append(f"ele{e}_FY_i")
+                    if ndf == 3:
+                        cols.append(f"ele{e}_MZ_i")
+                    cols.append(f"ele{e}_FX_j")
+                    cols.append(f"ele{e}_FY_j")
+                    if ndf == 3:
+                        cols.append(f"ele{e}_MZ_j")
                 return cols
 
             if resp == "axialForce":
@@ -290,13 +295,21 @@ class OpenSeesRunner:
                 return cols
 
             if resp == "basicForce":
+                ndf = self.data.get("model_config", {}).get("ndf", 2)
                 for e in eles:
-                    cols.append(f"ele{e}_basicForce")
+                    cols.append(f"ele{e}_P")
+                    if ndf == 3:
+                        cols.append(f"ele{e}_M_i")
+                        cols.append(f"ele{e}_M_j")
                 return cols
 
             if resp == "basicDeformation":
+                ndf = self.data.get("model_config", {}).get("ndf", 2)
                 for e in eles:
-                    cols.append(f"ele{e}_basicDeform")
+                    cols.append(f"ele{e}_delta")
+                    if ndf == 3:
+                        cols.append(f"ele{e}_theta_i")
+                        cols.append(f"ele{e}_theta_j")
                 return cols
 
             if resp == "deformation":

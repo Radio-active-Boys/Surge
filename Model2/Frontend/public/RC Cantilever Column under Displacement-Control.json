@@ -121,12 +121,6 @@
         2,
         "-dof",
         1,
-        "disp",
-        "-dof",
-        2,
-        "disp",
-        "-dof",
-        3,
         "disp"
       ]
     },
@@ -140,12 +134,6 @@
         1,
         "-dof",
         1,
-        "reaction",
-        "-dof",
-        2,
-        "reaction",
-        "-dof",
-        3,
         "reaction"
       ]
     },

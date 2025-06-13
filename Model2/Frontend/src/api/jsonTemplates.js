@@ -1,17 +1,13 @@
-// src/api/jsonTemplates.js
-// Model
+import patternTemplates from './templates/pattern.json';
 import beamIntegration from './templates/beamIntegration.json';
 import uniaxialMaterial from './templates/uniaxialMaterial.json';
 import element from './templates/element.json';
-import geomTransf from './templates/geomTransf.json'
-import pattern from './templates/pattern.json'
-import timeSeries from './templates/timeSeries.json'
-import section from './templates/section.json'
-import node from './templates/node.json'
-import model from './templates/model.json'
-import boundryConditions from './templates/boundryConditions.json'
+import geomTransf from './templates/geomTransf.json';
+import timeSeries from './templates/timeSeries.json';
+import node from './templates/node.json';
+import model from './templates/model.json';
+import boundaryConditions from './templates/boundryConditions.json';
 
-// Analysis
 import constraints from './templates/constraints.json';
 import numberer from './templates/numberer.json';
 import system from './templates/system.json';
@@ -20,26 +16,43 @@ import integrator from './templates/integrator.json';
 import analysis from './templates/analysis.json';
 import analyze from './templates/analyze.json';
 
-// Output
 import recorder from './templates/recorder.json';
 
+// Section/fiber/patch/layer templates
+import sectionTemplates from './templates/section.json';
+import fiberTemplates from './templates/fiber.json';
+import patchTemplates from './templates/patch.json';
+import layerTemplates from './templates/layer.json';
+
+const patternOnlyTemplates = patternTemplates.filter(t => t.category === 'pattern');
+const loadTemplates = patternTemplates.filter(t => t.category === 'load');
+const eleLoadTemplates = patternTemplates.filter(t => t.category === 'eleLoad');
+const spTemplates = patternTemplates.filter(t => t.category === 'sp');
+
 const TEMPLATES = {
-  // Model
+  // Model-level
+  model,
+  node,
+  boundaryConditions,
   beamIntegration,
   uniaxialMaterial,
   element,
   geomTransf,
-  pattern,
   timeSeries,
-  section,
-  node,
-  model,
-  boundryConditions,
+  section: sectionTemplates,
+  fiber: fiberTemplates,
+  patch: patchTemplates,
+  layer: layerTemplates,
 
+  // Patterns & nested
+  pattern: patternOnlyTemplates,
+  load: loadTemplates,
+  eleLoad: eleLoadTemplates,
+  sp: spTemplates,
 
-  // Analysis 
+  // Analysis
   constraints,
-  numberer, 
+  numberer,
   system,
   algorithm,
   integrator,
@@ -48,7 +61,6 @@ const TEMPLATES = {
 
   // Output
   recorder,
-
 };
 
 export const getTemplates = (category) => {
@@ -56,30 +68,30 @@ export const getTemplates = (category) => {
 };
 
 export const getTemplateByName = (category, name) => {
-  const templates = getTemplates(category);
-  return templates.find(t => t.name === name);
+  const temps = getTemplates(category);
+  return temps.find(t => t.name === name);
 };
 
 export const generateCommand = (template, params) => {
   const args = template.command.args.map(arg => {
     if (typeof arg === 'string') {
-      if (arg.startsWith('$')) {
-        const paramKey = arg.slice(1);
-        return params[paramKey];
-      }
       if (arg.startsWith('*$')) {
-        const arrayKey = arg.slice(2);
-        return params[arrayKey] || [];
+        const key = arg.slice(2);
+        const arr = params[key] || [];
+        return arr;
+      }
+      if (arg.startsWith('$')) {
+        const key = arg.slice(1);
+        return params[key];
       }
       return arg;
     }
     return arg;
   });
-  
   return {
     command: template.command.name,
     args: args.flat(),
     category: template.category,
     name: template.name
   };
-}; 
+};

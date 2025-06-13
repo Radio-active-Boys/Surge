@@ -1,0 +1,50 @@
+[
+  {
+    "category": "patch",
+    "name": "RectPatch",
+    "defaultParams": {
+      "matTag": 2,
+      "numSubdivY": 4,
+      "numSubdivZ": 3,
+      "crdsI": [-0.05, -0.05],
+      "crdsJ": [0.05, 0.05]
+    },
+    "command": {
+      "name": "patch",
+      "args": ["rect", "$matTag", "$numSubdivY", "$numSubdivZ", "$crdsI[0]", "$crdsI[1]", "$crdsJ[0]", "$crdsJ[1]"]
+    }
+  },
+  {
+    "category": "patch",
+    "name": "QuadPatch",
+    "defaultParams": {
+      "matTag": 2,
+      "numSubdivIJ": 4,
+      "numSubdivJK": 4,
+      "crdsI": [-0.05, -0.05],
+      "crdsJ": [0.05, -0.05],
+      "crdsK": [0.05, 0.05],
+      "crdsL": [-0.05, 0.05]
+    },
+    "command": {
+      "name": "patch",
+      "args": ["quad", "$matTag", "$numSubdivIJ", "$numSubdivJK", "$crdsI[0]", "$crdsI[1]", "$crdsJ[0]", "$crdsJ[1]", "$crdsK[0]", "$crdsK[1]", "$crdsL[0]", "$crdsL[1]"]
+    }
+  },
+  {
+    "category": "patch",
+    "name": "CircPatch",
+    "defaultParams": {
+      "matTag": 2,
+      "numSubdivCirc": 8,
+      "numSubdivRad": 2,
+      "center": [0.0, 0.0],
+      "rad": [0.01, 0.05],
+      "ang": [0.0, 360.0]
+    },
+    "command": {
+      "name": "patch",
+      "args": ["circ", "$matTag", "$numSubdivCirc", "$numSubdivRad", "$center[0]", "$center[1]", "$rad[0]", "$rad[1]", "$ang[0]", "$ang[1]"]
+    }
+  }
+]

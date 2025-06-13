@@ -9,13 +9,20 @@ const ParametricEditor = ({ category }) => {
   const [params, setParams] = useState({});
   const addComponent = useModelStore(state => state.addComponent);
 
+  const patterns = useModelStore(state => state.patterns);
+  const [patternId, setPatternId] = useState(null);
+
   useEffect(() => {
     const tpls = getTemplates(category);
     setTemplates(tpls);
     if (tpls.length) {
       setSelected(tpls[0]);
       setParams(tpls[0].defaultParams);
+    } else {
+      setSelected(null);
+      setParams({});
     }
+    setPatternId(null);
   }, [category]);
 
   if (!selected) return <div className="loading">Loading...</div>;
@@ -25,7 +32,11 @@ const ParametricEditor = ({ category }) => {
   };
 
   const handleSubmit = () => {
-    addComponent(category, selected.name, params);
+    if (['load','eleLoad','sp'].includes(category) && !patternId) {
+      alert('Please select a pattern to attach this command');
+      return;
+    }
+    addComponent(category, selected.name, params, patternId);
     setParams(selected.defaultParams);
   };
 
@@ -48,6 +59,23 @@ const ParametricEditor = ({ category }) => {
       </div>
 
       <div className="params">
+        {['load','eleLoad','sp'].includes(category) && (
+          <div className="param-row">
+            <label>Pattern</label>
+            <select
+              value={patternId || ''}
+              onChange={e => setPatternId(Number(e.target.value))}
+            >
+              <option value="">-- select pattern --</option>
+              {patterns.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.templateName} (id {p.id})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {Object.entries(selected.defaultParams).map(([key, def]) => (
           <div className="param-row" key={key}>
             <label>{key}</label>
@@ -80,13 +108,11 @@ const ArrayInput = ({ values, onChange }) => {
     arr[i] = parseFloat(val);
     onChange(arr);
   };
-
   const addItem = () => onChange([...values, 0]);
   const removeItem = i => {
     const arr = values.filter((_, idx) => idx !== i);
     onChange(arr);
   };
-
   return (
     <div className="array-input">
       {values.map((v, i) => (
@@ -96,10 +122,10 @@ const ArrayInput = ({ values, onChange }) => {
             value={v}
             onChange={e => handleChange(i, e.target.value)}
           />
-          <button className="remove-btn" onClick={() => removeItem(i)}>×</button>
+          <button type="button" className="remove-btn" onClick={() => removeItem(i)}>×</button>
         </div>
       ))}
-      <button className="add-btn" onClick={addItem}>+ Add</button>
+      <button type="button" className="add-btn" onClick={addItem}>+ Add</button>
     </div>
   );
 };

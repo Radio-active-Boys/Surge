@@ -3,7 +3,7 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text, Line } from '@react-three/drei';
 import { useModelStore } from '../../stores/useModelStore';
-import './ModelViewer.css'; // ensure .model-viewer { height: 500px; }
+import './ModelViewer.css';
 
 const ModelViewer = () => {
   const nodes    = useModelStore(state => state.node);

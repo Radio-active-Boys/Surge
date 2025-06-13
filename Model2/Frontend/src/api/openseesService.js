@@ -4,6 +4,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000';
 
 export const runAnalysis = async (modelData) => {
+  console.log("Data send to backend",modelData)
   try {
     const response = await axios.post(`${API_URL}/run-analysis`, modelData);
     return response.data;

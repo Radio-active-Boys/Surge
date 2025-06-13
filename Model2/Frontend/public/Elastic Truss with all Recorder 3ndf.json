@@ -1,0 +1,191 @@
+{
+  "model_config": { "ndm": 2, "ndf": 3 },
+
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 5.0, 0.0] },
+    { "command": "node", "args": [3, 10.0, 0.0] },
+    { "command": "node", "args": [4, 15.0, 0.0] },
+    { "command": "node", "args": [5, 20.0, 0.0] },
+    { "command": "node", "args": [6, 5.0, 5.0] },
+    { "command": "node", "args": [7, 10.0, 5.0] },
+    { "command": "node", "args": [8, 15.0, 5.0] }
+  ],
+
+  "boundary_conditions": [
+
+    { "command": "fix", "args": [1, 1, 1, 1] },
+    { "command": "fix", "args": [5, 1, 1, 1] },
+
+    { "command": "fix", "args": [2, 0, 0, 1] },
+    { "command": "fix", "args": [3, 0, 0, 1] },
+    { "command": "fix", "args": [4, 0, 0, 1] },
+    { "command": "fix", "args": [6, 0, 0, 1] },
+    { "command": "fix", "args": [7, 0, 0, 1] },
+    { "command": "fix", "args": [8, 0, 0, 1] }
+  ],
+
+  "materials": [
+    { "command": "uniaxialMaterial", "name": "Elastic", "args": [1, 200000000000] }
+  ],
+
+  "elements": [
+
+    { "command": "element", "name": "Truss", "args": [1, 1, 2, 0.02, 1] },
+    { "command": "element", "name": "Truss", "args": [2, 2, 3, 0.02, 1] },
+    { "command": "element", "name": "Truss", "args": [3, 3, 4, 0.02, 1] },
+    { "command": "element", "name": "Truss", "args": [4, 4, 5, 0.02, 1] },
+
+    { "command": "element", "name": "Truss", "args": [5, 6, 7, 0.02, 1] },
+    { "command": "element", "name": "Truss", "args": [6, 7, 8, 0.02, 1] },
+
+
+    { "command": "element", "name": "Truss", "args": [7, 2, 6, 0.015, 1] },
+    { "command": "element", "name": "Truss", "args": [8, 3, 7, 0.015, 1] },
+    { "command": "element", "name": "Truss", "args": [9, 4, 8, 0.015, 1] },
+
+    { "command": "element", "name": "Truss", "args": [10, 1, 6, 0.015, 1] },
+    { "command": "element", "name": "Truss", "args": [11, 2, 7, 0.015, 1] },
+    { "command": "element", "name": "Truss", "args": [12, 3, 8, 0.015, 1] },
+    { "command": "element", "name": "Truss", "args": [13, 4, 7, 0.015, 1] },
+    { "command": "element", "name": "Truss", "args": [14, 5, 8, 0.015, 1] }
+  ],
+
+  "time_series": [
+    { "command": "timeSeries", "name": "Linear", "args": [1] }
+  ],
+
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": [1, 1, "-fact", 1.0],
+      "loads": [
+        { "command": "load", "args": [6, 0.0, -50000.0, 0.0] },
+        { "command": "load", "args": [7, 0.0, -50000.0, 0.0] },
+        { "command": "load", "args": [8, 0.0, -50000.0, 0.0] }
+      ]
+    }
+  ],
+
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Plain"] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["BandGeneral"] },
+    { "command": "test", "args": ["NormDispIncr", 1e-6, 10] },
+    { "command": "algorithm", "args": ["Linear"] },
+    { "command": "integrator", "name": "LoadControl", "args": [1.0] },
+    { "command": "analysis", "args": ["Static"] },
+    { "command": "analyze", "args": [200] }
+  ],
+
+    "recorders": [
+
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": [
+        "-file", "nodes_disp.txt",
+        "-time",
+        "-node", 1, 2, 3, 4, 5, 6, 7, 8,
+        "-dof", 1, 2, 3,
+        "disp"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": [
+        "-file", "nodes_vel.txt",
+        "-time",
+        "-node", 1, 2, 3, 4, 5, 6, 7, 8,
+        "-dof", 1, 2, 3,
+        "vel"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": [
+        "-file", "nodes_accel.txt",
+        "-time",
+        "-node", 1, 2, 3, 4, 5, 6, 7, 8,
+        "-dof", 1, 2, 3,
+        "accel"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": [
+        "-file", "nodes_reaction.txt",
+        "-time",
+        "-node", 1, 2, 3, 4, 5, 6, 7, 8,
+        "-dof", 1, 2, 3,
+        "reaction"
+      ]
+    },
+
+  
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": [
+        "-file", "elem_force_global.txt",
+        "-time",
+        "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+        "force"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": [
+        "-file", "elem_force_local.txt",
+        "-time",
+        "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+        "localForce"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": [
+        "-file", "elem_axialForce.txt",
+        "-time",
+        "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+        "axialForce"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": [
+        "-file", "elem_basicForce.txt",
+        "-time",
+        "-ele",1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+        "basicForce"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": [
+        "-file", "elem_basicDeformation.txt",
+        "-time",
+        "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+        "basicDeformation"
+      ]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": [
+        "-file", "elem_deformation.txt",
+        "-time",
+        "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,
+        "deformation"
+      ]
+    }
+  ]
+}

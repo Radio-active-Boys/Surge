@@ -1,24 +1,19 @@
 // src/pages/ModelBuilderPage.jsx
 import { useState, useEffect } from 'react';
 import ParametricEditor from '../components/model-builder/ParametricEditor';
+import PatternEditor from '../components/model-builder/PatternEditor';
+import SectionEditor from '../components/model-builder/SectionEditor';
 import ModelViewer from '../components/visualization/ModelViewer';
 import { useModelStore } from '../stores/useModelStore';
 import './ModelBuilderPage.css';
 
 const ModelBuilderPage = () => {
-  // Initialize local state from the store's current snapshot
-  const [modelJson, setModelJson] = useState(
-    useModelStore.getState().toJson()
-  );
+  const [modelJson, setModelJson] = useState(useModelStore.getState().toJson());
 
   useEffect(() => {
-    // Subscribe to all changes in the store
-    const unsubscribe = useModelStore.subscribe(
-      // On any change, re-serialize the JSON
-      () => setModelJson(useModelStore.getState().toJson())
+    const unsubscribe = useModelStore.subscribe(() => 
+      setModelJson(useModelStore.getState().toJson())
     );
-
-    // Cleanup on unmount
     return unsubscribe;
   }, []);
 
@@ -31,15 +26,15 @@ const ModelBuilderPage = () => {
       case 'nodes':
         return <ParametricEditor category="node" />;
       case 'supports':
-        return <ParametricEditor category="boundryConditions" />;
+        return <ParametricEditor category="boundaryConditions" />;
       case 'materials':
         return <ParametricEditor category="uniaxialMaterial" />;
       case 'sections':
-        return <ParametricEditor category="section" />;
+        return <SectionEditor />;
       case 'timeSeries':
         return <ParametricEditor category="timeSeries" />;
       case 'pattern':
-        return <ParametricEditor category="pattern" />;
+        return <PatternEditor />;
       case 'elements':
         return <ParametricEditor category="element" />;
       case 'integrations':
@@ -66,7 +61,7 @@ const ModelBuilderPage = () => {
             'elements',
             'timeSeries',
             'pattern'
-          ].map((tab) => (
+          ].map(tab => (
             <button
               key={tab}
               className={activeTab === tab ? 'active' : ''}
@@ -76,14 +71,10 @@ const ModelBuilderPage = () => {
             </button>
           ))}
         </div>
-
         <div className="editor-container">{renderEditor()}</div>
       </div>
-      
-
       <div className="visualization-panel">
         <ModelViewer />
-        
       </div>
     </div>
   );

@@ -1,0 +1,97 @@
+.section-editor-container {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.section-editor-heading {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.section-editor-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.section-editor-row label {
+  width: 100px;
+}
+.section-editor-row input,
+.section-editor-row select {
+  flex: 1;
+  padding: 0.25rem;
+}
+.section-editor-button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+.section-editor-button:hover {
+  background-color: #0056b3;
+}
+.section-editor-section {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+.section-editor-nested {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-top: 1px solid #ddd;
+}
+.section-editor-remove-btn,
+.section-editor-edit-btn {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.4rem;
+  border: none;
+  background: #dc3545;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.section-editor-remove-btn:hover,
+.section-editor-edit-btn:hover {
+  background: #c82333;
+}
+.array-input {
+  display: flex;
+  flex-direction: column;
+}
+.array-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.array-row input {
+  width: 80px;
+  padding: 0.2rem;
+}
+.array-row .remove-btn {
+  margin-left: 0.5rem;
+  border: none;
+  background: #dc3545;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.array-row .remove-btn:hover {
+  background: #c82333;
+}
+.add-btn {
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border: none;
+  background: #28a745;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.add-btn:hover {
+  background: #218838;
+}

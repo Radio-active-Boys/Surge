@@ -2,11 +2,14 @@
 import { useState } from 'react';
 import { useAnalysisStore } from '../../stores/useAnalysisStore';
 import { useModelStore } from '../../stores/useModelStore';
+import { useResultStore } from '../../stores/useResultStore';
 import { runAnalysis } from '../../api/openseesService';
 import ResultsVisualizer from './ResultsVisualizer';
+import { importModel } from '../../utils/modelUtils';
 import './AnalysisConfig.css';
 
 const AnalysisConfig = () => {
+  // Local UI state
   const [results, setResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,6 +18,11 @@ const AnalysisConfig = () => {
   const [importedJson, setImportedJson] = useState(null);
   const [importError, setImportError] = useState(null);
   const [importFileName, setImportFileName] = useState('');
+  const [inputKey, setInputKey] = useState(0);
+
+  // Zustand store actions
+  const setResultData = useResultStore((state) => state.setResultData);
+  const clearResults = useResultStore((state) => state.clearResults);
 
   // Handler for file input change
   const handleFileChange = (e) => {
@@ -36,7 +44,7 @@ const AnalysisConfig = () => {
       try {
         const text = event.target.result;
         const parsed = JSON.parse(text);
-        // Optional: you can add validation here, e.g., check required keys like "nodes", "analysis_sequence", etc.
+        // Optional: validate structure
         setImportedJson(parsed);
       } catch (err) {
         console.error('JSON parse error:', err);
@@ -50,43 +58,17 @@ const AnalysisConfig = () => {
     reader.readAsText(file);
   };
 
-  // Optionally: function to load importedJson into zustand stores, if structure matches your store schema.
-  const loadIntoStores = () => {
-    if (!importedJson) return;
-    // Example: if your JSON has keys like "model", "node", etc matching your store keys.
-    // WARNING: this is highly dependent on the shape of importedJson. Adapt as needed.
-    const modelStore = useModelStore.getState();
-    const analysisStore = useAnalysisStore.getState();
-
-    // Clear existing store contents? You might need methods to reset the stores.
-    // For example, if your stores had `clearAll()` method, call it here. If not, you can individually remove components:
-    // (Assuming each category array is in state and you have removeComponent; 
-    // but you’d need the IDs. Alternatively, you might rebuild the store from scratch; but Zustand doesn’t provide built-in reset unless you code it.)
-    // Here, we'll assume you just send the imported JSON to backend, without updating stores.
-
-    // If you really want to update the stores to reflect imported JSON:
-    // 1. You need to define in your store a reset or initialize function.
-    // 2. Then iterate through importedJson keys and dispatch addComponent or set state directly.
-    // E.g.:
-    // if (importedJson.nodes) {
-    //   importedJson.nodes.forEach(nodeCmd => {
-    //     // You need a template matching function; if imported JSON already has command objects, 
-    //     // you might bypass the template system and store raw commands in state, 
-    //     // but that requires your components to handle raw commands as well.
-    //   });
-    // }
-    // For now, we skip store-loading and just send to backend.
-  };
-
   const handleRunAnalysis = async () => {
     setIsLoading(true);
     setError(null);
     setResults(null);
+    clearResults();  // clear previous result data in store
 
-    // Decide payload: importedJson if present, else build from stores
+    // Build payload
     let fullPayload;
     if (importedJson) {
       fullPayload = importedJson;
+      importModel(fullPayload)
     } else {
       const modelJson = useModelStore.getState().toJson();
       const analysisJson = useAnalysisStore.getState().toJson();
@@ -96,13 +78,38 @@ const AnalysisConfig = () => {
     try {
       const response = await runAnalysis(fullPayload);
       if (response.status === 'success') {
+        // Local state for inline render if desired
         setResults(response);
+        // Populate global store with broken-out data
+        setResultData(response);
       } else {
-        setError(response.message || 'Analysis failed with an unknown error.');
+        const msg = response.message || 'Analysis failed with an unknown error.';
+        setError(msg);
+        // Still populate store so downstream can show errors
+        setResultData({
+          status: 'failure',
+          errors: [msg],
+          warnings: response.warnings || [],
+          monitoring: null,
+          recorders: null,
+          model: null,
+          output_dir: null,
+          // other fields can be omitted or null
+        });
       }
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError(err.message || 'An unexpected error occurred.');
+      const msg = err.message || 'An unexpected error occurred.';
+      setError(msg);
+      setResultData({
+        status: 'error',
+        errors: [msg],
+        warnings: [],
+        monitoring: null,
+        recorders: null,
+        model: null,
+        output_dir: null,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -112,13 +119,8 @@ const AnalysisConfig = () => {
     setImportedJson(null);
     setImportError(null);
     setImportFileName('');
-    // Also clear the file input value. We can use a ref, or simpler: reset the input via key change.
-    // Easiest: force re-render of <input> by changing its key. We'll handle that below.
     setInputKey((prev) => prev + 1);
   };
-
-  // To reset file input, we use a key on the input element:
-  const [inputKey, setInputKey] = useState(0);
 
   return (
     <div className="analysis-container">
@@ -151,22 +153,6 @@ const AnalysisConfig = () => {
         )}
       </div>
 
-      {/* Optionally: button to load into stores */}
-      {/* 
-      {importedJson && (
-        <button
-          onClick={() => {
-            loadIntoStores();
-            // Possibly show a message like "Loaded into UI stores"
-          }}
-          className="load-stores-button mb-4 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-          type="button"
-        >
-          Load into UI
-        </button>
-      )} 
-      */}
-
       {/* Run Analysis */}
       <button
         onClick={handleRunAnalysis}
@@ -187,6 +173,7 @@ const AnalysisConfig = () => {
         </div>
       )}
 
+      {/* Inline display: renders immediate results if desired */}
       {results && (
         <div className="results-section mt-6">
           <ResultsVisualizer results={results} />

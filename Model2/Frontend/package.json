@@ -14,11 +14,16 @@
     "@react-three/fiber": "^9.1.2",
     "@types/three": "^0.177.0",
     "axios": "^1.9.0",
+    "d3": "^7.9.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-plotly.js": "^2.6.0",
     "react-router-dom": "^7.6.2",
     "recharts": "^2.15.3",
     "three": "^0.177.0",
+    "uuid": "^11.1.0",
+    "uuidv4": "^6.2.13",
+    "v4": "^0.0.1",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

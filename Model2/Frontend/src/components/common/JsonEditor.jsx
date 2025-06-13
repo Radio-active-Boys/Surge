@@ -65,7 +65,6 @@ const JsonEditor = () => {
                       <input
                         key={i}
                         type="text"
-                        // ensure value is not null to avoid React warning
                         value={arg ?? ''}
                         onChange={e => handleArgChange(category, item.id, i, e.target.value)}
                         className="arg-input"

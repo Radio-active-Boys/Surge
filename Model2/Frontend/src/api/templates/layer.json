@@ -1,0 +1,50 @@
+[
+  {
+    "category": "layer",
+    "name": "StraightLayer",
+    "defaultParams": {
+      "matTag": 3,
+      "numFiber": 5,
+      "areaFiber": 1e-5,
+      "start": [-0.04, 0.04],
+      "end": [0.04, 0.04]
+    },
+    "command": {
+      "name": "layer",
+      "args": ["straight", "$matTag", "$numFiber", "$areaFiber", "$start[0]", "$start[1]", "$end[0]", "$end[1]"]
+    }
+  },
+  {
+    "category": "layer",
+    "name": "CircLayer",
+    "defaultParams": {
+      "matTag": 3,
+      "numFiber": 6,
+      "areaFiber": 1e-5,
+      "center": [0.0, 0.0],
+      "radius": 0.05,
+      "ang": [0.0, 300.0]
+    },
+    "command": {
+      "name": "layer",
+      "args": ["circ", "$matTag", "$numFiber", "$areaFiber", "$center[0]", "$center[1]", "$radius", "$ang[0]", "$ang[1]"]
+    }
+  },
+  {
+    "category": "layer",
+    "name": "RectLayer",
+    "defaultParams": {
+      "matTag": 3,
+      "numFiberY": 1,
+      "numFiberZ": 2,
+      "areaFiber": 1e-5,
+      "center": [0.0, 0.0],
+      "distY": 0.1,
+      "distZ": 0.2
+    },
+    "command": {
+      "name": "layer",
+      "args": ["rect", "$matTag", "$numFiberY", "$numFiberZ", "$areaFiber", "$center[0]", "$center[1]", "$distY", "$distZ"]
+    }
+  }
+]

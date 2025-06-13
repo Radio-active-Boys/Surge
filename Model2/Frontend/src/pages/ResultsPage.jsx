@@ -1,82 +1,43 @@
-// src/pages/ModelBuilderPage.jsx
-import { useState, useEffect } from 'react';
-import ParametricEditor from '../components/model-builder/ParametricEditor';
-import ModelViewer from '../components/visualization/ModelViewer';
-import { useAnalysisStore } from '../stores/useAnalysisStore';
-import JsonTogglePanel from '../components/common/Panel';
-import './AnalysisPage.css';
-
+// src/pages/ResultsPage.jsx
+import React from 'react';
+import { useResultStore } from '../stores/useResultStore';
+import ResultsVisualizer from '../components/analysis/ResultsVisualizer';
+import ResultsPlotter from '../components/results/ResultsPlotter';
 const ResultsPage = () => {
-  // Initialize local state from the store's current snapshot
-  const [modelJson, setModelJson] = useState(
-    useAnalysisStore.getState().toJson()
-  );
+  const status = useResultStore((state) => state.status);
+  const errors = useResultStore((state) => state.errors);
+  const warnings = useResultStore((state) => state.warnings);
+  const fullResults = useResultStore((state) => state.fullResults);
 
-  useEffect(() => {
-    // Subscribe to all changes in the store
-    const unsubscribe = useAnalysisStore.subscribe(
-      // On any change, re-serialize the JSON
-      () => setModelJson(useAnalysisStore.getState().toJson())
-    );
-
-    // Cleanup on unmount
-    return unsubscribe;
-  }, []);
-
-  const [activeTab, setActiveTab] = useState('constraints');
-
-  const renderEditor = () => {
-    switch (activeTab) {
-      case 'constraints':
-        return <ParametricEditor category="constraints" />;
-      case 'numberer':
-        return <ParametricEditor category="numberer" />;
-      case 'system':
-        return <ParametricEditor category="system" />;
-      case 'algorithm':
-        return <ParametricEditor category="algorithm" />;
-      case 'integrator':
-        return <ParametricEditor category="integrator" />;
-      case 'analysis':
-        return <ParametricEditor category="analysis" />;
-      case 'analyze':
-        return <ParametricEditor category="analyze" />;
-      default:
-        return null;
-    }
-  };
+  if (!status) {
+    return <p>No results available. Please run an analysis first.</p>;
+  }
 
   return (
-    <div className="model-builder">
-      <div className="editors-panel">
-        <div className="tabs">
-          {[
-            'constraints',
-            'numberer',
-            'system',
-            'algorithm',
-            'integrator',
-            'analysis',
-            'analyze' 
-          ].map((tab) => (
-            <button
-              key={tab}
-              className={activeTab === tab ? 'active' : ''}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+    <div>
+      <h1>Analysis Results</h1>
+      {status !== 'success' && errors.length > 0 && (
+        <div className="error-section">
+          <h2>Errors</h2>
+          <ul>
+            {errors.map((e, i) => <li key={i}>{e}</li>)}
+          </ul>
         </div>
-        <JsonTogglePanel />
-        <div className="editor-container">{renderEditor()}</div>
-      </div>
-      
-
-      <div className="visualization-panel">
-        <ModelViewer />
-        
-      </div>
+      )}
+      {warnings && warnings.length > 0 && (
+        <div className="warning-section">
+          <h2>Warnings</h2>
+          <ul>
+            {warnings.map((w, i) => <li key={i}>{w}</li>)}
+          </ul>
+        </div>
+      )}
+      {status === 'success' && fullResults && (
+        <>
+        <ResultsVisualizer results={fullResults} />
+        </>
+      )}
+      <ResultsPlotter />
     </div>
   );
 };

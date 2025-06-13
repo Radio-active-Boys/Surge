@@ -1,66 +1,52 @@
-// src/pages/ModelBuilderPage.jsx
-import { useState, useEffect } from 'react';
+// src/pages/AnalysisPage.jsx
+
+import React, { useState, useEffect } from 'react';
 import AnalysisEditor from '../components/analysis/AnalysisEditor';
 import { useAnalysisStore } from '../stores/useAnalysisStore';
 import AnalysisConfig from '../components/analysis/AnalysisConfig';
+import { useModelStore } from '../stores/useModelStore';
 import './AnalysisPage.css';
 
 const AnalysisPage = () => {
-  // Initialize local state from the store's current snapshot
-  const [modelJson, setModelJson] = useState(
-    useAnalysisStore.getState().toJson()
-  );
+  const initializeDefaultRecorders = useAnalysisStore(state => state.initializeDefaultRecorders);
+  // Get model node/element arrays from model store
+  const modelNodes = useModelStore(state => state.node);
+  const modelElements = useModelStore(state => state.element);
 
   useEffect(() => {
-    // Subscribe to all changes in the store
-    const unsubscribe = useAnalysisStore.subscribe(
-      // On any change, re-serialize the JSON
-      () => setModelJson(useAnalysisStore.getState().toJson())
-    );
+    // Extract node IDs and element IDs
+    const nodeIds = (modelNodes || []).map(n => n.args[0]);
+    const dofs = [1, 2]; // adjust if your model supports other DOFs
+    const eleIds = (modelElements || []).map(e => e.args[0]);
+    initializeDefaultRecorders({ nodeIds, dofs, eleIds });
+  }, [modelNodes, modelElements, initializeDefaultRecorders]);
 
-    // Cleanup on unmount
-    return unsubscribe;
+  // Subscribe to JSON for display
+  const [analysisJson, setAnalysisJson] = useState(useAnalysisStore.getState().toJson());
+  useEffect(() => {
+    const unsub = useAnalysisStore.subscribe(() => {
+      setAnalysisJson(useAnalysisStore.getState().toJson());
+    });
+    return unsub;
   }, []);
 
-  const [activeTab, setActiveTab] = useState('constraints');
-
-  const renderEditor = () => {
-    switch (activeTab) {
-      case 'constraints':
-        return <AnalysisEditor category="constraints" />;
-      case 'numberer':
-        return <AnalysisEditor category="numberer" />;
-      case 'system':
-        return <AnalysisEditor category="system" />;
-      case 'algorithm':
-        return <AnalysisEditor category="algorithm" />;
-      case 'integrator':
-        return <AnalysisEditor category="integrator" />;
-      case 'analysis':
-        return <AnalysisEditor category="analysis" />;
-      case 'analyze':
-        return <AnalysisEditor category="analyze" />;
-      case 'recorder':
-        return <AnalysisEditor category="recorder" />;
-      default:
-        return null;
-    }
-  };
+  const tabs = [
+    'constraints',
+    'numberer',
+    'system',
+    'algorithm',
+    'integrator',
+    'analysis',
+    'analyze',
+    'recorder'
+  ];
+  const [activeTab, setActiveTab] = useState(tabs[0]);
 
   return (
     <div className="model-builder">
       <div className="editors-panel">
         <div className="tabs">
-          {[
-            'constraints',
-            'numberer',
-            'system',
-            'algorithm',
-            'integrator',
-            'analysis',
-            'analyze',
-            'recorder',
-          ].map((tab) => (
+          {tabs.map(tab => (
             <button
               key={tab}
               className={activeTab === tab ? 'active' : ''}
@@ -70,7 +56,9 @@ const AnalysisPage = () => {
             </button>
           ))}
         </div>
-        <div className="analysis-container">{renderEditor()}</div>
+        <div className="analysis-container">
+          <AnalysisEditor category={activeTab} />
+        </div>
       </div>
 
       <div className="analysis-panel">
