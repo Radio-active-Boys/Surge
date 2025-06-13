@@ -61,7 +61,7 @@ export const useModelStore = create((set, get) => ({
         return { section: sections };
       });
     }
-    else if (category === 'pattern') {
+    if (category === 'pattern') {
       const p = {
         id,
         templateName,
@@ -159,20 +159,41 @@ export const useModelStore = create((set, get) => ({
       });
     }
     else if (category === 'pattern') {
-      const state = get();
-      set({
-        patterns: state.patterns.map(p => {
-          if (p.id !== id) return p;
-          const tpl = getTemplateByName('pattern', p.templateName);
-          if (!tpl) return p;
-          const cmd = generateCommand(tpl, newParams);
-          return { ...p, params: { ...newParams }, command: cmd.command, args: cmd.args };
-        })
-      });
+      const tpl = getTemplateByName('pattern',
+        get().patterns.find(p => p.id === id)?.templateName
+      );
+      if (!tpl) return;
+      const cmd = generateCommand(tpl, newParams);
+      const newArgs  = cmd.args.slice(1);
+      set(state => ({
+        patterns: state.patterns.map(p =>
+          p.id !== id
+            ? p
+            : {
+                ...p,
+                params: { ...newParams },
+                command: cmd.command,
+                args: newArgs
+              }
+        )
+      }));
     }
     // loads/eleLoads/sp update normally via separate methods if implemented
   },
-
+// Add to useModelStore
+updateComponentArgs: (category, id, newArgs) => {
+  set(state => {
+    const arr = [...state[category]];
+    const index = arr.findIndex(item => item.id === id);
+    if (index === -1) return;
+    
+    arr[index] = { ...arr[index], args: newArgs };
+    return { [category]: arr };
+  });
+},
+  updatePattern: (id, newParams) => {
+    get().updateComponent('pattern', id, newParams);
+  },
   removeComponent: (category, id) => {
     if (category === 'section') {
       set(state => ({
@@ -189,12 +210,12 @@ export const useModelStore = create((set, get) => ({
         return { section: sections };
       });
     }
-    else if (category === 'pattern') {
+    else  if (category === 'pattern') {
       set(state => ({
         patterns: state.patterns.filter(p => p.id !== id),
-        loads: state.loads.filter(l => l.patternId !== id),
+        loads:    state.loads.filter(l => l.patternId !== id),
         eleLoads: state.eleLoads.filter(el => el.patternId !== id),
-        sps: state.sps.filter(sp => sp.patternId !== id)
+        sps:      state.sps.filter(sp => sp.patternId !== id)
       }));
     }
     else if (category === 'load') {
@@ -210,6 +231,7 @@ export const useModelStore = create((set, get) => ({
       // other categories: implement if needed
     }
   },
+  
 
   toJson: () => {
     const s = get();

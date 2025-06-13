@@ -7,11 +7,11 @@ import { generateId } from '../utils/idGenerator';
 
 // Helper: build args array for a recorder given its metadata
 function buildRecorderArgs({ name, fileName, nodeIds = [], dofs = [], eleIds = [], responseType }) {
-  const args = ['-file', fileName, '-time'];
+  const args = ['-file', fileName, '-time', name === 'Element' ? '-ele' : '-node'];
   if (name === 'Node') {
-    args.push('-node', ...nodeIds, '-dof', ...dofs, responseType);
+    args.push( ...nodeIds, '-dof', ...dofs, responseType);
   } else if (name === 'Element') {
-    args.push('-ele', ...eleIds, responseType);
+    args.push( ...eleIds, responseType);
   }
   return args;
 }
@@ -88,6 +88,23 @@ export const useAnalysisStore = create((set, get) => ({
     const cmdObj = { id, category: 'recorder', command: 'recorder', name, fileName, responseType, nodeIds: [...nodeIds], dofs: [...dofs], eleIds: [...eleIds], args, immutable: false };
     set(state => ({ recorders: [...state.recorders, cmdObj] }));
   },
+  updateSequenceArgs: (id, newArgs) => {
+    set(state => ({
+      sequence: state.sequence.map(item =>
+        item.id === id ? { ...item, args: newArgs } : item
+      )
+    }));
+  },
+
+  // YOU ALREADY ADDED this, but for clarity:
+  updateRecorderArgs: (id, newArgs) => {
+    set(state => ({
+      recorders: state.recorders.map(r =>
+        r.id === id ? { ...r, args: newArgs } : r
+      )
+    }));
+  },
+
 
   removeRecorder: (id) => {
     const recs = get().recorders;

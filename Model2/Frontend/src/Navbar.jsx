@@ -16,7 +16,7 @@ const Navbar = () => {
         </div>
       </header>
 
-      {/* <JsonTogglePanel /> */}
+      <JsonTogglePanel />
     </>
   );
 };

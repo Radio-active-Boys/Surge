@@ -1,3 +1,4 @@
+ // src/components/common/Panel.jsx
 import { useState, useEffect } from 'react';
 import CommandPreview from './CommandPreview';
 import JsonEditor from './JsonEditor';

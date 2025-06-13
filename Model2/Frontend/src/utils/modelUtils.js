@@ -1,6 +1,7 @@
 import { useAnalysisStore } from "../stores/useAnalysisStore";
 import { useModelStore } from "../stores/useModelStore";
 import { generateId } from "./idGenerator";
+import { getTemplateByName } from '../api/jsonTemplates';
 
 function parseRecorderArgs(args) {
   const result = { fileName: null, nodeIds: [], dofs: [], eleIds: [], responseType: null };
@@ -128,14 +129,23 @@ export const importModel = (payload) => {
   }));
   useModelStore.setState({ timeSeries: tss });
 
-  const patterns = (payload.patterns || []).map(p => ({
-    id: generateId(),
-    command: p.command,
-    templateName: p.name,
-    args: p.args,
-    params: null,
-    category: 'pattern'
-  }));
+  const patterns = (payload.patterns || []).map(p => {
+    const id = generateId();
+    // grab the template to clone its defaults
+    const tpl = getTemplateByName('pattern', p.name);
+    const params = tpl
+      ? { ...tpl.defaultParams }
+      : {};
+
+    return {
+      id,
+      command: p.command,
+      templateName: p.name,
+      args: p.args,
+      params,
+      category: 'pattern'
+    };
+  });
   useModelStore.setState({ patterns });
 
   const loads = [];
