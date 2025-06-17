@@ -32,6 +32,7 @@ const SectionEditor = () => {
 
   const handleAddSection = () => {
     if (!newTplName) return;
+    console.log("Section Data ", " newTplName ",newTplName, " newParams", newParams )
     addComponent('section', newTplName, newParams);
     const tpl = sectionTemplates.find(t => t.name === newTplName);
     if (tpl) setNewParams(tpl.defaultParams);

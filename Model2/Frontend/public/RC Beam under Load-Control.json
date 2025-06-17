@@ -7,7 +7,7 @@
   ],
   "boundary_conditions": [
     { "command": "fix", "args": [1, 1, 1, 0] },
-    { "command": "fix", "args": [3, 0, 1, 0] }
+    { "command": "fix", "args": [2, 0, 1, 0] }
   ],
   "materials": [
     {
@@ -93,7 +93,7 @@
       "args": [1, 1],
       "loads": [
 
-        { "command": "load", "args": [2, 0.0, -10000.0, 0.0] }
+        { "command": "load", "args": [3, 0.0, -10000.0, 0.0] }
       ]
     }
   ],
@@ -107,100 +107,15 @@
     { "command": "analysis", "args": ["Static"] },
     { "command": "analyze", "args": [10] }
   ],
-  "monitoring": {
-    "capture_during_analysis": true,
-    "nodes": [2],
-    "responses": ["disp"],
-    "elements": [1, 2],
-    "responses": ["forces", "deformation"]
-  },
   "recorders": [
-    {
-      "command": "recorder",
-      "name": "Node",
-      "args": [
-        "-file",
-        "node2_disp.txt",
-        "-node",
-        2,
-        "-dof",
-        1,
-        "disp",
-        "-dof",
-        2,
-        "disp",
-        "-dof",
-        3,
-        "disp"
-      ]
-    },
-    {
-      "command": "recorder",
-      "name": "Node",
-      "args": [
-        "-file",
-        "node1_reaction.txt",
-        "-node",
-        1,
-        "-dof",
-        1,
-        "reaction",
-        "-dof",
-        2,
-        "reaction",
-        "-dof",
-        3,
-        "reaction"
-      ]
-    },
-    {
-      "command": "recorder",
-      "name": "Node",
-      "args": [
-        "-file",
-        "node3_reaction.txt",
-        "-node",
-        3,
-        "-dof",
-        1,
-        "reaction",
-        "-dof",
-        2,
-        "reaction",
-        "-dof",
-        3,
-        "reaction"
-      ]
-    },
-    {
-      "command": "recorder",
-      "name": "Element",
-      "args": ["-file", "elem1_end_forces.txt", "-ele", 1, "force"]
-    },
-    {
-      "command": "recorder",
-      "name": "Element",
-      "args": ["-file", "elem2_end_forces.txt", "-ele", 2, "force"]
-    },
-    {
-      "command": "recorder",
-      "name": "Element",
-      "args": ["-file", "elem1_section_forces.txt", "-ele", 1, "section", "forces"]
-    },
-    {
-      "command": "recorder",
-      "name": "Element",
-      "args": ["-file", "elem2_section_forces.txt", "-ele", 2, "section", "forces"]
-    },
-    {
-      "command": "recorder",
-      "name": "Element",
-      "args": ["-file", "elem1_section_deformations.txt", "-ele", 1, "section", "deformation"]
-    },
-    {
-      "command": "recorder",
-      "name": "Element",
-      "args": ["-file", "elem2_section_deformations.txt", "-ele", 2, "section", "deformation"]
-    }
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_disp.txt", "-time", "-node", 1,2,3, "-dof", 1,2,3, "disp"] },
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_reactions.txt", "-time", "-node", 1,2,3, "-dof", 1,2,3, "reaction"] },
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_vel.txt", "-time", "-node", 1,2,3, "-dof", 1,2,3, "vel"] },
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_accel.txt", "-time", "-node", 1,2,3, "-dof", 1,2,3, "accel"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_force.txt", "-time", "-ele", 1,2, "force"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_localForce.txt", "-time", "-ele", 1,2, "localForce"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_axialForce.txt", "-time", "-ele", 1,2, "axialForce"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_basicDeformation.txt", "-time", "-ele", 1,2, "basicDeformation"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_stiffness.txt", "-time", "-ele", 1,2, "stiffness"] }
   ]
 }

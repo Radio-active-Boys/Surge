@@ -8,6 +8,7 @@ const ParametricEditor = ({ category }) => {
   const [selected, setSelected] = useState(null);
   const [params, setParams] = useState({});
   const addComponent = useModelStore(state => state.addComponent);
+  const setModelConfig = useModelStore(state => state.setModelConfig);
 
   const patterns = useModelStore(state => state.patterns);
   const [patternId, setPatternId] = useState(null);

@@ -41,8 +41,8 @@ export const useAnalysisStore = create((set, get) => ({
 
   initializeDefaultRecorders: ({ nodeIds = [], dofs = [1, 2], eleIds = [] }) => {
     const defaults = [
-      { name: 'Node', fileName: 'nodes_disp.txt', responseType: 'disp' },
-      { name: 'Node', fileName: 'nodes_reaction.txt', responseType: 'reaction' },
+      { name: 'Node', fileName: 'node_disp.txt', responseType: 'disp' },
+      { name: 'Node', fileName: 'node_reaction.txt', responseType: 'reaction' },
       { name: 'Node', fileName: 'node_vel.txt', responseType: 'vel' },
       { name: 'Node', fileName: 'node_accel.txt', responseType: 'accel' },
       { name: 'Element', fileName: 'elem_force_global.txt', responseType: 'force' },

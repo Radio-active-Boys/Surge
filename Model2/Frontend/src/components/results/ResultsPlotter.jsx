@@ -2,11 +2,12 @@
 import React from 'react';
 import { useResultStore } from '../../stores/useResultStore';
 import TrussVisualizer from '../visualization/TrussVisualizer';
+import Model from '../visualization/Model';
+import DeflectedShape from '../visualization/DeflectedShape';
 
 const ResultsPlotter = () => {
   const hasResults = useResultStore(state => !!state.fullResults);
-  
-  
+
   if (!hasResults) {
     return (
       <div className="no-results">
@@ -18,7 +19,13 @@ const ResultsPlotter = () => {
     );
   }
 
-  return <TrussVisualizer />;
+  return (
+    <>
+      {/* <TrussVisualizer /> */}
+      <Model />
+      <DeflectedShape />
+    </>
+  );
 };
 
 export default ResultsPlotter;

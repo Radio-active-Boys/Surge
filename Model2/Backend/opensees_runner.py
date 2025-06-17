@@ -414,6 +414,7 @@ class OpenSeesRunner:
             self.capture_final_state()
             ops.wipe()  
             self.collect_recorder_data()
+            
             return self.results
         except Exception as e:
             self.results["status"]    = f"critical_error: {e}"

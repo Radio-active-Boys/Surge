@@ -82,99 +82,219 @@ import { useResultStore } from '../stores/useResultStore';
 function parseSupports(modelSupports, ndf) {
   const grouped = {};
   modelSupports.forEach(sp => {
+    if (sp.category !== "boundaryConditions" || sp.command !== "fix") return;
     const args = sp.args || [];
-    if (args.length >= 3) {
-      const nodeId = args[0];
-      const dof = args[1];
-      const value = args[2];
+    if (args.length === ndf + 1) {
+      const nodeId = Number(args[0]);
       if (!grouped[nodeId]) grouped[nodeId] = {};
-      grouped[nodeId][dof] = value;
+      for (let d = 1; d <= ndf; d++) {
+        grouped[nodeId][d] = Number(args[d]);
+      }
+    } else if (args.length >= 3) {
+      const nodeId = Number(args[0]);
+      const dof = Number(args[1]);
+      const val = Number(args[2]);
+      if (!grouped[nodeId]) grouped[nodeId] = {};
+      grouped[nodeId][dof] = val;
     }
   });
+
   const supports = [];
-  Object.entries(grouped).forEach(([nodeId, dofMap]) => {
-    const dofs = [];
-    const values = [];
+  Object.entries(grouped).forEach(([nodeIdStr, dofMap]) => {
+    const nodeId = Number(nodeIdStr);
+    const dofs = [], values = [];
     for (let d = 1; d <= ndf; d++) {
       dofs.push(d);
       values.push(dofMap[d] !== undefined ? dofMap[d] : 0);
     }
-    supports.push({ nodeId: Number(nodeId), dof: dofs, value: values });
+    supports.push({ nodeId, dof: dofs, value: values });
   });
+
   return supports;
 }
 
 /**
- * Helper to parse nodal loads from modelLoads array.
+ * Parse loads, eleLoads, and sps from unified modelLoads
  */
-function parseLoads(modelLoads) {
-  const loads = [];
-  modelLoads.forEach(load => {
-    const args = load.args || [];
-    if (args.length >= 2) {
-      const nodeId = args[0];
-      const values = args.slice(1);
-      loads.push({ nodeId, values });
-    }
-  });
-  return loads;
-}
+function parsePatternLoads(modelLoads) {
+  const loads = [], eleLoads = [], sps = [];
 
-/**
- * Helper to parse element loads from modelEleLoads array.
- */
-function parseEleLoads(modelEleLoads) {
-  const eleLoads = [];
-  modelEleLoads.forEach(el => {
-    const args = el.args || [];
-    let eleIds = [];
-    let type = null;
-    const params = {};
-    const eleIndex = args.indexOf('-ele');
-    if (eleIndex !== -1) {
-      let i = eleIndex + 1;
-      while (i < args.length && (typeof args[i] !== 'string' || !args[i].startsWith('-'))) {
-        eleIds.push(args[i]);
-        i++;
+  modelLoads.forEach(load => {
+    const { command, args = [] } = load;
+
+    if (command === "load") {
+      if (args.length >= 2) {
+        const nodeId = Number(args[0]);
+        const values = args.slice(1).map(Number);
+        loads.push({ nodeId, values });
       }
     }
-    const typeIndex = args.indexOf('-type');
-    if (typeIndex !== -1 && typeIndex + 1 < args.length) {
-      type = args[typeIndex + 1];
-      const rest = args.slice(typeIndex + 2);
-      params.values = rest;
+    else if (command === "eleLoad") {
+      // Prepare defaults
+      let eleIds = [];
+      let range = null;
+      let type = null;
+      let values = [];
+
+      // Scan args sequentially
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (arg === "-ele") {
+          // single element: next entry is element tag
+          const next = args[i+1];
+          if (typeof next === "number") {
+            eleIds.push(Number(next));
+            i += 1;
+          }
+        }
+        else if (arg === "-range") {
+          // range: next two entries are start and end tags
+          const start = args[i+1], end = args[i+2];
+          if (typeof start === "number" && typeof end === "number") {
+            range = { start: Number(start), end: Number(end) };
+            // optionally store eleIds as array of ints, e.g. all tags in [start..end],
+            // but often we can keep range and expand later if needed.
+            i += 2;
+          }
+        }
+        else if (arg === "-type") {
+          // next is type string
+          const next = args[i+1];
+          if (typeof next === "string") {
+            type = next;
+            // Collect all subsequent numeric args as values until next flag or end
+            let j = i+2;
+            while (j < args.length && typeof args[j] === "number") {
+              values.push(Number(args[j]));
+              j++;
+            }
+            i = j - 1;
+          }
+        }
+        // else: skip other flags if any (e.g., future flags)
+      }
+
+      // Build structured params depending on type
+      const params = {};
+      if (type === "beamPoint") {
+        // In 2D: values = [Pz, xL] or [Pz, xL, Px]
+        // In 3D: [Py, Pz, xL] or [Py, Pz, xL, Px]
+        if (values.length >= 2) {
+          // assume last is xL, first(s) are magnitudes
+          const xL = values[values.length - 1];
+          if (values.length === 2) {
+            // 2D: [Pz, xL]
+            params.Pz = values[0];
+            params.xL = xL;
+          }
+          else if (values.length === 3) {
+            // Could be 2D with Px or 3D without Px?
+            // Decide by ndm context elsewhere; here assume 2D+[Px]: [Pz, xL, Px]
+            params.Pz = values[0];
+            params.xL = values[1];
+            params.Px = values[2];
+          }
+          else if (values.length === 3 || values.length === 4) {
+            // 3D: [Py, Pz, xL] or [Py, Pz, xL, Px]
+            params.Py = values[0];
+            params.Pz = values[1];
+            params.xL = values[2];
+            if (values.length === 4) {
+              params.Px = values[3];
+            }
+          }
+        }
+      }
+      else if (type === "beamUniform") {
+        // In 2D: values = [Wz] or [Wz, Wx]
+        // In 3D: [Wy, Wz] or [Wy, Wz, Wx]
+        // Or trapezoidal 2D: [Wz_start, Wx_start, aL, bL, Wz_end, Wx_end]
+        // Or trapezoidal 3D: [Wy_start, Wz_start, Wx_start, aL, bL, Wy_end, Wz_end, Wx_end]
+        if (values.length === 1) {
+          params.Wz = values[0];
+        }
+        else if (values.length === 2) {
+          // ambiguous: 2D [Wz, Wx] or 3D [Wy, Wz]? Use ndm context elsewhere.
+          params.W1 = values[0];
+          params.W2 = values[1];
+        }
+        else if (values.length === 3) {
+          // likely 3D simple: [Wy, Wz, Wx]
+          params.Wy = values[0];
+          params.Wz = values[1];
+          params.Wx = values[2];
+        }
+        else if (values.length === 6) {
+          // 2D trapezoidal: [Wz_start, Wx_start, aL, bL, Wz_end, Wx_end]
+          params.Wz_start = values[0];
+          params.Wx_start = values[1];
+          params.aL = values[2];
+          params.bL = values[3];
+          params.Wz_end = values[4];
+          params.Wx_end = values[5];
+        }
+        else if (values.length === 8) {
+          // 3D trapezoidal: [Wy_start, Wz_start, Wx_start, aL, bL, Wy_end, Wz_end, Wx_end]
+          params.Wy_start = values[0];
+          params.Wz_start = values[1];
+          params.Wx_start = values[2];
+          params.aL = values[3];
+          params.bL = values[4];
+          params.Wy_end = values[5];
+          params.Wz_end = values[6];
+          params.Wx_end = values[7];
+        }
+      }
+      else {
+        // handle other types if needed, e.g., beamThermal
+        params.values = values;
+      }
+
+      // Determine eleIds: if range is given, optionally expand or keep range
+      if (range) {
+        // Option A: keep range object
+        // eleLoads.push({ range, type, params });
+        // Option B: expand into array of IDs if you know all element tags in model
+        // For now, store both
+      }
+      if (eleIds.length === 0 && range) {
+        // Optionally record that this uses a range
+      }
+
+      eleLoads.push({ eleIds, range, type, params });
     }
-    eleLoads.push({ eleIds, type, params });
+    else if (command === "sp") {
+      const nodeId = Number(args[0]);
+      const dof = Number(args[1]);
+      const value = Number(args[2]);
+      sps.push({ nodeId, dof: [dof], value: [value] });
+    }
   });
-  return eleLoads;
+
+  return { loads, eleLoads, sps };
 }
 
-/**
- * Parse recorder tables into separate series variables.
- * Each series is an array of { time, data } entries.
- * Keys are prefixed: nodeDispSeries, nodeReactionSeries, ..., eleAxialForceSeries, etc.
- */
 function parseRecorderSeries(parsedTables) {
   const series = {};
-  // Utility to parse node-based table
+
   function parseNodeTable(table, resp) {
-    return table.rows.map((row, idx) => {
+    return table.rows.map(row => {
       const entry = { time: row[0], data: {} };
       table.columns.forEach((col, ci) => {
         if (ci === 0) return;
-        const m = col.match(new RegExp(`node(\\d+)_${resp}_DOF(\\d+)`));
+        const m = col.match(/node(\d+)_([a-zA-Z]+)_DOF(\d+)/);
         if (m) {
-          const [, nodeId, dof] = m;
+          const [, nodeId, , dof] = m;
           entry.data[nodeId] = entry.data[nodeId] || {};
-          entry.data[nodeId][dof] = table.rows[idx][ci];
+          entry.data[nodeId][dof] = row[ci];
         }
       });
       return entry;
     });
   }
-  // Utility to parse element-based table for single-value responses
+
   function parseElementSingle(table, pattern) {
-    return table.rows.map((row, idx) => {
+    return table.rows.map(row => {
       const entry = { time: row[0], data: {} };
       table.columns.forEach((col, ci) => {
         if (ci === 0) return;
@@ -187,15 +307,15 @@ function parseRecorderSeries(parsedTables) {
       return entry;
     });
   }
-  // Utility to parse element-based table for multi-value responses
+
   function parseElementMulti(table) {
-    return table.rows.map((row, idx) => {
+    return table.rows.map(row => {
       const entry = { time: row[0], data: {} };
       table.columns.forEach((col, ci) => {
         if (ci === 0) return;
-        const m = col.match(/ele(\d+)_(.+)/);
+        const m = col.match(/ele(\d+)_([\w]+)/);
         if (m) {
-          const [, eleId, key] = m;
+          const [ , eleId, key ] = m;
           entry.data[eleId] = entry.data[eleId] || {};
           entry.data[eleId][key] = row[ci];
         }
@@ -204,10 +324,9 @@ function parseRecorderSeries(parsedTables) {
     });
   }
 
-  // Mapping with prefixed keys
   const mapping = [
-    { key: 'nodeDispSeries', file: 'nodes_disp.txt', type: 'node', resp: 'disp' },
-    { key: 'nodeReactionSeries', file: 'nodes_reaction.txt', type: 'node', resp: 'reaction' },
+    { key: 'nodeDispSeries', file: 'node_disp.txt', type: 'node', resp: 'disp' },
+    { key: 'nodeReactionSeries', file: 'node_reaction.txt', type: 'node', resp: 'reaction' },
     { key: 'nodeVelSeries', file: 'node_vel.txt', type: 'node', resp: 'vel' },
     { key: 'nodeAccelSeries', file: 'node_accel.txt', type: 'node', resp: 'accel' },
     { key: 'eleGlobalForceSeries', file: 'elem_force_global.txt', type: 'element_multi' },
@@ -235,10 +354,7 @@ function parseRecorderSeries(parsedTables) {
   return series;
 }
 
-/**
- * Core parsing logic: given raw inputs, build unified data.
- */
-function parseResults(modelNodes, modelElements, modelSupports, modelLoads, modelEleLoads, recorders, ndf) {
+function parseResults(modelNodes, modelElements, modelSupports, modelLoads, recorders, ndf) {
   const nodeCoordinates = {};
   modelNodes.forEach(n => {
     const [nodeId, x, y] = n.args;
@@ -251,8 +367,7 @@ function parseResults(modelNodes, modelElements, modelSupports, modelLoads, mode
   });
 
   const supports = parseSupports(modelSupports, ndf);
-  const loads = parseLoads(modelLoads);
-  const eleLoads = parseEleLoads(modelEleLoads);
+  const { loads, eleLoads, sps } = parsePatternLoads(modelLoads);
 
   const parsedTables = {};
   Object.entries(recorders || {}).forEach(([filename, rec]) => {
@@ -273,24 +388,21 @@ function parseResults(modelNodes, modelElements, modelSupports, modelLoads, mode
     supports,
     loads,
     eleLoads,
+    sps,
     ...series
   };
 }
 
-/**
- * React hook: fetches model & results from stores, memoizes parsing.
- */
 export function usePlotParser() {
   const modelNodes = useModelStore(state => state.node);
   const modelElements = useModelStore(state => state.element);
-  const modelSupports = useModelStore(state => state.sps || state.boundaryConditions);
+  const modelSupports = useModelStore(state => state.boundaryConditions);
   const modelLoads = useModelStore(state => state.loads);
-  const modelEleLoads = useModelStore(state => state.eleLoads);
   const recorders = useResultStore(state => state.recorders);
   const modelConfig = useModelStore(state => state.modelConfig);
   const ndf = modelConfig?.ndf || 2;
 
   return useMemo(() => {
-    return parseResults(modelNodes, modelElements, modelSupports, modelLoads, modelEleLoads, recorders, ndf);
-  }, [modelNodes, modelElements, modelSupports, modelLoads, modelEleLoads, recorders, ndf]);
+    return parseResults(modelNodes, modelElements, modelSupports, modelLoads, recorders, ndf);
+  }, [modelNodes, modelElements, modelSupports, modelLoads, recorders, ndf]);
 }

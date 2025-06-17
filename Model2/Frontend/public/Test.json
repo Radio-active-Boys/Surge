@@ -4,27 +4,27 @@
     "ndf": 3
   },
   "nodes": [
-    {"command": "node", "args": [1, 0, 0]},
-    {"command": "node", "args": [2, 5, 0]},
-    {"command": "node", "args": [3, 0, 3]},
-    {"command": "node", "args": [4, 5, 3]}
+    { "command": "node", "args": [1, 0, 0] },
+    { "command": "node", "args": [2, 5, 0] },
+    { "command": "node", "args": [3, 0, 3] },
+    { "command": "node", "args": [4, 5, 3] }
   ],
   "boundary_conditions": [
-    {"command": "fix", "args": [1, 1, 1, 1]},
-    {"command": "fix", "args": [2, 1, 1, 1]}
+    { "command": "fix", "args": [1, 1, 1, 1] },
+    { "command": "fix", "args": [2, 1, 1, 1] }
   ],
   "materials": [
     {
       "command": "uniaxialMaterial",
       "name": "Steel01",
-      "args": [1, 300e6, 200e9, 0.02]
+      "args": [1, 300000000, 200000000000, 0.02]
     }
   ],
   "sections": [
     {
       "command": "section",
-      "name": "WFSection2d",
-      "args": [1, 1, 0.6, 0.012, 0.3, 0.025, 5, 4]
+      "name": "Elastic",
+      "args": [1, 2.1e11, 8.1e-4, 1.0e-4]
     }
   ],
   "transformations": [
@@ -32,7 +32,7 @@
       "command": "geomTransf",
       "name": "Linear",
       "args": [1],
-      "params": {"vec": [0, 0, 1]}
+      "params": { "vec": [0, 0, 1] }
     }
   ],
   "integrations": [
@@ -60,34 +60,31 @@
     }
   ],
   "time_series": [
-    {"command": "timeSeries", "name": "Linear", "args": [1]}
+    { "command": "timeSeries", "name": "Linear", "args": [1] }
   ],
   "patterns": [
     {
-      "command": "pattern", 
-      "name": "Plain", 
+      "command": "pattern",
+      "name": "Plain",
       "args": [1, 1],
       "loads": [
-        {"command": "load", "args": [3, 10000, 0, 0]},
-        {"command": "load", "args": [4, 10000, 0, 0]}
-      ],
-      "sp_constraints": [
-        {"command": "sp", "args": [4, 1, 0.0]}
+        { "command": "load", "args": [3, -10000, -10000, 0] },
+        { "command": "load", "args": [4, 10000, 0, 0] }
       ]
     }
   ],
   "analysis_sequence": [
-    {"command": "constraints", "args": ["Penalty", 1e12, 1e12]},
-    {"command": "numberer", "args": ["RCM"]},
-    {"command": "system", "args": ["UmfPack"]},
-    {"command": "test", "args": ["EnergyIncr", 1e-6, 20]},
-    {"command": "algorithm", "args": ["Newton"]},
+    { "command": "constraints", "args": ["Penalty", 1e12, 1e12] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["UmfPack"] },
+    { "command": "test", "args": ["EnergyIncr", 1e-6, 20] },
+    { "command": "algorithm", "args": ["Newton"] },
     {
       "command": "integrator",
       "name": "DisplacementControl",
       "args": [4, 1, 0.001]
     },
-    {"command": "analysis", "args": ["Static"]},
+    { "command": "analysis", "args": ["Static"] },
     {
       "command": "analyze",
       "args": [500],
@@ -96,8 +93,8 @@
   ],
   "recorders": [
     {
-      "command": "recorder", 
-      "name": "Node", 
+      "command": "recorder",
+      "name": "Node",
       "args": ["-file", "roof_drift.txt", "-node", 4, "-dof", 1, "disp"]
     },
     {
@@ -110,11 +107,5 @@
       "name": "Element",
       "args": ["-file", "section_force.txt", "-ele", 3, "section", "force"]
     }
-  ],
-  "monitoring": {
-    "nodes": [3, 4],
-    "elements": [1, 2, 3],
-    "responses": ["disp", "forces", "deformation"],
-    "capture_during_analysis": true
-  }
+  ]
 }

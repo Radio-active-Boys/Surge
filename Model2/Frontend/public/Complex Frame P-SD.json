@@ -1,0 +1,125 @@
+{
+  "model_config": {
+    "ndm": 2,
+    "ndf": 3
+  },
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 5.0, 0.0] },
+    { "command": "node", "args": [3, 10.0, 0.0] },
+    { "command": "node", "args": [4, 0.0, 3.0] },
+    { "command": "node", "args": [5, 5.0, 3.0] },
+    { "command": "node", "args": [6, 10.0, 3.0] },
+    { "command": "node", "args": [7, 0.0, 6.0] },
+    { "command": "node", "args": [8, 5.0, 6.0] },
+    { "command": "node", "args": [9, 10.0, 6.0] },
+    { "command": "node", "args": [10, 0.0, 9.0] },
+    { "command": "node", "args": [11, 5.0, 9.0] },
+    { "command": "node", "args": [12, 10.0, 9.0] }
+  ],
+  "boundary_conditions": [
+    { "command": "fix", "args": [1, 1, 1, 1] },
+    { "command": "fix", "args": [2, 1, 1, 1] },
+    { "command": "fix", "args": [3, 1, 1, 1] }
+  ],
+  "sections": [
+    { "command": "section", "name": "Elastic", "args": [1, 2.1e11, 8.5e-5, 2e-4] },
+    { "command": "section", "name": "Elastic", "args": [2, 2.1e11, 6.0e-5, 1.5e-4] },
+    { "command": "section", "name": "Elastic", "args": [3, 2.1e11, 4.0e-5, 1e-4] }
+  ],
+  "transformations": [
+    { "command": "geomTransf", "name": "Linear", "args": [1] }
+  ],
+  "elements": [
+    { "command": "element", "name": "elasticBeamColumn", "args": [1, 1, 4, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [2, 2, 5, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [3, 3, 6, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [4, 4, 7, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [5, 5, 8, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [6, 6, 9, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [7, 7, 10, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [8, 8, 11, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [9, 9, 12, 8.5e-5, 2.1e11, 2e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [10, 4, 5, 6.0e-5, 2.1e11, 1.5e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [11, 5, 6, 6.0e-5, 2.1e11, 1.5e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [12, 7, 8, 6.0e-5, 2.1e11, 1.5e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [13, 8, 9, 6.0e-5, 2.1e11, 1.5e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [14, 10, 11, 6.0e-5, 2.1e11, 1.5e-4, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": [15, 11, 12, 6.0e-5, 2.1e11, 1.5e-4, 1] }
+  ],
+  "time_series": [
+    { "command": "timeSeries", "name": "Linear", "args": [1] }
+  ],
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": [1, 1],
+      "loads": [
+        { "command": "load", "args": [1, 0.0, -50000.0, 0.0] },
+        { "command": "load", "args": [2, 0.0, -50000.0, 0.0] },
+        { "command": "load", "args": [3, 0.0, -50000.0, 0.0] },
+        {
+          "command": "eleLoad",
+          "args": [
+            "-range", 1, 15,
+            "-type", "beamUniform",
+            -5000.0
+          ]
+        },
+        {
+          "command": "eleLoad",
+          "args": [
+            "-range", 1, 15,
+            "-type", "beamPoint",
+            1000.0,
+            0.5
+          ]
+        },
+                {
+          "command": "eleLoad",
+          "args": [
+            "-range", 1, 15,
+            "-type", "beamPoint",
+            -1000.0,
+            0.1
+          ]
+        },
+        {
+          "command": "eleLoad",
+          "args": [
+            "-range", 1, 15,
+            "-type", "beamUniform",
+            -2000.0,
+            10.0,
+            0.2,
+            0.9,
+            4000.0,
+            0.0
+          ]
+        }
+      ]
+    }
+  ],
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Plain"] },
+    { "command": "numberer",    "args": ["RCM"] },
+    { "command": "system",      "args": ["UmfPack"] },
+    { "command": "test",        "args": ["NormDispIncr", 1e-6, 20] },
+    { "command": "algorithm",   "args": ["Newton"] },
+    { "command": "integrator",  "name": "LoadControl", "args": [0.1] },
+    { "command": "analysis",    "args": ["Static"] },
+    { "command": "analyze",     "args": [20] }
+  ],
+  "recorders": [
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_disp.txt", "-time", "-node", 1,2,3,4,5,6,7,8,9,10,11,12, "-dof", 1,2,3, "disp"] },
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_reactions.txt", "-time", "-node", 1,2,3,4,5,6,7,8,9,10,11,12, "-dof", 1,2,3, "reaction"] },
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_vel.txt", "-time", "-node", 1,2,3,4,5,6,7,8,9,10,11,12, "-dof", 1,2,3, "vel"] },
+    { "command": "recorder", "name": "Node", "args": ["-file", "node_accel.txt", "-time", "-node", 1,2,3,4,5,6,7,8,9,10,11,12, "-dof", 1,2,3, "accel"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_force.txt", "-time", "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, "force"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_localForce.txt", "-time", "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, "localForce"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_axialForce.txt", "-time", "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, "axialForce"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_basicDeformation.txt", "-time", "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, "basicDeformation"] },
+    { "command": "recorder", "name": "Element", "args": ["-file", "elem_stiffness.txt", "-time", "-ele", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, "stiffness"] }
+  ]
+}
