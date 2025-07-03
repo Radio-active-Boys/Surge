@@ -152,14 +152,7 @@ function DrawElements(g, elements, coords, xScale, yScale) {
     const mx = (x1 + x2) / 2;
     const my = (y1 + y2) / 2;
 
-    // element ID label at midpoint
-    g.append("text")
-      .attr("x", mx + 3)
-      .attr("y", my - 3)
-      .attr("text-anchor", "middle")
-      .attr("font-size", 3)
-      .attr("fill", "blue")
-      .text(`E${el.id}`);
+
 
     // local axes (optional)
     const dx = p2.x - p1.x, dy = p2.y - p1.y;
@@ -191,6 +184,15 @@ function DrawElements(g, elements, coords, xScale, yScale) {
       .attr("stroke", "green")
       .attr("stroke-width", 0.5)
       .attr("marker-end", "url(#arrowhead-transverse)");
+
+    // element ID label at midpoint
+    g.append("text")
+      .attr("x", (tx+qx)/2)
+      .attr("y", (ty+qy)/2)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 3)
+      .attr("fill", "blue")
+      .text(`E${el.id}`);
   });
 }
 

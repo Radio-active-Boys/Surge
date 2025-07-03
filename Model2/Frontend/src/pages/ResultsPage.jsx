@@ -41,6 +41,12 @@ const ResultsPage = () => {
         >
           Section Forces
         </button>
+        <button
+          className={`tab ${activeView === 'reaction' ? 'active' : ''}`}
+          onClick={() => setActiveView('reaction')}
+        >
+          Reaction Forces
+        </button>
       </div>
 
       <div className="tab-content">

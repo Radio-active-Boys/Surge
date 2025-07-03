@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import * as d3 from "d3";
 import { usePlotParser } from "../../utils/plotParser";
-
+import "./SectionForce.css"
 function sectionForceDistribution2D(ecrd, pl, eleLoadData = [['-beamUniform', 0, 0]], nep = 2) {
   const [p1, p2] = ecrd;
   const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
@@ -38,14 +38,12 @@ function sectionForceDistribution2D(ecrd, pl, eleLoadData = [['-beamUniform', 0,
   let N1 = 0, V1 = 0, M1 = 0;
   if (isFrame) {
     [N1, V1, M1] = pl;
-  } else {
-    // for beams, pl = [FX_i], but we still need shear & moment:
-    N1 = pl[0];
-    // assume plExtended contains [FX_i, FY_i, MZ_i]
-    // adjust here to pull from eleLoadData or separate source:
-    V1 = pl[1] || 0;    // local shear at start
-    M1 = pl[2] || 0;    // local moment at start
+  }    else {
+    N1 = pl?.[0] ?? 0;
+    V1 = pl?.[1] ?? 0;
+    M1 = pl?.[2] ?? 0;
   }
+
 
   // 5) initialize baseline arrays for all elements
   const N = Array(nep).fill(-N1);
@@ -373,17 +371,16 @@ const { s, xl } = sectionForceDistribution2D(
     
     // Function to add label with position tracking
     const addLabel = (pt, value, isExtreme = false) => {
-      // Create a unique key for this position
+      if (!pt || value == null || isNaN(value)) return; // <== ✅ Prevent crash
+
       const posKey = `${xScale(pt.x).toFixed(1)},${yScale(pt.y).toFixed(1)}`;
-      
-      // Skip if we've already labeled this position
       if (labelPositions.has(posKey)) return;
       labelPositions.add(posKey);
-      
+
       const formattedValue = Math.abs(value) > 1000 
-        ? `${(value/1000).toFixed(1)}k` 
+        ? `${(value / 1000).toFixed(1)}k`
         : value.toFixed(0);
-      
+
       const text = root.append("text")
         .attr("x", xScale(pt.x))
         .attr("y", yScale(pt.y) - 8)
@@ -391,14 +388,10 @@ const { s, xl } = sectionForceDistribution2D(
         .attr("dominant-baseline", "middle")
         .attr("font-size", isExtreme ? "10px" : "9px")
         .attr("font-weight", isExtreme ? "bold" : "normal")
-        .text(formattedValue);
-      
-      if (isExtreme) {
-        text.attr("fill", "#5550");
-      } else {
-        text.attr("fill", "#444");
-      }
+        .text(formattedValue)
+        .attr("fill", isExtreme ? "#5550" : "#444");
     };
+
 
     // Draw force diagrams
     elementsData.forEach(element => {
@@ -411,33 +404,29 @@ const { s, xl } = sectionForceDistribution2D(
       }));
 
       // Create diagram points - offset perpendicular to element
-      const diagramPoints = xl.map((x, i) => {
-        // Get force magnitude with proper sign
-        let forceVal = 0;
-        if (s[i] && s[i].length > 0) {
-          if (sfType === 'N') forceVal = s[i][0];
-          else if (sfType === 'V') forceVal = s[i][1];
-          else if (sfType === 'M') forceVal = -s[i][2]; // Invert sign for moments
-        }
-        
-        // Skip bending moment and shear for trusses
-        if (!isFrame && sfType !== 'N') return {
-          x: basePoints[i].x,
-          y: basePoints[i].y
-        };
-        
-        // Calculate offset perpendicular to element
-        // Calculate offset
-        const offset = forceVal * diagScale;
-        
-        // Apply offset based on direction mode
+// Create diagram points - offset perpendicular to element
+const diagramPoints = xl.map((x, i) => {
+  if (!s[i]) return basePoints[i];  // guard against undefined section force
 
-          return {
-            x: basePoints[i].x - offset * cosb,
-            y: basePoints[i].y + offset * cosa
-          };
-        }
-      );
+let forceVal = 0;
+if (sfType === 'N') forceVal = s[i]?.[0] ?? 0;
+else if (sfType === 'V') forceVal = s[i]?.[1] ?? 0;
+else if (sfType === 'M') forceVal = -(s[i]?.[2] ?? 0);
+
+if (!Number.isFinite(forceVal)) forceVal = 0;  // extra safety
+
+  // For trusses, skip drawing shear or moment
+  if (!isFrame && sfType !== 'N') {
+    return basePoints[i];
+  }
+
+  const offset = forceVal * diagScale;
+  return {
+    x: basePoints[i].x - offset * cosb,
+    y: basePoints[i].y + offset * cosa
+  };
+});
+
 
       // Skip empty diagrams (like moments in trusses)
       const isTrussWithoutN = !isFrame && sfType !== 'N';
@@ -490,10 +479,10 @@ const { s, xl } = sectionForceDistribution2D(
       // Skip endpoints in min/max search since we'll label them separately
       for (let i = 1; i < s.length - 1; i++) {
         let val = 0;
-        if (sfType === 'N') val = s[i][0];
-        else if (sfType === 'V') val = s[i][1];
-        else if (sfType === 'M') val = s[i][2];
-        
+        if (sfType === 'N') val = s[i]?.[0] ?? 0;
+        else if (sfType === 'V') val = s[i]?.[1] ?? 0;
+        else if (sfType === 'M') val = s[i]?.[2] ?? 0;
+
         if (val < minVal) {
           minVal = val;
           minIdx = i;
@@ -504,22 +493,21 @@ const { s, xl } = sectionForceDistribution2D(
         }
       }
 
+
       // Add labels at endpoints
       if (s.length > 0) {
-        // Start point
-        addLabel(diagramPoints[0], 
-          sfType === 'N' ? s[0][0] : 
-          sfType === 'V' ? s[0][1] : 
-          s[0][2]
-        );
-        
-        // End point
-        addLabel(diagramPoints[diagramPoints.length - 1], 
-          sfType === 'N' ? s[s.length - 1][0] : 
-          sfType === 'V' ? s[s.length - 1][1] : 
-          s[s.length - 1][2]
-        );
+        const startVal = sfType === 'N' ? s[0]?.[0] ?? 0 :
+                        sfType === 'V' ? s[0]?.[1] ?? 0 :
+                        s[0]?.[2] ?? 0;
+
+        const endVal = sfType === 'N' ? s[s.length - 1]?.[0] ?? 0 :
+                      sfType === 'V' ? s[s.length - 1]?.[1] ?? 0 :
+                      s[s.length - 1]?.[2] ?? 0;
+
+        addLabel(diagramPoints[0], startVal);
+        addLabel(diagramPoints[diagramPoints.length - 1], endVal);
       }
+
 
       // Add min value point if found
       if (minIdx !== -1) {

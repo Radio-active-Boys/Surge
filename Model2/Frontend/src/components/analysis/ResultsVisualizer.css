@@ -1,3 +1,4 @@
+/* ResultsVisualizer.css */
 .results-container {
   background-color: white;
   border-radius: 8px;
@@ -58,8 +59,9 @@
 
 .recorders-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 5fr;
   gap: 1.5rem;
+  height: 70vh;
 }
 
 .recorders-list {
@@ -67,6 +69,7 @@
   border-radius: 6px;
   padding: 1rem;
   height: 100%;
+  overflow-y: auto;
 }
 
 .recorders-list-container {
@@ -123,12 +126,20 @@
   color: #6b7280;
 }
 
+.recorder-details {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .recorder-detail-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background-color: white;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 1rem;
-  height: 100%;
 }
 
 .recorder-header {
@@ -148,8 +159,8 @@
 .recorder-type-label {
   margin-left: 0.5rem;
   font-size: 0.75rem;
-  color: #6b7280;
-  background-color: #f3f4f6;
+  color: #4f5f7e;
+  background-color: #8afda7;
   padding: 0.125rem 0.5rem;
   border-radius: 9999px;
 }
@@ -163,7 +174,7 @@
 }
 
 .close-button:hover {
-  color: #6b7280;
+  color: #b80d0d;
 }
 
 .close-button svg {
@@ -206,24 +217,43 @@
   margin: 0;
 }
 
-/* Recorder table styling */
-.recorder-table-container {
-  overflow-x: auto;
+/* Table scroll containers */
+.table-scroll-container {
+  overflow: auto;
+  max-height: 65vh;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-top: 0.5rem;
 }
 
+.recorder-table-container {
+  overflow: auto;
+  max-height: 65vh;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+/* Recorder table styling */
 .recorder-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
+  min-width: max-content;
 }
 
 .recorder-table th {
+  position: sticky;
+  top: 0;
   background-color: #f3f4f6;
   padding: 0.5rem 0.75rem;
   text-align: left;
   font-weight: 500;
   color: #374151;
   border: 1px solid #e5e7eb;
+  z-index: 10;
 }
 
 .recorder-table td {
@@ -244,22 +274,59 @@
   background-color: #f9fafb;
   padding: 0.75rem;
   border-radius: 4px;
-  max-height: 400px;
+  max-height: 65vh;
   overflow: auto;
   font-family: monospace;
   font-size: 0.875rem;
 }
 
 /* Model state styling */
-.model-state-viewer {
-  background-color: #f9fafb;
+.model-container {
+  height: 80%;
+}
+
+.model-tab-layout {
+  display: flex;
+  margin-top: 1rem;
+  height: 70vh;
+}
+
+.model-tab-sidebar {
+  width: 150px;
+  border-right: 1px solid #e5e7eb;
   padding: 1rem;
+  flex-shrink: 0;
+}
+
+.model-tab-btn {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: #f4f4f4;
+  border: none;
   border-radius: 4px;
-  max-height: 500px;
-  overflow: auto;
-  font-size: 0.875rem;
-  font-family: monospace;
-  white-space: pre-wrap;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.model-tab-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.model-tab-btn.active {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: bold;
+}
+
+.model-tab-content {
+  flex: 1;
+  padding: 1rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Empty state messages */

@@ -1,0 +1,68 @@
+{
+  "model_config": { "ndm": 2, "ndf": 3 },
+
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 5.0, 0.0] },
+    { "command": "node", "args": [3, 10.0, 0.0] },
+    { "command": "node", "args": [4, 2.5, 4.0] },
+    { "command": "node", "args": [5, 7.5, 4.0] }
+  ],
+
+  "boundary_conditions": [
+    { "command": "fix", "args": [1, 1, 1, 0] },
+    { "command": "fix", "args": [3, 1, 1, 0] }
+  ],
+
+  "materials": [
+    { "command": "uniaxialMaterial", "name": "Elastic", "args": ["Elastic", 1, 2.0e11] }
+  ],
+
+  "elements": [
+    { "command": "element", "name": "truss", "args": ["truss", 1, 1, 4, 0.003, 1] },
+    { "command": "element", "name": "truss", "args": ["truss", 2, 2, 4, 0.003, 1] },
+    { "command": "element", "name": "truss", "args": ["truss", 3, 2, 5, 0.003, 1] },
+    { "command": "element", "name": "truss", "args": ["truss", 4, 3, 5, 0.003, 1] },
+    { "command": "element", "name": "truss", "args": ["truss", 5, 4, 5, 0.003, 1] }
+  ],
+
+  "time_series": [
+    { "command": "timeSeries", "name": "Linear", "args": ["Linear", 1] }
+  ],
+
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": ["Plain", 1, 1],
+      "loads": [
+        { "command": "load", "args": [4, 0.0, -10000.0] },
+        { "command": "load", "args": [5, 0.0, -10000.0] }
+      ]
+    }
+  ],
+
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Transformation"] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["BandGeneral"] },
+    { "command": "test", "args": ["NormDispIncr", 1.0e-6, 10] },
+    { "command": "algorithm", "args": ["Linear"] },
+    { "command": "integrator", "name": "LoadControl", "args": ["LoadControl", 1.0] },
+    { "command": "analysis", "args": ["Static"] },
+    { "command": "analyze", "args": [100] }
+  ],
+    "recorders": [
+
+
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_disp.txt", "-time", "-node",  1, 2, 3, 4, 5,   "-dof", 1,2,3, "disp"] },
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_reactions.txt", "-time", "-node",  1, 2, 3, 4, 5,   "-dof", 1,2,3, "reaction"] },
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_vel.txt", "-time", "-node",  1, 2, 3, 4, 5,   "-dof", 1,2,3, "vel"] },
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_accel.txt", "-time", "-node",  1, 2, 3, 4, 5,   "-dof", 1,2,3, "accel"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_force.txt", "-time", "-ele",1, 2, 3, 4, 5, "force"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_localForce.txt", "-time", "-ele",1, 2, 3, 4, 5, "localForce"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_axialForce.txt", "-time", "-ele",1, 2, 3, 4, 5, "axialForce"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_basicDeformation.txt", "-time", "-ele",1, 2, 3, 4, 5, "basicDeformation"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_stiffness.txt", "-time", "-ele",1, 2, 3, 4, 5, "stiffness"] }
+  ]
+}

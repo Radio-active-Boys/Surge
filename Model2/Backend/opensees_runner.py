@@ -201,6 +201,9 @@ class OpenSeesRunner:
     def get_node_accel(self, tag):
         try:    return ops.nodeAccel(tag)
         except: return None
+    def get_node_reaction(self, tag):
+        try:    return ops.nodeReaction(tag)
+        except: return None
     def get_ele_forces(self, tag):
         try:    return ops.eleForce(tag)
         except: return None
@@ -382,7 +385,8 @@ class OpenSeesRunner:
                 self.record_node_info(tag, {
                     "final_disp": self.get_node_disp(tag),
                     "final_vel":  self.get_node_vel(tag),
-                    "final_accel":self.get_node_accel(tag)
+                    "final_accel":self.get_node_accel(tag),
+                    "final_reaction":self.get_node_reaction(tag)
                 })
         if "elements" in self.data:
             for e in self.data["elements"]:

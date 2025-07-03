@@ -210,30 +210,34 @@ class OpenSeesRunner:
 
     def capture_monitoring_data(self):
         mon = self.data["monitoring"]
-        t   = ops.getTime()
+        t = ops.getTime()
         if abs(t - self.current_time) < 1e-10:
             return
         self.current_time = t
         if "time_history" not in self.results["monitoring"]:
             self.results["monitoring"]["time_history"] = []
+            
         point = {"time": t}
+        
+        # Only store monitoring data in monitoring section - DO NOT record to model
         if "nodes" in mon:
             for nt in mon["nodes"]:
                 d = {}
                 for resp in mon.get("responses", ["disp"]):
-                    if resp == "disp":  d["disp"]  = self.get_node_disp(nt)
-                    if resp == "vel":   d["vel"]   = self.get_node_vel(nt)
+                    if resp == "disp":  d["disp"] = self.get_node_disp(nt)
+                    if resp == "vel":   d["vel"] = self.get_node_vel(nt)
                     if resp == "accel": d["accel"] = self.get_node_accel(nt)
                 point[f"node_{nt}"] = d
+                
         if "elements" in mon:
             for et in mon["elements"]:
                 d = {}
                 for resp in mon.get("responses", ["forces"]):
-                    if resp == "forces":      d["forces"]      = self.get_ele_forces(et)
+                    if resp == "forces": d["forces"] = self.get_ele_forces(et)
                     if resp == "deformation": d["deformation"] = self.get_ele_response(et, "deformation")
                 point[f"ele_{et}"] = d
+                
         self.results["monitoring"]["time_history"].append(point)
-
     def get_node_disp(self, tag):
         try:    return ops.nodeDisp(tag)
         except: return None

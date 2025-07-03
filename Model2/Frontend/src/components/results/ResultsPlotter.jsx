@@ -4,6 +4,7 @@ import ResultsVisualizer from '../analysis/ResultsVisualizer';
 import Model from '../visualization/Model';
 import DeflectedShape from '../visualization/DeflectedShape2';
 import SectionForce from '../visualization/SectionForce';
+import Reaction from '../visualization/Reactions';
 
 const ResultsPlotter = ({ view, results }) => {
   switch (view) {
@@ -15,6 +16,8 @@ const ResultsPlotter = ({ view, results }) => {
       return <DeflectedShape />;
     case 'section':
       return <SectionForce />;
+    case 'reaction':
+      return <Reaction />;
     default:
       return null;
   }
