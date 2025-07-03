@@ -1,5 +1,14 @@
-/* src/components/visualization/ModelViewer.css */
 .model-viewer {
   width: 100%;
-  height:  100vh; /* or 100vh */
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fafafa;
+}
+
+.model-viewer svg {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ccc;
 }

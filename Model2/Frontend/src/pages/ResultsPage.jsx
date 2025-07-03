@@ -1,9 +1,10 @@
-// src/pages/ResultsPage.jsx
-import React from 'react';
+import React, { useState } from 'react';
+import './ResultsPage.css';
 import { useResultStore } from '../stores/useResultStore';
-import ResultsVisualizer from '../components/analysis/ResultsVisualizer';
 import ResultsPlotter from '../components/results/ResultsPlotter';
+
 const ResultsPage = () => {
+  const [activeView, setActiveView] = useState('results');
   const status = useResultStore((state) => state.status);
   const errors = useResultStore((state) => state.errors);
   const warnings = useResultStore((state) => state.warnings);
@@ -14,30 +15,53 @@ const ResultsPage = () => {
   }
 
   return (
-    <div>
-      <h1>Analysis Results</h1>
-      {status !== 'success' && errors.length > 0 && (
-        <div className="error-section">
-          <h2>Errors</h2>
-          <ul>
-            {errors.map((e, i) => <li key={i}>{e}</li>)}
-          </ul>
-        </div>
-      )}
-      {warnings && warnings.length > 0 && (
-        <div className="warning-section">
-          <h2>Warnings</h2>
-          <ul>
-            {warnings.map((w, i) => <li key={i}>{w}</li>)}
-          </ul>
-        </div>
-      )}
-      {status === 'success' && fullResults && (
-        <>
-        <ResultsVisualizer results={fullResults} />
-        </>
-      )}
-      <ResultsPlotter />
+    <div className="results-container">
+      <div className="tabs">
+        <button
+          className={`tab ${activeView === 'results' ? 'active' : ''}`}
+          onClick={() => setActiveView('results')}
+        >
+          Results
+        </button>
+        <button
+          className={`tab ${activeView === 'model' ? 'active' : ''}`}
+          onClick={() => setActiveView('model')}
+        >
+          Model
+        </button>
+        <button
+          className={`tab ${activeView === 'deflected' ? 'active' : ''}`}
+          onClick={() => setActiveView('deflected')}
+        >
+          Deflected Shape
+        </button>
+        <button
+          className={`tab ${activeView === 'section' ? 'active' : ''}`}
+          onClick={() => setActiveView('section')}
+        >
+          Section Forces
+        </button>
+      </div>
+
+      <div className="tab-content">
+        {status !== 'success' && errors.length > 0 && (
+          <div className="error-section">
+            <h2 className="section-title">Errors</h2>
+            <ul>{errors.map((e, i) => <li key={i}>{e}</li>)}</ul>
+          </div>
+        )}
+
+        {warnings && warnings.length > 0 && (
+          <div className="warning-section">
+            <h2 className="section-title">Warnings</h2>
+            <ul>{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+          </div>
+        )}
+
+        {status === 'success' && fullResults && (
+          <ResultsPlotter view={activeView} results={fullResults} />
+        )}
+      </div>
     </div>
   );
 };

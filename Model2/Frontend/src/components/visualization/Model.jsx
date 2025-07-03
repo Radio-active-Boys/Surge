@@ -12,6 +12,11 @@ export default function Model({ width = 1000, height = 600, margin = 40 }) {
     loads,
     eleLoads,
   } = usePlotParser();
+  console.log("nodeCoordinates",nodeCoordinates)
+  console.log("elementConnectivity",elementConnectivity)
+  console.log("supports",supports)
+  console.log("loads",loads)
+  console.log("eleLoads",eleLoads)
 
   const svgRef = useRef();
 
@@ -282,6 +287,7 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
         subG.append("path")
           .attr("d", d3.line()(pathData))
           .attr("fill", color);
+        
       }
       if (fx !== 0) {
         const signX = fx > 0 ? 1 : -1;
@@ -295,185 +301,161 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
 }
 
 // ─── DRAW ELEMENT LOADS ──────────────────────────────────────────────────
+// ─── DRAW ELEMENT LOADS ──────────────────────────────────────────────────
 function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
+  // helper: turn a range into an array of element IDs
   function expandRange(range) {
-    const ids = [];
-    elements.forEach(el => {
-      if (el.id >= range.start && el.id <= range.end) {
-        ids.push(el.id);
-      }
-    });
-    return ids;
+    return elements
+      .filter(el => el.id >= range.start && el.id <= range.end)
+      .map(el => el.id);
   }
+
   g.selectAll("*").remove();
   const sampleCount = 30;
+
   eleLoads.forEach(load => {
-    let ids = [];
-    if (Array.isArray(load.eleIds) && load.eleIds.length > 0) {
-      ids = load.eleIds;
-    } else if (load.range) {
-      ids = expandRange(load.range);
-    }
+    // determine which element IDs to draw
+    const ids = (Array.isArray(load.eleIds) && load.eleIds.length)
+      ? load.eleIds
+      : (load.range ? expandRange(load.range) : []);
+
     ids.forEach(eleId => {
       const el = elements.find(e => e.id === eleId);
       if (!el) return;
       const p1 = coords[el.i], p2 = coords[el.j];
       if (!p1 || !p2) return;
-      const dx = p2.x - p1.x, dy = p2.y - p1.y;
-      const len = Math.hypot(dx, dy);
-      if (len === 0) return;
-      const ux = dx / len, uy = dy / len;
-      const nx = -uy, ny = ux;
-      const baseArrowLen = len * 0.1;
 
+      // SCREEN‑SPACE geometry
+      const x1_s = xScale(p1.x), y1_s = yScale(p1.y);
+      const x2_s = xScale(p2.x), y2_s = yScale(p2.y);
+      const dx_s = x2_s - x1_s, dy_s = y2_s - y1_s;
+      const screenLen = Math.hypot(dx_s, dy_s);
+      if (!screenLen) return;
+      const ux_s = dx_s / screenLen, uy_s = dy_s / screenLen;
+      const nx_s = -uy_s, ny_s = ux_s;
+      const arrowLenPx = Math.min(12, screenLen * 0.05);
+
+      // ─── Point loads (beamPoint) ───────────────────────────────────────
       if (load.type === "beamPoint") {
-        const { Pz, xL } = load.params;
-        if (Pz == null || xL == null) return;
-        const sx = p1.x + ux * (xL * len);
-        const sy = p1.y + uy * (xL * len);
-        const sign = Math.sign(Pz) || 1;
-        const tx = sx + nx * (baseArrowLen * sign);
-        const ty = sy + ny * (baseArrowLen * sign);
+        const { Py, xL, Px } = load.params;
+        if (Py == null || xL == null) return;
+
+        // base on the beam line
+        const baseX = x1_s + ux_s * (xL * screenLen);
+        const baseY = y1_s + uy_s * (xL * screenLen);
+
+        // sign inversion: negative Py → arrow outward
+        const sign = -(Math.sign(Py) || 1);
+        const tipX = baseX + nx_s * (arrowLenPx * sign);
+        const tipY = baseY + ny_s * (arrowLenPx * sign);
+
+        // draw the transverse arrow
         g.append("line")
-          .attr("x1", xScale(sx)).attr("y1", yScale(sy))
-          .attr("x2", xScale(tx)).attr("y2", yScale(ty))
-          .attr("stroke", "steelblue").attr("stroke-width", 1)
-          .attr("marker-end",   "url(#arrowhead-transverse)");
+         .attr("x1", baseX).attr("y1", baseY)
+         .attr("x2", tipX ).attr("y2", tipY )
+         .attr("stroke", "steelblue")
+         .attr("marker-end", "url(#arrowhead-transverse)");
+
+        // magnitude label
         g.append("text")
-          .attr("x", xScale(sx)).attr("y", yScale(sy))
-          .attr("dy", "-6").attr("text-anchor", "middle")
-          .attr("fill", "steelblue")
-          .text(Math.abs(Pz));
-      }
-      else if (load.type === "beamUniform") {
+         .attr("x", baseX).attr("y", baseY)
+         .attr("dy", "-6").attr("text-anchor", "middle")
+         .attr("fill", "steelblue")
+         .text(Math.abs(Py));
+
+        // optional axial arrow (Px)
+        if (Px != null && Px !== 0) {
+          const signA = -(Math.sign(Px) || 1);
+          const tipXA = baseX + ux_s * (arrowLenPx * signA);
+          const tipYA = baseY + uy_s * (arrowLenPx * signA);
+          g.append("line")
+           .attr("x1", baseX).attr("y1", baseY)
+           .attr("x2", tipXA).attr("y2", tipYA)
+           .attr("stroke", "gray")
+           .attr("marker-end", "url(#arrowhead-axial)");
+          g.append("text")
+           .attr("x", (baseX + tipXA)/2).attr("y", (baseY + tipYA)/2)
+           .attr("dy", "-6").attr("fill", "gray")
+           .text(Math.abs(Px));
+        }
+
+      // ─── Uniform loads (beamUniform) ──────────────────────────────────
+      } else if (load.type === "beamUniform") {
         const p = load.params;
-        if (p.aL != null && p.bL != null && p.Wz_start != null && p.Wz_end != null) {
-          const aL = p.aL, bL = p.bL;
-          const startX = p1.x + ux * (aL * len);
-          const startY = p1.y + uy * (aL * len);
-          const endX = p1.x + ux * (bL * len);
-          const endY = p1.y + uy * (bL * len);
-          g.append("line")
-            .attr("x1", xScale(startX)).attr("y1", yScale(startY))
-            .attr("x2", xScale(endX)).attr("y2", yScale(endY))
-            .attr("stroke", "purple").attr("stroke-width", 1)
-            .attr("stroke-dasharray", "4,2");
-          const signEnd = Math.sign(p.Wz_end) || 1;
-          const tx1 = endX + nx * (baseArrowLen * signEnd);
-          const ty1 = endY + ny * (baseArrowLen * signEnd);
-          g.append("line")
-            .attr("x1", xScale(endX)).attr("y1", yScale(endY))
-            .attr("x2", xScale(tx1)).attr("y2", yScale(ty1))
-            .attr("stroke", "purple").attr("stroke-width", 1)
-            .attr("marker-end", "url(#arrowhead-transverse)");
-          const maxMag = Math.max(Math.abs(p.Wz_start), Math.abs(p.Wz_end), 1);
-          for (let k = 1; k < sampleCount; k++) {
-            const tFrac = aL + (bL - aL) * (k / sampleCount);
-            if (tFrac <= 0 || tFrac >= 1) continue;
-            const sxI = p1.x + ux * (tFrac * len);
-            const syI = p1.y + uy * (tFrac * len);
-            const mag = p.Wz_start + (p.Wz_end - p.Wz_start) * ((tFrac - aL) / (bL - aL));
-            const signI = Math.sign(mag) || 1;
-            const arrowLen = baseArrowLen * (Math.abs(mag) / maxMag);
-            const txI = sxI + nx * (arrowLen * signI);
-            const tyI = syI + ny * (arrowLen * signI);
-            g.append("line")
-              .attr("x1", xScale(sxI)).attr("y1", yScale(syI))
-              .attr("x2", xScale(txI)).attr("y2", yScale(tyI))
-              .attr("stroke", "purple").attr("stroke-width", 1)
-              .attr("marker-end", "url(#arrowhead-transverse)");
-          }
-          g.append("text")
-            .attr("x", xScale(startX)).attr("y", yScale(startY))
-            .attr("dy", "-6").attr("text-anchor", "start")
-            .attr("fill", "purple")
-            .text(Math.abs(p.Wz_start));
-          g.append("text")
-            .attr("x", xScale(endX)).attr("y", yScale(endY))
-            .attr("dy", "-6").attr("text-anchor", "end")
-            .attr("fill", "purple")
-            .text(Math.abs(p.Wz_end));
+
+        // normalize simple → trapezoidal form if needed
+        if (p.Wy != null) {
+          p.Wy_start = p.Wy;
+          p.Wy_end   = p.Wy;
+          p.Wx_start = p.Wx != null ? p.Wx : 0;
+          p.Wx_end   = p.Wx != null ? p.Wx : 0;
+          p.aL = 0; p.bL = 1;
         }
-        else if (p.Wz != null) {
-          const sign = Math.sign(p.Wz) || 1;
-          const sx0 = p1.x, sy0 = p1.y;
-          const tx0 = sx0 + nx * (baseArrowLen * sign);
-          const ty0 = sy0 + ny * (baseArrowLen * sign);
+        // require trapezoidal fields now
+        if (
+          p.Wy_start == null ||
+          p.Wy_end   == null ||
+          p.aL       == null ||
+          p.bL       == null
+        ) return;
+
+        // compute start/end screen points
+        const startX = x1_s + ux_s * (p.aL * screenLen);
+        const startY = y1_s + uy_s * (p.aL * screenLen);
+        const endX   = x1_s + ux_s * (p.bL * screenLen);
+        const endY   = y1_s + uy_s * (p.bL * screenLen);
+
+        // draw dashed span
+        g.append("line")
+         .attr("x1", startX).attr("y1", startY)
+         .attr("x2", endX  ).attr("y2", endY  )
+         .attr("stroke", "purple")
+         .attr("stroke-dasharray", "4,2");
+
+        // end arrow
+        const signEnd = -(Math.sign(p.Wy_end) || 1);
+        const tipX_e = endX + nx_s * (arrowLenPx * signEnd);
+        const tipY_e = endY + ny_s * (arrowLenPx * signEnd);
+        g.append("line")
+         .attr("x1", endX).attr("y1", endY)
+         .attr("x2", tipX_e).attr("y2", tipY_e)
+         .attr("stroke", "purple")
+         .attr("marker-end", "url(#arrowhead-transverse)");
+
+        // intermediate arrows (scaled by magnitude)
+        const maxMag = Math.max(Math.abs(p.Wy_start), Math.abs(p.Wy_end), 1);
+        for (let k = 1; k < sampleCount; k++) {
+          const tFrac = p.aL + (p.bL - p.aL) * (k / sampleCount);
+          if (tFrac <= 0 || tFrac >= 1) continue;
+          const baseX_i = x1_s + ux_s * (tFrac * screenLen);
+          const baseY_i = y1_s + uy_s * (tFrac * screenLen);
+          const mag     = p.Wy_start + (p.Wy_end - p.Wy_start) * ((tFrac - p.aL) / (p.bL - p.aL));
+          const signI   = -(Math.sign(mag) || 1);
+          const lenI    = arrowLenPx * (Math.abs(mag) / maxMag);
+          const tipX_i  = baseX_i + nx_s * (lenI * signI);
+          const tipY_i  = baseY_i + ny_s * (lenI * signI);
           g.append("line")
-            .attr("x1", xScale(sx0)).attr("y1", yScale(sy0))
-            .attr("x2", xScale(tx0)).attr("y2", yScale(ty0))
-            .attr("stroke", "tomato").attr("stroke-width", 1)
-            .attr("marker-end", "url(#arrowhead-transverse)");
-          const sx1 = p2.x, sy1 = p2.y;
-          const tx1 = sx1 + nx * (baseArrowLen * sign);
-          const ty1 = sy1 + ny * (baseArrowLen * sign);
-          g.append("line")
-            .attr("x1", xScale(sx1)).attr("y1", yScale(sy1))
-            .attr("x2", xScale(tx1)).attr("y2", yScale(ty1))
-            .attr("stroke", "tomato").attr("stroke-width", 1)
-            .attr("marker-end", "url(#arrowhead-transverse)");
-          for (let k = 1; k < sampleCount; k++) {
-            const tFrac = k / sampleCount;
-            const sxI = p1.x + ux * (tFrac * len);
-            const syI = p1.y + uy * (tFrac * len);
-            const txI = sxI + nx * (baseArrowLen * sign);
-            const tyI = syI + ny * (baseArrowLen * sign);
-            g.append("line")
-              .attr("x1", xScale(sxI)).attr("y1", yScale(syI))
-              .attr("x2", xScale(txI)).attr("y2", yScale(tyI))
-              .attr("stroke", "tomato").attr("stroke-width", 1)
-              .attr("marker-end", "url(#arrowhead-transverse)");
-          }
-          const midX = p1.x + ux * (0.5 * len);
-          const midY = p1.y + uy * (0.5 * len);
-          g.append("text")
-            .attr("x", xScale(midX)).attr("y", yScale(midY))
-            .attr("dy", "-6").attr("text-anchor", "middle")
-            .attr("fill", "tomato")
-            .text(Math.abs(p.Wz));
+           .attr("x1", baseX_i).attr("y1", baseY_i)
+           .attr("x2", tipX_i).attr("y2", tipY_i)
+           .attr("stroke", "purple")
+           .attr("marker-end", "url(#arrowhead-transverse)");
         }
-        if (p.Wx != null && p.Wx !== 0) {
-          const signAx = Math.sign(p.Wx) || 1;
-          const asx0 = p1.x, asy0 = p1.y;
-          const atx0 = asx0 + ux * (baseArrowLen * 0.5 * signAx);
-          const aty0 = asy0 + uy * (baseArrowLen * 0.5 * signAx);
-          g.append("line")
-            .attr("x1", xScale(asx0)).attr("y1", yScale(asy0))
-            .attr("x2", xScale(atx0)).attr("y2", yScale(aty0))
-            .attr("stroke", "gray").attr("stroke-width", 1)
-            .attr("marker-end", "url(#arrowhead-axial)");
-          const asx1 = p2.x, asy1 = p2.y;
-          const atx1 = asx1 + ux * (baseArrowLen * 0.5 * signAx);
-          const aty1 = asy1 + uy * (baseArrowLen * 0.5 * signAx);
-          g.append("line")
-            .attr("x1", xScale(asx1)).attr("y1", yScale(asy1))
-            .attr("x2", xScale(atx1)).attr("y2", yScale(aty1))
-            .attr("stroke", "gray").attr("stroke-width", 1)
-            .attr("marker-end", "url(#arrowhead-axial)");
-          for (let k = 1; k < sampleCount; k++) {
-            const tFrac = k / sampleCount;
-            const asxI = p1.x + ux * (tFrac * len);
-            const asyI = p1.y + uy * (tFrac * len);
-            const atxI = asxI + ux * (baseArrowLen * 0.5 * signAx);
-            const atyI = asyI + uy * (baseArrowLen * 0.5 * signAx);
-            g.append("line")
-              .attr("x1", xScale(asxI)).attr("y1", yScale(asyI))
-              .attr("x2", xScale(atxI)).attr("y2", yScale(atyI))
-              .attr("stroke", "gray").attr("stroke-width", 1)
-              .attr("marker-end", "url(#arrowhead-axial)");
-          }
-          const amidX = p1.x + ux * (0.5 * len);
-          const amidY = p1.y + uy * (0.5 * len);
-          g.append("text")
-            .attr("x", xScale(amidX)).attr("y", yScale(amidY))
-            .attr("dy", "12").attr("text-anchor", "middle")
-            .attr("fill", "gray")
-            .text(Math.abs(p.Wx));
-        }
+
+        // start & end magnitude labels
+        g.append("text")
+         .attr("x", startX).attr("y", startY)
+         .attr("dy", "-6").attr("fill", "purple")
+         .text(Math.abs(p.Wy_start));
+        g.append("text")
+         .attr("x", endX).attr("y", endY)
+         .attr("dy", "-6").attr("text-anchor", "end")
+         .attr("fill", "purple")
+         .text(Math.abs(p.Wy_end));
       }
     });
   });
 }
+
 
 // ─── SVG marker definitions ───────────────────────────────────────────────
 function defineArrowMarkers(svg) {

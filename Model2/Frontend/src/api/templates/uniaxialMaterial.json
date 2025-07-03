@@ -10,7 +10,7 @@
     },
     "command": {
       "name": "uniaxialMaterial",
-      "args": ["Elastic", "$matTag", "$E", "$eta", "$Eneg"]
+      "args": [ "Elastic","$matTag", "$E", "$eta", "$Eneg"]
     }
   },
   {
@@ -41,7 +41,7 @@
     },
     "command": {
       "name": "uniaxialMaterial",
-      "args": ["ElasticPPGap", "$matTag", "$E", "$Fy", "$gap", "$eta", "$damage"]
+      "args": ["ElasticPPGap","$matTag", "$E", "$Fy", "$gap", "$eta", "$damage"]
     }
   },
   {
@@ -53,7 +53,7 @@
     },
     "command": {
       "name": "uniaxialMaterial",
-      "args": ["ENT", "$matTag", "$E"]
+      "args": [ "ENT","$matTag", "$E"]
     }
   } , 
 
@@ -68,7 +68,7 @@
     },
     "command": {
       "name": "uniaxialMaterial",
-      "args": ["Steel01", "$matTag", "$Fy", "$E", "$b"]
+      "args": ["Steel01","$matTag", "$Fy", "$E", "$b"]
     }
   },
   {

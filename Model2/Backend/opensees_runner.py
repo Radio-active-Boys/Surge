@@ -34,11 +34,9 @@ class OpenSeesRunner:
             command = cmd_dict["command"]
             args    = cmd_dict.get("args", [])
             params  = cmd_dict.get("params", {})
-            name    = cmd_dict.get("name", None)
             func    = getattr(ops, command)
             all_args = []
-            if name:
-                all_args.append(name)
+
             all_args.extend(args)
             for k, v in params.items():
                 all_args.append(f"-{k}")
@@ -388,7 +386,7 @@ class OpenSeesRunner:
                 })
         if "elements" in self.data:
             for e in self.data["elements"]:
-                tag = e["args"][0]
+                tag = e["args"][1]
                 self.record_ele_info(tag, {
                     "forces": self.get_ele_forces(tag)
                 })

@@ -1,31 +1,23 @@
 // src/components/results/ResultsPlotter.jsx
 import React from 'react';
-import { useResultStore } from '../../stores/useResultStore';
-import TrussVisualizer from '../visualization/TrussVisualizer';
+import ResultsVisualizer from '../analysis/ResultsVisualizer';
 import Model from '../visualization/Model';
-import DeflectedShape from '../visualization/DeflectedShape';
+import DeflectedShape from '../visualization/DeflectedShape2';
+import SectionForce from '../visualization/SectionForce';
 
-const ResultsPlotter = () => {
-  const hasResults = useResultStore(state => !!state.fullResults);
-
-  if (!hasResults) {
-    return (
-      <div className="no-results">
-        <div className="placeholder">
-          <h3>No Analysis Results Available</h3>
-          <p>Run an analysis to view structural visualization</p>
-        </div>
-      </div>
-    );
+const ResultsPlotter = ({ view, results }) => {
+  switch (view) {
+    case 'results':
+      return <ResultsVisualizer results={results} />;
+    case 'model':
+      return <Model />;
+    case 'deflected':
+      return <DeflectedShape />;
+    case 'section':
+      return <SectionForce />;
+    default:
+      return null;
   }
-
-  return (
-    <>
-      {/* <TrussVisualizer /> */}
-      <Model />
-      <DeflectedShape />
-    </>
-  );
 };
 
 export default ResultsPlotter;

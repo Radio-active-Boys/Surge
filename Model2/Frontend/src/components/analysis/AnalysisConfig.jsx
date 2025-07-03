@@ -58,62 +58,72 @@ const AnalysisConfig = () => {
     reader.readAsText(file);
   };
 
-  const handleRunAnalysis = async () => {
-    setIsLoading(true);
-    setError(null);
-    setResults(null);
-    clearResults();  // clear previous result data in store
+const handleRunAnalysis = async () => {
+  setIsLoading(true);
+  setError(null);
+  setResults(null);
+  clearResults(); // clear previous result data in store
 
-    // Build payload
-    let fullPayload;
-    if (importedJson) {
-      fullPayload = importedJson;
-      importModel(fullPayload)
+  // Build payload
+  let fullPayload;
+  if (importedJson) {
+    fullPayload = importedJson;
+    importModel(fullPayload);
+  } else {
+    const modelJson = useModelStore.getState().toJson();
+    const analysisJson = useAnalysisStore.getState().toJson();
+    fullPayload = { ...modelJson, ...analysisJson };
+  }
+
+  try {
+    const response = await runAnalysis(fullPayload);
+
+    if (response.status === 'success') {
+      setResults(response);
+      setResultData(response);
     } else {
-      const modelJson = useModelStore.getState().toJson();
-      const analysisJson = useAnalysisStore.getState().toJson();
-      fullPayload = { ...modelJson, ...analysisJson };
-    }
-
-    try {
-      const response = await runAnalysis(fullPayload);
-      if (response.status === 'success') {
-        // Local state for inline render if desired
-        setResults(response);
-        // Populate global store with broken-out data
-        setResultData(response);
-      } else {
-        const msg = response.message || 'Analysis failed with an unknown error.';
-        setError(msg);
-        // Still populate store so downstream can show errors
-        setResultData({
-          status: 'failure',
-          errors: [msg],
-          warnings: response.warnings || [],
-          monitoring: null,
-          recorders: null,
-          model: null,
-          output_dir: null,
-          // other fields can be omitted or null
-        });
+      let msg = response.message || 'Analysis failed.';
+      
+      // 👇 Show OpenSees errors if available
+      if (Array.isArray(response.errors)) {
+        const errorMsgs = response.errors.map(e =>
+          typeof e === 'string'
+            ? e
+            : e.stderr || e.error || JSON.stringify(e)
+        );
+        msg += ' ' + errorMsgs.join('; ');
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-      const msg = err.message || 'An unexpected error occurred.';
+
       setError(msg);
+
       setResultData({
-        status: 'error',
-        errors: [msg],
-        warnings: [],
+        status: 'failure',
+        errors: response.errors || [msg],
+        warnings: response.warnings || [],
         monitoring: null,
         recorders: null,
         model: null,
-        output_dir: null,
+        output_dir: response.output_dir || null,
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    const msg = err.message || 'An unexpected error occurred.';
+    setError(msg);
+    setResultData({
+      status: 'error',
+      errors: [msg],
+      warnings: [],
+      monitoring: null,
+      recorders: null,
+      model: null,
+      output_dir: null,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleClearImport = () => {
     setImportedJson(null);

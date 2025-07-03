@@ -1,0 +1,39 @@
+.section-force-container {
+  padding: 1rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.force-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.force-controls label {
+  margin-right: 8px;
+  font-weight: 500;
+  color: #374151; /* Tailwind Gray-700 */
+}
+
+.force-controls select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db; /* Tailwind Gray-300 */
+  border-radius: 4px;
+  background-color: white;
+  color: #111827; /* Tailwind Gray-900 */
+  font-size: 0.875rem;
+}
+
+.force-controls select:focus {
+  outline: none;
+  border-color: #3b82f6; /* Tailwind Blue-500 */
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.section-force-svg {
+
+  border: 1px solid #e5e7eb; /* Tailwind Gray-200 */
+  border-radius: 4px;
+  background-color: #fafafa;
+}

@@ -1,3 +1,4 @@
+// src/components/model-builder/ParametricEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { getTemplates } from '../../api/jsonTemplates';
 import { useModelStore } from '../../stores/useModelStore';
@@ -9,22 +10,60 @@ const ParametricEditor = ({ category }) => {
   const [params, setParams] = useState({});
   const addComponent = useModelStore(state => state.addComponent);
   const setModelConfig = useModelStore(state => state.setModelConfig);
-
+  const modelConfig = useModelStore(state => state.modelConfig); // CHANGED: subscribe to modelConfig
   const patterns = useModelStore(state => state.patterns);
   const [patternId, setPatternId] = useState(null);
 
   useEffect(() => {
-    const tpls = getTemplates(category);
-    setTemplates(tpls);
-    if (tpls.length) {
-      setSelected(tpls[0]);
-      setParams(tpls[0].defaultParams);
+    if (category !== 'model') {
+      const tpls = getTemplates(category);
+      setTemplates(tpls);
+      if (tpls.length) {
+        setSelected(tpls[0]);
+        setParams(tpls[0].defaultParams);
+      } else {
+        setSelected(null);
+        setParams({});
+      }
+      setPatternId(null);
     } else {
+      // For 'model' category: no templates; we only edit modelConfig
+      setTemplates([]);
       setSelected(null);
       setParams({});
+      setPatternId(null);
     }
-    setPatternId(null);
   }, [category]);
+
+  if (category === 'model') {
+    // RENDER inputs for modelConfig (ndm, ndf, maybe more later)
+    const handleConfigChange = (key, value) => {
+      // merge into existing config
+      setModelConfig({ [key]: value }); // setModelConfig now merges by default
+    };
+    return (
+      <div className="param-editor">
+        <h3>Model Configuration</h3>
+        <div className="param-row">
+          <label>ndm</label>
+          <input
+            type="number"
+            value={modelConfig.ndm}
+            onChange={e => handleConfigChange('ndm', parseInt(e.target.value, 10) || 0)}
+          />
+        </div>
+        <div className="param-row">
+          <label>ndf</label>
+          <input
+            type="number"
+            value={modelConfig.ndf}
+            onChange={e => handleConfigChange('ndf', parseInt(e.target.value, 10) || 0)}
+          />
+        </div>
+        {/* Add other modelConfig fields here if needed */}
+      </div>
+    );
+  }
 
   if (!selected) return <div className="loading">Loading...</div>;
 
@@ -37,7 +76,9 @@ const ParametricEditor = ({ category }) => {
       alert('Please select a pattern to attach this command');
       return;
     }
+    console.log('[ParametricEditor] adding:', { category, template: selected.name, params, patternId }); // CHANGED: debug log
     addComponent(category, selected.name, params, patternId);
+    // reset to defaults
     setParams(selected.defaultParams);
   };
 
@@ -65,7 +106,7 @@ const ParametricEditor = ({ category }) => {
             <label>Pattern</label>
             <select
               value={patternId || ''}
-              onChange={e => setPatternId(Number(e.target.value))}
+              onChange={e => setPatternId(Number(e.target.value) || null)}
             >
               <option value="">-- select pattern --</option>
               {patterns.map(p => (

@@ -1,122 +1,108 @@
-// src/components/model-builder/PatternEditor.jsx
-
+// src/components/PatternEditor.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { getTemplates } from '../../api/jsonTemplates';
 import { useModelStore } from '../../stores/useModelStore';
 import './PatternEditor.css';
 
-const PatternEditor = () => {
-  // Keep the list of pattern‐templates stable
-  const templates = useMemo(() => getTemplates('pattern'), []);
-
-  // Core actions & state
+export default function PatternEditor() {
+  const templates       = useMemo(() => getTemplates('pattern'), []);
   const addComponent    = useModelStore(s => s.addComponent);
-  const updatePattern   = useModelStore(s => s.updatePattern);
+  const updateComponent = useModelStore(s => s.updateComponent);
   const removeComponent = useModelStore(s => s.removeComponent);
   const patterns        = useModelStore(s => s.patterns);
+  const allLoads        = useModelStore(s => s.loads);
 
-  // Nested‐command state
-  const allLoads    = useModelStore(s => s.loads);
-  const allEleLoads = useModelStore(s => s.eleLoads);
-  const allSps      = useModelStore(s => s.sps);
+  // — Shared render logic for both Add & Edit forms —
+  const renderParams = (tplName, params, setParams) =>
+    Object.entries(
+      templates.find(t => t.name === tplName).defaultParams
+    )
+    .filter(([key]) => {
+      if (key === 'useRange')        return true;             // always show checkbox
+      if (key === 'range')           return params.useRange;   // show 'range' only when useRange=true
+      if (key === 'eleTag1'|| key==='eleTag2') return params.useRange;   // show eleTag1/2 only when range
+      if (key === 'eleTags')         return !params.useRange;  // show eleTags only when NOT range
+      // hide the mutual-exclusion keys from the "other" list
+      return !['range','eleTag1','eleTag2','eleTags'].includes(key);
+    })
+    .map(([key, def]) => (
+      <div key={key} className="pattern-editor-param-row">
+        <label>{key}</label>
+        {typeof def === 'boolean' ? (
+          <input
+            type="checkbox"
+            checked={!!params[key]}
+            onChange={e => setParams(p => ({ ...p, [key]: e.target.checked }))}
+          />
+        ) : Array.isArray(def) ? (
+          <ArrayInput
+            values={params[key] || []}
+            onChange={v => setParams(p => ({ ...p, [key]: v }))}
+          />
+        ) : (
+          <input
+            type="number"
+            value={params[key] ?? ''}
+            onChange={e => {
+              const v = e.target.value;
+              setParams(p => ({ ...p, [key]: v === '' ? '' : parseFloat(v) }));
+            }}
+          />
+        )}
+      </div>
+    ));
 
-  // — Add New Pattern form —
-  const [newTplName, setNewTplName] = useState(templates[0]?.name || '');
-  const [newParams, setNewParams]   = useState(
-    templates[0] ? { ...templates[0].defaultParams } : {}
-  );
+  // — Add New Pattern —
+  const [newTpl, setNewTpl]       = useState(templates[0]?.name || '');
+  const [newParams, setNewParams] = useState(templates[0]?.defaultParams || {});
 
-  // Reset newParams when template changes
   useEffect(() => {
-    const tpl = templates.find(t => t.name === newTplName);
+    const tpl = templates.find(t => t.name === newTpl);
     setNewParams(tpl ? { ...tpl.defaultParams } : {});
-  }, [newTplName]);
+  }, [newTpl, templates]);
 
   const handleAddPattern = () => {
-    if (!newTplName) return;
-    addComponent('pattern', newTplName, newParams, null);
-    // reset form
-    const tpl = templates.find(t => t.name === newTplName);
-    if (tpl) setNewParams({ ...tpl.defaultParams });
+    if (!newTpl) return;
+    addComponent('pattern', newTpl, newParams);
+    setNewParams(templates.find(t => t.name === newTpl).defaultParams);
   };
 
   // — Edit Existing Pattern —
-  const [selectedPatternId, setSelectedPatternId] = useState('');
-  const selectedPattern = patterns.find(p => p.id === selectedPatternId);
-
+  const [selPatId, setSelPatId]     = useState('');
+  const selectedPattern             = patterns.find(p => String(p.id) === selPatId);
   const [editParams, setEditParams] = useState({});
+
   useEffect(() => {
-    if (selectedPattern) {
-      setEditParams({ ...selectedPattern.params });
-    } else {
-      setEditParams({});
-    }
+    setEditParams(selectedPattern ? { ...selectedPattern.params } : {});
   }, [selectedPattern]);
 
-  const handleSavePattern = () => {
-    if (!selectedPattern) return;
-    updatePattern(selectedPattern.id, editParams);
+  const handleSavePattern   = () => {
+    if (selectedPattern) updateComponent('pattern', selectedPattern.id, editParams);
   };
   const handleRemovePattern = () => {
-    if (!selectedPattern) return;
-    removeComponent('pattern', selectedPattern.id);
-    setSelectedPatternId('');
+    if (selectedPattern) removeComponent('pattern', selectedPattern.id);
+    setSelPatId('');
   };
 
   return (
     <div className="pattern-editor-container">
+      {/* Add New Pattern */}
       <h3>Add New Pattern</h3>
-      <div className="pattern-editor-param-row">
-        <label>Template:</label>
-        <select
-          value={newTplName}
-          onChange={e => setNewTplName(e.target.value)}
-        >
-          {templates.map(t => (
-            <option key={t.name} value={t.name}>{t.name}</option>
-          ))}
-        </select>
-      </div>
-
-      {newTplName && templates.find(t => t.name === newTplName)?.defaultParams &&
-        Object.entries(templates.find(t => t.name === newTplName).defaultParams)
-          .map(([key, def]) => (
-            <div className="pattern-editor-param-row" key={key}>
-              <label>{key}</label>
-              {Array.isArray(def) ? (
-                <ArrayInput
-                  values={newParams[key] || []}
-                  onChange={v => setNewParams(prev => ({ ...prev, [key]: v }))}
-                />
-              ) : (
-                <input
-                  type="number"
-                  value={newParams[key] ?? ''}
-                  onChange={e => setNewParams(prev => ({
-                    ...prev,
-                    [key]: parseFloat(e.target.value),
-                  }))}
-                />
-              )}
-            </div>
-          ))
-      }
-
-      <button
-        className="pattern-editor-button"
-        onClick={handleAddPattern}
-      >
+      <select value={newTpl} onChange={e => setNewTpl(e.target.value)}>
+        {templates.map(t => (
+          <option key={t.name} value={t.name}>{t.name}</option>
+        ))}
+      </select>
+      {newTpl && renderParams(newTpl, newParams, setNewParams)}
+      <button className="pattern-editor-button" onClick={handleAddPattern}>
         ➕ Add Pattern
       </button>
 
-      <hr />
+      <hr/>
 
+      {/* Edit Existing Pattern */}
       <h3>Existing Patterns</h3>
-      <select
-        className="pattern-editor-select"
-        value={selectedPatternId}
-        onChange={e => setSelectedPatternId(e.target.value)}
-      >
+      <select value={selPatId} onChange={e => setSelPatId(e.target.value)}>
         <option value="">-- select pattern --</option>
         {patterns.map(p => (
           <option key={p.id} value={p.id}>
@@ -127,44 +113,15 @@ const PatternEditor = () => {
 
       {selectedPattern && (
         <div className="pattern-editor-section">
-          <h4>Edit "{selectedPattern.templateName}"</h4>
-          {templates.find(t => t.name === selectedPattern.templateName)
-            ?.defaultParams &&
-            Object.entries(
-              templates.find(t => t.name === selectedPattern.templateName)
-                .defaultParams
-            ).map(([key, def]) => (
-              <div className="pattern-editor-param-row" key={key}>
-                <label>{key}</label>
-                {Array.isArray(def) ? (
-                  <ArrayInput
-                    values={editParams[key] || []}
-                    onChange={v => setEditParams(prev => ({ ...prev, [key]: v }))}
-                  />
-                ) : (
-                  <input
-                    type="number"
-                    value={editParams[key] ?? ''}
-                    onChange={e => setEditParams(prev => ({
-                      ...prev,
-                      [key]: parseFloat(e.target.value),
-                    }))}
-                  />
-                )}
-              </div>
-            ))
-          }
-
-          <button
-            className="pattern-editor-button"
-            onClick={handleSavePattern}
-          >
+          <h4>Edit “{selectedPattern.templateName}”</h4>
+          {renderParams(selectedPattern.templateName, editParams, setEditParams)}
+          <button className="pattern-editor-button" onClick={handleSavePattern}>
             💾 Save Pattern
           </button>
           <button
             className="pattern-editor-button"
+            style={{ marginLeft: 8 }}
             onClick={handleRemovePattern}
-            style={{ marginLeft: '0.5rem' }}
           >
             🗑 Remove Pattern
           </button>
@@ -172,9 +129,6 @@ const PatternEditor = () => {
           <NestedCommandsEditor
             patternId={selectedPattern.id}
             allLoads={allLoads}
-            allEleLoads={allEleLoads}
-            allSps={allSps}
-            // pass down remover functions
             removeLoad={id => removeComponent('load', id)}
             removeEleLoad={id => removeComponent('eleLoad', id)}
             removeSp={id => removeComponent('sp', id)}
@@ -184,25 +138,19 @@ const PatternEditor = () => {
       )}
     </div>
   );
-};
+}
 
-export default PatternEditor;
-
-
-/** NestedCommandsEditor Component **/  
-const NestedCommandsEditor = ({
+function NestedCommandsEditor({
   patternId,
   allLoads,
-  allEleLoads,
-  allSps,
   removeLoad,
   removeEleLoad,
   removeSp,
   addComponent,
-}) => {
-  const loads    = allLoads.filter(l => l.patternId === patternId);
-  const eleLoads = allEleLoads.filter(el => el.patternId === patternId);
-  const sps      = allSps.filter(sp => sp.patternId === patternId);
+}) {
+  const loads    = allLoads.filter(l => l.patternId === patternId && l.category === 'load');
+  const eleLoads = allLoads.filter(l => l.patternId === patternId && l.category === 'eleLoad');
+  const sps      = allLoads.filter(l => l.patternId === patternId && l.category === 'sp');
 
   const [subCategory, setSubCategory]     = useState('load');
   const [templatesList, setTemplatesList] = useState([]);
@@ -212,36 +160,42 @@ const NestedCommandsEditor = ({
   useEffect(() => {
     const tpls = getTemplates(subCategory);
     setTemplatesList(tpls);
-    if (tpls.length) {
+    if (tpls[0]) {
       setSelectedTpl(tpls[0]);
-      setParams(tpls[0].defaultParams);
+      setParams({ ...tpls[0].defaultParams });
     } else {
       setSelectedTpl(null);
       setParams({});
     }
   }, [subCategory]);
 
-  const handleAddNested = () => {
+  const handleAdd = () => {
     if (!selectedTpl) return;
     addComponent(subCategory, selectedTpl.name, params, patternId);
-    setParams(selectedTpl.defaultParams);
+    setParams({ ...selectedTpl.defaultParams });
   };
+
+  const combined = [...loads, ...eleLoads, ...sps];
 
   return (
     <div className="pattern-editor-nested">
       <h5>Nested Commands for Pattern</h5>
 
-      <strong>Loads:</strong>
-      {loads.length === 0 ? (
+      <strong>Existing:</strong>
+      {combined.length === 0 ? (
         <p><em>None</em></p>
       ) : (
         <ul>
-          {loads.map(l => (
-            <li key={l.id}>
-              {l.command}([{l.args.join(', ')}])
+          {combined.map(item => (
+            <li key={item.id}>
+              {item.command}([{item.args.join(', ')}])
               <button
                 className="pattern-editor-remove-btn"
-                onClick={() => removeLoad(l.id)}
+                onClick={() => {
+                  if (item.category === 'load')    removeLoad(item.id);
+                  if (item.category === 'eleLoad') removeEleLoad(item.id);
+                  if (item.category === 'sp')      removeSp(item.id);
+                }}
               >
                 Remove
               </button>
@@ -250,57 +204,111 @@ const NestedCommandsEditor = ({
         </ul>
       )}
 
-      <strong>EleLoads:</strong>
-      {eleLoads.length === 0 ? (
-        <p><em>None</em></p>
-      ) : (
-        <ul>
-          {eleLoads.map(el => (
-            <li key={el.id}>
-              {el.command}([{el.args.join(', ')}])
-              <button
-                className="pattern-editor-remove-btn"
-                onClick={() => removeEleLoad(el.id)}
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <strong>SPs:</strong>
-      {sps.length === 0 ? (
-        <p><em>None</em></p>
-      ) : (
-        <ul>
-          {sps.map(sp => (
-            <li key={sp.id}>
-              {sp.command}([{sp.args.join(', ')}])
-              <button
-                className="pattern-editor-remove-btn"
-                onClick={() => removeSp(sp.id)}
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="pattern-editor-param-row" style={{ marginTop: '1rem' }}>
+      {/* select sub‑category */}
+      <div className="pattern-editor-param-row" style={{ marginTop: 16 }}>
         <label>Type:</label>
-        <select
-          value={subCategory}
-          onChange={e => setSubCategory(e.target.value)}
-        >
+        <select value={subCategory} onChange={e => setSubCategory(e.target.value)}>
           <option value="load">load</option>
           <option value="eleLoad">eleLoad</option>
           <option value="sp">sp</option>
         </select>
       </div>
 
-      {selectedTpl && (
+      {/* --- SPECIAL CASE: eleLoad --- */}
+      {subCategory === 'eleLoad' && (
+        <>
+          {/* — TEMPLATE SELECTOR — */}
+          <div className="pattern-editor-param-row">
+            <label>Template:</label>
+            <select
+              value={selectedTpl?.name || ''}
+              onChange={e => {
+                const tpl = templatesList.find(t => t.name === e.target.value);
+                setSelectedTpl(tpl);
+                setParams({ ...tpl.defaultParams });
+              }}
+            >
+              {templatesList.map(t => (
+                <option key={t.name} value={t.name}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* — useRange checkbox — */}
+          <div className="pattern-editor-param-row">
+            <label>useRange</label>
+            <input
+              type="checkbox"
+              checked={!!params.useRange}
+              onChange={e => setParams(p => ({ ...p, useRange: e.target.checked }))}
+            />
+          </div>
+
+          {/* — RANGE OR TAGS — */}
+          {params.useRange ? (
+            <>
+              <div className="pattern-editor-param-row">
+                <label>eleTag1</label>
+                <input
+                  type="number"
+                  value={params.eleTag1 ?? ''}
+                  onChange={e => setParams(p => ({ ...p, eleTag1: parseInt(e.target.value, 10) }))}
+                />
+              </div>
+              <div className="pattern-editor-param-row">
+                <label>eleTag2</label>
+                <input
+                  type="number"
+                  value={params.eleTag2 ?? ''}
+                  onChange={e => setParams(p => ({ ...p, eleTag2: parseInt(e.target.value, 10) }))}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="pattern-editor-param-row">
+              <label>eleTags</label>
+              <ArrayInput
+                values={params.eleTags || []}
+                onChange={v => setParams(p => ({ ...p, eleTags: v }))}
+              />
+            </div>
+          )}
+
+          {/* — OTHER eleLoad PARAMS — */}
+          {Object.entries(selectedTpl.defaultParams)
+            .filter(([key]) => !['useRange','element','eleTag1','eleTag2','eleTags'].includes(key))
+            .map(([key, def]) => (
+              <div key={key} className="pattern-editor-param-row">
+                <label>{key}</label>
+                {Array.isArray(def) ? (
+                  <ArrayInput
+                    values={params[key] || []}
+                    onChange={v => setParams(p => ({ ...p, [key]: v }))}
+                  />
+                ) : (
+                  <input
+                    type="number"
+                    value={params[key] ?? ''}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setParams(p => ({ ...p, [key]: v === '' ? '' : parseFloat(v) }));
+                    }}
+                  />
+                )}
+              </div>
+            ))
+          }
+
+          <button className="pattern-editor-add-btn" onClick={handleAdd}>
+            ➕ Add eleLoad
+          </button>
+        </>
+      )}
+
+      {/* --- GENERIC CASE for load & sp --- */}
+      {subCategory !== 'eleLoad' && selectedTpl && (
         <>
           <div className="pattern-editor-param-row">
             <label>Template:</label>
@@ -309,7 +317,7 @@ const NestedCommandsEditor = ({
               onChange={e => {
                 const tpl = templatesList.find(t => t.name === e.target.value);
                 setSelectedTpl(tpl);
-                setParams(tpl.defaultParams);
+                setParams({ ...tpl.defaultParams });
               }}
             >
               {templatesList.map(t => (
@@ -319,41 +327,45 @@ const NestedCommandsEditor = ({
           </div>
 
           {Object.entries(selectedTpl.defaultParams).map(([key, def]) => (
-            <div className="pattern-editor-param-row" key={key}>
+            <div key={key} className="pattern-editor-param-row">
               <label>{key}</label>
               {Array.isArray(def) ? (
                 <ArrayInput
                   values={params[key] || []}
-                  onChange={v => setParams(prev => ({ ...prev, [key]: v }))}
+                  onChange={v => setParams(p => ({ ...p, [key]: v }))}
                 />
               ) : (
                 <input
                   type="number"
                   value={params[key] ?? ''}
-                  onChange={e => setParams(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setParams(p => ({ ...p, [key]: v === '' ? '' : parseFloat(v) }));
+                  }}
                 />
               )}
             </div>
           ))}
 
-          <button className="pattern-editor-add-btn" onClick={handleAddNested}>
+          <button className="pattern-editor-add-btn" onClick={handleAdd}>
             ➕ Add {subCategory}
           </button>
         </>
       )}
     </div>
   );
-};
+}
 
-/** ArrayInput helper component **/
-const ArrayInput = ({ values, onChange }) => {
-  const handleChange = (i, val) => {
+// ArrayInput remains unchanged
+function ArrayInput({ values = [], onChange }) {
+  const handle = (i, val) => {
+    const num = parseFloat(val);
     const arr = [...values];
-    arr[i] = parseFloat(val);
+    arr[i] = val === '' || isNaN(num) ? '' : num;
     onChange(arr);
   };
-  const addItem = () => onChange([...values, 0]);
-  const removeItem = i => onChange(values.filter((_, idx) => idx !== i));
+  const add = () => onChange([...values, 0]);
+  const remove = i => onChange(values.filter((_, idx) => idx !== i));
 
   return (
     <div className="pattern-editor-array-input">
@@ -361,25 +373,13 @@ const ArrayInput = ({ values, onChange }) => {
         <div key={i} className="pattern-editor-array-row">
           <input
             type="number"
-            value={v}
-            onChange={e => handleChange(i, e.target.value)}
+            value={v ?? ''}
+            onChange={e => handle(i, e.target.value)}
           />
-          <button
-            type="button"
-            className="pattern-editor-remove-btn"
-            onClick={() => removeItem(i)}
-          >
-            ×
-          </button>
+          <button onClick={() => remove(i)}>×</button>
         </div>
       ))}
-      <button
-        type="button"
-        className="pattern-editor-add-btn"
-        onClick={addItem}
-      >
-        + Add
-      </button>
+      <button onClick={add}>+ Add</button>
     </div>
   );
-};
+}

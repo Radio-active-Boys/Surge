@@ -8,7 +8,7 @@
     },
     "command": {
       "name": "timeSeries",
-      "args": ["Constant", "$tsTag", "-factor", "$factor"]
+      "args": [ "Constant","$tsTag", "-factor", "$factor"]
     }
   },
   {
@@ -20,7 +20,7 @@
     },
     "command": {
       "name": "timeSeries",
-      "args": ["Linear", "$tsTag", "-factor", "$factor"]
+      "args": [ "Linear","$tsTag", "-factor", "$factor"]
     }
   },
   {
@@ -81,7 +81,7 @@
     "command": {
       "name": "timeSeries",
       "args": [
-        "Rectangular", "$tsTag",
+         "$tsTag",
         "$tStart", "$tEnd",
         "-factor", "$factor"
       ]
@@ -103,7 +103,7 @@
     "command": {
       "name": "timeSeries",
       "args": [
-        "Pulse", "$tsTag",
+       "$tsTag",
         "$tStart", "$tEnd", "$period",
         "-width", "$width",
         "-shift", "$shift",
@@ -130,7 +130,7 @@
     "command": {
       "name": "timeSeries",
       "args": [
-        "Path", "$tsTag",
+      "$tsTag",
         "-dt", "$dt",
         "-values", "*$values",
         "-time", "*$time",

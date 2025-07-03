@@ -14,7 +14,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLength",
         "$eleTag",
         "*$eleNodes",
         "-mat", "*$matTags",
@@ -38,7 +37,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthND",
         "$eleTag",
         "*$eleNodes",
         "$matTag",
@@ -61,7 +59,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthSection",
         "$eleTag",
         "*$eleNodes",
         "$secTag",
@@ -84,7 +81,6 @@
     "command": {
       "name": "element",
       "args": [
-        "CoupledZeroLength",
         "$eleTag",
         "*$eleNodes",
         "$dirn1",
@@ -109,7 +105,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthContact2D",
         "$eleTag",
         "*$eleNodes",
         "$Kn", "$Kt", "$mu",
@@ -132,7 +127,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthContact3D",
         "$eleTag",
         "*$eleNodes",
         "$Kn", "$Kt", "$mu", "$c", "$dir"
@@ -154,7 +148,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthContactNTS2D",
         "$eleTag",
         "-sNdNum", "$sNdNum",
         "-mNdNum", "$mNdNum",
@@ -180,7 +173,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthInterface2D",
         "$eleTag",
         "-sNdNum", "$sNdNum",
         "-mNdNum", "$mNdNum",
@@ -208,7 +200,6 @@
     "command": {
       "name": "element",
       "args": [
-        "zeroLengthImpact3D",
         "$eleTag",
         "*$eleNodes",
         "$direction",
@@ -276,7 +267,7 @@
   },
   {
     "category": "element",
-    "name": "elasticBeamColumn2D",
+    "name": "elasticBeamColumn",
     "defaultParams": {
       "eleTag": 12,
       "eleNodes": [5, 6],
@@ -291,7 +282,7 @@
     "command": {
       "name": "element",
       "args": [
-        "elasticBeamColumn",
+         "elasticBeamColumn",
         "$eleTag",
         "*$eleNodes",
         "$Area",
@@ -340,7 +331,7 @@
   },
   {
     "category": "element",
-    "name": "ElasticTimoshenkoBeam2D",
+    "name": "ElasticTimoshenkoBeam",
     "defaultParams": {
       "eleTag": 14,
       "eleNodes": [9, 10],
@@ -409,7 +400,7 @@
     "command": {
       "name": "element",
       "args": [
-        "forceBeamColumn",
+         "forceBeamColumn",
         "$eleTag",
         "*$eleNodes",
         "$transfTag",
@@ -463,7 +454,7 @@
     "command": {
       "name": "element",
       "args": [
-        "dispBeamColumnInt",
+         "dispBeamColumnInt",
         "$eleTag",
         "*$eleNodes",
         "$numIntgrPts",

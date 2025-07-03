@@ -1,5 +1,4 @@
 // src/components/analysis/AnalysisEditor.jsx
-
 import React, { useState, useEffect } from 'react';
 import { getTemplates } from '../../api/jsonTemplates';
 import { useAnalysisStore } from '../../stores/useAnalysisStore';
@@ -19,10 +18,13 @@ const AnalysisEditor = ({ category }) => {
   const addRecorder = useAnalysisStore(state => state.addRecorder);
   const removeRecorder = useAnalysisStore(state => state.removeRecorder);
 
-  // For non-recorder tabs: template-based
+  // For non-recorder, template-based tabs
   const [templates, setTemplates] = useState([]);
   const [selected, setSelected] = useState(null);
   const [params, setParams] = useState({});
+
+  // For 'analyze' special case
+  const [analyzeSteps, setAnalyzeSteps] = useState(1); // CHANGED: local state for analyze count
 
   useEffect(() => {
     if (!category) {
@@ -33,6 +35,15 @@ const AnalysisEditor = ({ category }) => {
       setTemplates([]); setSelected(null); setParams({});
       return;
     }
+    if (category === 'analyze') {
+      // CHANGED: reset local analyzeSteps if desired
+      setTemplates([]);
+      setSelected(null);
+      setParams({});
+      setAnalyzeSteps(1);
+      return;
+    }
+    // other categories: fetch templates
     const tpls = getTemplates(category);
     setTemplates(tpls);
     if (tpls.length) {
@@ -53,7 +64,7 @@ const AnalysisEditor = ({ category }) => {
     setParams(selected.defaultParams);
   };
 
-  // State for adding custom recorder (optional)
+  // For adding custom recorder
   const [recName, setRecName] = useState('Node');
   const [fileName, setFileName] = useState('');
   const [customNodeIds, setCustomNodeIds] = useState([]);
@@ -81,17 +92,10 @@ const AnalysisEditor = ({ category }) => {
     setCustomEleIds([]);
   };
 
-  // Handlers for editing default recorder entries
-  const handleUpdateDefault = (rec) => {
-    if (rec.name === 'Node') {
-      // prompt or UI fields handled below
-    }
-    // updateRecorder called when inputs change
-  };
-
   return (
     <div className="param-editor">
-      {category !== 'recorder' ? (
+      {category !== 'recorder' && category !== 'analyze' ? (
+        // Template-based tabs except 'analyze'
         <>
           {selected && (
             <>
@@ -159,6 +163,54 @@ const AnalysisEditor = ({ category }) => {
             )}
           </div>
         </>
+      ) : category === 'analyze' ? (
+        // CHANGED: special UI for 'analyze'
+        <div className="analyze-section">
+          <h3>Analyze Step</h3>
+          <div className="param-row">
+            <label>Number of steps/iterations:</label>
+            <input
+              type="number"
+              min="1"
+              value={analyzeSteps}
+              onChange={e => {
+                const v = parseInt(e.target.value, 10);
+                setAnalyzeSteps(isNaN(v) || v < 1 ? 1 : v);
+              }}
+            />
+          </div>
+          <button
+            className="submit-btn"
+            onClick={() => {
+              // add an 'analyze' step with the specified count
+              addComponent('analyze', null, { steps: analyzeSteps });
+            }}
+          >
+            ➕ Add Analyze
+          </button>
+
+          <div className="sequence-section" style={{ marginTop: '1rem' }}>
+            <h3>Analysis Sequence</h3>
+            {sequence.length === 0 ? (
+              <p className="empty-note"><em>No steps added yet</em></p>
+            ) : (
+              <ol className="sequence-list">
+                {sequence.map(item => (
+                  <li key={item.id} className="sequence-item">
+                    <div>
+                      <strong>{item.category}</strong>: {item.command}({item.args.join(', ')})
+                    </div>
+                    <div className="button-group">
+                      <button onClick={() => moveUp(item.id)} title="Move up">↑</button>
+                      <button onClick={() => moveDown(item.id)} title="Move down">↓</button>
+                      <button className="remove-btn" onClick={() => removeComponent(item.id)}>❌</button>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </div>
       ) : (
         // Recorder tab
         <div className="recorder-section">
@@ -167,22 +219,17 @@ const AnalysisEditor = ({ category }) => {
             {recorders.map(r => (
               <li key={r.id} className="recorder-item">
                 <div>
-                  {/* <code>{r.command} {r.args.map(a => JSON.stringify(a)).join(' ')}</code> */}
-                  {' '}
                   {r.immutable && <em>(default)</em>}
                 </div>
-                {/* For default recorders: allow editing nodeIds/dofs or eleIds */}
                 {r.immutable ? (
                   <DefaultRecorderEditor recorder={r} updateRecorder={updateRecorder} />
                 ) : (
-                  // Custom recorder: allow editing and removal
                   <CustomRecorderEditor recorder={r} updateRecorder={updateRecorder} removeRecorder={removeRecorder} />
                 )}
               </li>
             ))}
           </ul>
 
-          {/* Add custom recorder if desired */}
           <div className="add-recorder-form">
             <h4>Add Custom Recorder</h4>
             <div className="param-row">
@@ -209,7 +256,10 @@ const AnalysisEditor = ({ category }) => {
                     type="text"
                     value={customNodeIds.join(',')}
                     onChange={e => {
-                      const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                      const arr = e.target.value
+                        .split(',')
+                        .map(s => parseInt(s.trim(), 10))
+                        .filter(n => !isNaN(n));
                       setCustomNodeIds(arr);
                     }}
                     placeholder="e.g. 1,2,3"
@@ -221,7 +271,10 @@ const AnalysisEditor = ({ category }) => {
                     type="text"
                     value={customDofs.join(',')}
                     onChange={e => {
-                      const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                      const arr = e.target.value
+                        .split(',')
+                        .map(s => parseInt(s.trim(), 10))
+                        .filter(n => !isNaN(n));
                       setCustomDofs(arr);
                     }}
                     placeholder="e.g. 1,2"
@@ -236,7 +289,10 @@ const AnalysisEditor = ({ category }) => {
                   type="text"
                   value={customEleIds.join(',')}
                   onChange={e => {
-                    const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                    const arr = e.target.value
+                      .split(',')
+                      .map(s => parseInt(s.trim(), 10))
+                      .filter(n => !isNaN(n));
                     setCustomEleIds(arr);
                   }}
                   placeholder="e.g. 1,2"
@@ -260,15 +316,12 @@ const AnalysisEditor = ({ category }) => {
   );
 };
 
-// Editor for default recorder: allow editing nodeIds/dofs or eleIds
 const DefaultRecorderEditor = ({ recorder, updateRecorder }) => {
-  const { id, name, fileName, responseType, nodeIds, dofs, eleIds } = recorder;
-  // Local state mirrors current recorder metadata
+  const { id, name, responseType, nodeIds, dofs, eleIds } = recorder;
   const [localNodeIds, setLocalNodeIds] = useState([...nodeIds]);
   const [localDofs, setLocalDofs] = useState([...dofs]);
   const [localEleIds, setLocalEleIds] = useState([...eleIds]);
 
-  // When recorder prop changes (e.g. re-initialized), update local state
   useEffect(() => {
     setLocalNodeIds([...recorder.nodeIds]);
     setLocalDofs([...recorder.dofs]);
@@ -276,19 +329,18 @@ const DefaultRecorderEditor = ({ recorder, updateRecorder }) => {
   }, [recorder]);
 
   const handleSave = () => {
-    // Call updateRecorder in store
     updateRecorder({
       id,
-      nodeIds: name === 'Node' ? localNodeIds : undefined,
-      dofs: name === 'Node' ? localDofs : undefined,
-      eleIds: name === 'Element' ? localEleIds : undefined
+      nodeIds: recorder.name === 'Node' ? localNodeIds : undefined,
+      dofs: recorder.name === 'Node' ? localDofs : undefined,
+      eleIds: recorder.name === 'Element' ? localEleIds : undefined
     });
   };
 
   return (
     <div className="default-recorder-editor" style={{ marginTop: '0.5rem', paddingLeft: '1rem' }}>
-      <div> {name}  {responseType}</div>
-      {name === 'Node' ? (
+      <div>{recorder.name} - {responseType} <em>(default)</em></div>
+      {recorder.name === 'Node' ? (
         <>
           <div className="param-row">
             <label>Node IDs:</label>
@@ -296,7 +348,10 @@ const DefaultRecorderEditor = ({ recorder, updateRecorder }) => {
               type="text"
               value={localNodeIds.join(',')}
               onChange={e => {
-                const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                const arr = e.target.value
+                  .split(',')
+                  .map(s => parseInt(s.trim(), 10))
+                  .filter(n => !isNaN(n));
                 setLocalNodeIds(arr);
               }}
             />
@@ -307,21 +362,26 @@ const DefaultRecorderEditor = ({ recorder, updateRecorder }) => {
               type="text"
               value={localDofs.join(',')}
               onChange={e => {
-                const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                const arr = e.target.value
+                  .split(',')
+                  .map(s => parseInt(s.trim(), 10))
+                  .filter(n => !isNaN(n));
                 setLocalDofs(arr);
               }}
             />
           </div>
         </>
       ) : (
-        // Element recorder
         <div className="param-row">
           <label>Element IDs:</label>
           <input
             type="text"
             value={localEleIds.join(',')}
             onChange={e => {
-              const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+              const arr = e.target.value
+                .split(',')
+                .map(s => parseInt(s.trim(), 10))
+                .filter(n => !isNaN(n));
               setLocalEleIds(arr);
             }}
           />
@@ -334,7 +394,6 @@ const DefaultRecorderEditor = ({ recorder, updateRecorder }) => {
   );
 };
 
-// Editor for custom recorder: allow editing all fields and removal
 const CustomRecorderEditor = ({ recorder, updateRecorder, removeRecorder }) => {
   const { id, name, fileName, responseType, nodeIds, dofs, eleIds } = recorder;
   const [localNodeIds, setLocalNodeIds] = useState([...nodeIds]);
@@ -350,9 +409,9 @@ const CustomRecorderEditor = ({ recorder, updateRecorder, removeRecorder }) => {
   const handleSave = () => {
     updateRecorder({
       id,
-      nodeIds: name === 'Node' ? localNodeIds : undefined,
-      dofs: name === 'Node' ? localDofs : undefined,
-      eleIds: name === 'Element' ? localEleIds : undefined
+      nodeIds: recorder.name === 'Node' ? localNodeIds : undefined,
+      dofs: recorder.name === 'Node' ? localDofs : undefined,
+      eleIds: recorder.name === 'Element' ? localEleIds : undefined
     });
   };
 
@@ -371,7 +430,10 @@ const CustomRecorderEditor = ({ recorder, updateRecorder, removeRecorder }) => {
               type="text"
               value={localNodeIds.join(',')}
               onChange={e => {
-                const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                const arr = e.target.value
+                  .split(',')
+                  .map(s => parseInt(s.trim(), 10))
+                  .filter(n => !isNaN(n));
                 setLocalNodeIds(arr);
               }}
             />
@@ -382,7 +444,10 @@ const CustomRecorderEditor = ({ recorder, updateRecorder, removeRecorder }) => {
               type="text"
               value={localDofs.join(',')}
               onChange={e => {
-                const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                const arr = e.target.value
+                  .split(',')
+                  .map(s => parseInt(s.trim(), 10))
+                  .filter(n => !isNaN(n));
                 setLocalDofs(arr);
               }}
             />
@@ -395,7 +460,10 @@ const CustomRecorderEditor = ({ recorder, updateRecorder, removeRecorder }) => {
             type="text"
             value={localEleIds.join(',')}
             onChange={e => {
-              const arr = e.target.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+              const arr = e.target.value
+                .split(',')
+                .map(s => parseInt(s.trim(), 10))
+                .filter(n => !isNaN(n));
               setLocalEleIds(arr);
             }}
           />

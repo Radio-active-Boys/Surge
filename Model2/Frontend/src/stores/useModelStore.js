@@ -5,181 +5,280 @@ import { generateId } from '../utils/idGenerator';
 
 export const useModelStore = create((set, get) => ({
   modelConfig: { ndm: 2, ndf: 2 },
+
+  // core arrays
   node: [],
   boundaryConditions: [],
   uniaxialMaterial: [],
-  section: [],       // each: {id, command, templateName, args, params, fibers: [...]}  
+  section: [],      // items: { id, command, templateName, args, params, fibers: [] }
   element: [],
   geomTransf: [],
   beamIntegration: [],
-
   patterns: [],
-  loads: [],
-  eleLoads: [],
-  sps: [],
-
+  loads: [],        // holds load / eleLoad / sp entries
   timeSeries: [],
 
-  setModelConfig: (config) => set({ modelConfig: config }),
+  // merge without overwriting
+  setModelConfig: config =>
+    set(state => ({ modelConfig: { ...state.modelConfig, ...config } })),
 
+  // universal addComponent
   addComponent: (category, templateName, params, parentId = null) => {
-    const template = getTemplateByName(category, templateName);
-    if (!template) return;
+    const tpl = getTemplateByName(category, templateName);
+    if (!tpl) return;
     const id = generateId();
-    const commandObj = generateCommand(template, params);
+    const { command, args } = generateCommand(tpl, params);
 
+    // 1) section
     if (category === 'section') {
-      const sectionObj = {
-        id,
-        command: commandObj.command,
-        templateName,
-        args: commandObj.args,
-        params: { ...params },
-        fibers: []
-      };
-      set(state => ({ section: [...state.section, sectionObj] }));
+      set(state => ({
+        section: [
+          ...state.section,
+          { id, command, templateName, args, params: { ...params }, fibers: [] }
+        ]
+      }));
+      return;
     }
-    else if (['fiber', 'patch', 'layer'].includes(category)) {
+
+    // 2) fiber / patch / layer
+    if (['fiber','patch','layer'].includes(category)) {
       if (!parentId) return;
       const fiberId = generateId();
-      const fiberObj = {
-        id: fiberId,
-        category,
-        command: commandObj.command,
-        templateName,
-        args: commandObj.args,
-        params: { ...params }
-      };
-      set(state => {
-        const sections = state.section.map(sec => {
-          if (sec.id !== parentId) return sec;
-          return { ...sec, fibers: [...(sec.fibers || []), fiberObj] };
-        });
-        return { section: sections };
-      });
+      const newFiber = { id: fiberId, category, command, templateName, args, params: { ...params } };
+      set(state => ({
+        section: state.section.map(sec =>
+          sec.id !== parentId
+            ? sec
+            : { ...sec, fibers: [...(sec.fibers||[]), newFiber] }
+        )
+      }));
+      return;
     }
+
+    // 3) pattern
     if (category === 'pattern') {
-      const p = { id, templateName, params: { ...params }, command: commandObj.command, args: commandObj.args, category };
-      set(state => ({ patterns: [...state.patterns, p] }));
+      set(state => ({
+        patterns: [
+          ...state.patterns,
+          { id, category, templateName, params: { ...params }, command, args }
+        ]
+      }));
+      return;
     }
-    else if (category === 'load') {
+
+    // 4) loads / eleLoad / sp — all into `loads[]`
+    if (['load','eleLoad','sp'].includes(category)) {
       if (!parentId) return;
-      const cmd = commandObj;
-      set(state => ({ loads: [...state.loads, { id, patternId: parentId, command: cmd.command, args: cmd.args, category }] }));
+      set(state => ({
+        loads: [
+          ...state.loads,
+          { id, patternId: parentId, category, command, args }
+        ]
+      }));
+      return;
     }
-    else {
-      const arrName = (() => {
-        switch(category) {
-          case 'node': return 'node';
-          case 'boundaryConditions': return 'boundaryConditions';
-          case 'uniaxialMaterial': return 'uniaxialMaterial';
-          case 'element': return 'element';
-          case 'geomTransf': return 'geomTransf';
-          case 'beamIntegration': return 'beamIntegration';
-          case 'timeSeries': return 'timeSeries';
-          default: return null;
-        }
-      })();
-      if (arrName) {
-        const item = { id, command: commandObj.command, args: commandObj.args, category };
-        if (['uniaxialMaterial','element','timeSeries','section','geomTransf','beamIntegration'].includes(category)) {
-          item.templateName = templateName;
-          item.params = { ...params };
-        }
-        set(state => {
-          const arr = state[arrName] || [];
-          return { [arrName]: [...arr, item] };
-        });
-      }
+
+    // 5) all other generic categories
+    const arrMap = {
+      node: 'node',
+      boundaryConditions: 'boundaryConditions',
+      uniaxialMaterial: 'uniaxialMaterial',
+      element: 'element',
+      geomTransf: 'geomTransf',
+      beamIntegration: 'beamIntegration',
+      timeSeries: 'timeSeries'
+    };
+    const arrName = arrMap[category] || null;
+    if (!arrName) return;
+
+    const item = { id, command, args, category };
+    if (['uniaxialMaterial','element','timeSeries','section','geomTransf','beamIntegration'].includes(category)) {
+      item.templateName = templateName;
+      item.params = { ...params };
     }
+    set(state => ({ [arrName]: [...(state[arrName]||[]), item] }));
   },
 
+  // update section / fibers / pattern
   updateComponent: (category, id, newParams) => {
+    const state = get();
+
+    // section
     if (category === 'section') {
-      const state = get();
       const sec = state.section.find(s => s.id === id);
       if (!sec) return;
       const tpl = getTemplateByName('section', sec.templateName);
       if (!tpl) return;
-      const cmd = generateCommand(tpl, newParams);
-      set(state => ({ section: state.section.map(s => s.id !== id ? s : { ...s, params: { ...newParams }, command: cmd.command, args: cmd.args }) }));
+      const { command, args } = generateCommand(tpl, newParams);
+      set(state => ({
+        section: state.section.map(s =>
+          s.id !== id ? s : { ...s, params: { ...newParams }, command, args }
+        )
+      }));
+      return;
     }
-    else if (['fiber','patch','layer'].includes(category)) {
-      const state = get();
-      set(state => ({ section: state.section.map(sec => {
-        const idx = (sec.fibers || []).findIndex(f => f.id === id);
-        if (idx === -1) return sec;
-        const fiber = sec.fibers[idx];
-        const tpl = getTemplateByName(category, fiber.templateName);
-        if (!tpl) return sec;
-        const cmd = generateCommand(tpl, newParams);
-        const newFiber = { ...fiber, params: { ...newParams }, command: cmd.command, args: cmd.args };
-        const newFibers = [...sec.fibers]; newFibers[idx] = newFiber;
-        return { ...sec, fibers: newFibers };
-      }) }));
+
+    // fiber / patch / layer
+    if (['fiber','patch','layer'].includes(category)) {
+      set(state => ({
+        section: state.section.map(sec => {
+          const idx = sec.fibers.findIndex(f => f.id === id);
+          if (idx === -1) return sec;
+          const fiber = sec.fibers[idx];
+          const tpl = getTemplateByName(category, fiber.templateName);
+          if (!tpl) return sec;
+          const { command, args } = generateCommand(tpl, newParams);
+          const updated = { ...fiber, params: { ...newParams }, command, args };
+          const fibers = [...sec.fibers];
+          fibers[idx] = updated;
+          return { ...sec, fibers };
+        })
+      }));
+      return;
     }
-    else if (category === 'pattern') {
-      const tpl = getTemplateByName('pattern', get().patterns.find(p => p.id === id)?.templateName);
+
+    // pattern
+    if (category === 'pattern') {
+      const pat = state.patterns.find(p => p.id === id);
+      if (!pat) return;
+      const tpl = getTemplateByName('pattern', pat.templateName);
       if (!tpl) return;
-      const cmd = generateCommand(tpl, newParams);
-      const newArgs = cmd.args.slice(1);
-      set(state => ({ patterns: state.patterns.map(p => p.id !== id ? p : { ...p, params: { ...newParams }, command: cmd.command, args: newArgs }) }));
+      const { command, args } = generateCommand(tpl, newParams);
+      set(state => ({
+        patterns: state.patterns.map(p =>
+          p.id !== id ? p : { ...p, params: { ...newParams }, command, args }
+        )
+      }));
+      return;
     }
   },
 
-  updateComponentArgs: (category, id, newArgs) => {
-    set(state => {
-      const arr = [...state[category]];
-      const index = arr.findIndex(item => item.id === id);
-      if (index === -1) return;
-      arr[index] = { ...arr[index], args: newArgs };
-      return { [category]: arr };
-    });
-  },
-
+  // unified removeComponent
   removeComponent: (category, id) => {
+    // section
     if (category === 'section') {
-      set(state => ({ section: state.section.filter(sec => sec.id !== id) }));
+      set(state => ({ section: state.section.filter(s => s.id !== id) }));
+      return;
     }
-    else if (['fiber','patch','layer'].includes(category)) {
-      set(state => ({ section: state.section.map(sec => ({ ...sec, fibers: sec.fibers?.filter(f => f.id !== id) || [] })) }));
+    // fibers
+    if (['fiber','patch','layer'].includes(category)) {
+      set(state => ({
+        section: state.section.map(sec => ({
+          ...sec,
+          fibers: sec.fibers.filter(f => f.id !== id)
+        }))
+      }));
+      return;
     }
-    else if (category === 'pattern') {
-      set(state => ({ patterns: state.patterns.filter(p => p.id !== id), loads: state.loads.filter(l => l.patternId !== id), eleLoads: state.eleLoads.filter(el => el.patternId !== id), sps: state.sps.filter(sp => sp.patternId !== id) }));
+    // pattern
+    if (category === 'pattern') {
+      set(state => ({
+        patterns: state.patterns.filter(p => p.id !== id),
+        loads: state.loads.filter(l => l.patternId !== id)
+      }));
+      return;
     }
-    else if (['load','eleLoad','sp'].includes(category)) {
-      set(state => ({ [category === 'load' ? 'loads' : category === 'eleLoad' ? 'eleLoads' : 'sps']: state[category === 'load' ? 'loads' : category === 'eleLoad' ? 'eleLoads' : 'sps'].filter(item => item.id !== id) }));
+    // any load type
+    if (['load','eleLoad','sp'].includes(category)) {
+      set(state => ({ loads: state.loads.filter(l => l.id !== id) }));
+      return;
+    }
+    // generic arrays
+    const arrMap = {
+      node: 'node',
+      boundaryConditions: 'boundaryConditions',
+      uniaxialMaterial: 'uniaxialMaterial',
+      element: 'element',
+      geomTransf: 'geomTransf',
+      beamIntegration: 'beamIntegration',
+      timeSeries: 'timeSeries'
+    };
+    const arrName = arrMap[category];
+    if (arrName) {
+      set(state => ({
+        [arrName]: state[arrName].filter(item => item.id !== id)
+      }));
     }
   },
+updateComponentArgs: (category, id, newArgs) => {
+  const state = get();
 
+  // SECTION
+  if (category === 'section') {
+    set(state => ({
+      section: state.section.map(s =>
+        s.id === id ? { ...s, args: newArgs } : s
+      )
+    }));
+    return;
+  }
+
+  // PATTERNS
+  if (category === 'patterns') {
+    set(state => ({
+      patterns: state.patterns.map(p =>
+        p.id === id ? { ...p, args: newArgs } : p
+      )
+    }));
+    return;
+  }
+
+  // LOADS (load / eleLoad / sp)
+  if (category === 'loads') {
+    set(state => ({
+      loads: state.loads.map(l =>
+        l.id === id ? { ...l, args: newArgs } : l
+      )
+    }));
+    return;
+  }
+
+  // STANDARD categories (node, element, etc.)
+  const arrMap = {
+    node: 'node',
+    boundaryConditions: 'boundaryConditions',
+    uniaxialMaterial: 'uniaxialMaterial',
+    element: 'element',
+    geomTransf: 'geomTransf',
+    beamIntegration: 'beamIntegration',
+    timeSeries: 'timeSeries',
+  };
+  const arrName = arrMap[category];
+  if (!arrName) return;
+
+  set(state => ({
+    [arrName]: state[arrName].map(item =>
+      item.id === id ? { ...item, args: newArgs } : item
+    )
+  }));
+},
+
+  // export to JSON
   toJson: () => {
     const s = get();
-    const sectionsOut = s.section.map(sec => {
-      const base = { command: sec.command, name: sec.templateName, args: sec.args };
-      if (sec.fibers?.length) base.fibers = sec.fibers.map(f => ({ command: f.command, name: f.templateName, args: f.args }));
-      return base;
-    });
-
     return {
       model_config: s.modelConfig,
-      nodes: s.node.map(item => ({ command: item.command, args: item.args })),
-      boundary_conditions: s.boundaryConditions.map(item => ({ command: item.command, args: item.args })),
-      materials: s.uniaxialMaterial.map(item => ({ command: item.command, name: item.templateName, args: item.args })),
-      sections: sectionsOut,
-      transformations: s.geomTransf.map(item => ({ command: item.command, name: item.templateName, args: item.args })),
-      integrations: s.beamIntegration.map(item => ({ command: item.command, name: item.templateName, args: item.args })),
-      elements: s.element.map(item => ({ command: item.command, name: item.templateName, args: item.args })),
-      patterns: s.patterns.map(p => {
-        const base = { command: p.command, name: p.templateName, args: p.args };
-        const loadsFor = s.loads.filter(l => l.patternId === p.id);
-        if (loadsFor.length) base.loads = loadsFor.map(l => ({ command: l.command, args: l.args }));
-        const eleLoadsFor = s.eleLoads.filter(el => el.patternId === p.id);
-        if (eleLoadsFor.length) base.eleLoads = eleLoadsFor.map(el => ({ command: el.command, args: el.args }));
-        const spsFor = s.sps.filter(sp => sp.patternId === p.id);
-        if (spsFor.length) base.sps = spsFor.map(sp => ({ command: sp.command, args: sp.args }));
-        return base;
-      }),
-      time_series: s.timeSeries.map(item => ({ command: item.command, name: item.templateName, args: item.args }))
+      nodes: s.node.map(i => ({ command: i.command, args: i.args })),
+      boundary_conditions: s.boundaryConditions.map(i => ({ command: i.command, args: i.args })),
+      materials: s.uniaxialMaterial.map(i => ({ command: i.command, name: i.templateName, args: i.args })),
+      sections: s.section.map(sec => ({
+        command: sec.command,
+        name: sec.templateName,
+        args: sec.args,
+        fibers: sec.fibers.map(f => ({ command: f.command, name: f.templateName, args: f.args }))
+      })),
+      transformations: s.geomTransf.map(i => ({ command: i.command, name: i.templateName, args: i.args })),
+      integrations: s.beamIntegration.map(i => ({ command: i.command, name: i.templateName, args: i.args })),
+      elements: s.element.map(i => ({ command: i.command, name: i.templateName, args: i.args })),
+      patterns: s.patterns.map(p => ({
+        command: p.command,
+        name: p.templateName,
+        args: p.args,
+        loads: s.loads
+          .filter(l => l.patternId === p.id)
+          .map(l => ({ command: l.command, args: l.args }))
+      })),
+      time_series: s.timeSeries.map(i => ({ command: i.command, name: i.templateName, args: i.args }))
     };
   }
 }));

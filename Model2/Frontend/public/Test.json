@@ -69,7 +69,7 @@
       "args": [1, 1],
       "loads": [
         { "command": "load", "args": [3, -10000, -10000, 0] },
-        { "command": "load", "args": [4, 10000, 0, 0] }
+        { "command": "load", "args": [4, -10000, 0, 0] }
       ]
     }
   ],
@@ -95,17 +95,57 @@
     {
       "command": "recorder",
       "name": "Node",
-      "args": ["-file", "roof_drift.txt", "-node", 4, "-dof", 1, "disp"]
+      "args": ["-file", "node_disp.txt", "-time", "-node", 1, 2, 3,4, "-dof", 1, 2, 3, "disp"]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node_reactions.txt", "-time", "-node", 1, 2,3,4, "-dof", 1, 2, 3, "reaction"]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node_vel.txt", "-time", "-node", 1, 2,3,4, "-dof", 1, 2, 3, "vel"]
+    },
+    {
+      "command": "recorder",
+      "name": "Node",
+      "args": ["-file", "node_accel.txt", "-time", "-node", 1, 2,3,4, "-dof", 1, 2, 3, "accel"]
     },
     {
       "command": "recorder",
       "name": "Element",
-      "args": ["-file", "section_deformation.txt", "-ele", 3, "section", "deformation"]
+      "args": ["-file", "elem_force.txt", "-time", "-ele", 1, 2,3, "force"]
     },
     {
       "command": "recorder",
       "name": "Element",
-      "args": ["-file", "section_force.txt", "-ele", 3, "section", "force"]
+      "args": ["-file", "elem_localForce.txt", "-time", "-ele", 1, 2,3, "localForce"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem_deformation.txt", "-time", "-ele", 1, 2,3, "deformation"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem_axialForce.txt", "-time", "-ele", 1, 2,3, "axialForce"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem_basicDeformation.txt", "-time", "-ele", 1, 2,3, "basicDeformation"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem_basicForce.txt", "-time", "-ele", 1, 2,3, "basicForce"]
+    },
+    {
+      "command": "recorder",
+      "name": "Element",
+      "args": ["-file", "elem_stiffness.txt", "-time", "-ele", 1, 2,3, "stiffness"]
     }
   ]
 }

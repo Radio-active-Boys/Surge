@@ -1,22 +1,19 @@
-/*
-src/stores/useAnalysisStore.js
-*/
+// src/stores/useAnalysisStore.js
 import { create } from 'zustand';
 import { generateCommand, getTemplateByName } from '../api/jsonTemplates';
 import { generateId } from '../utils/idGenerator';
 
 // Helper: build args array for a recorder given its metadata
 function buildRecorderArgs({ name, fileName, nodeIds = [], dofs = [], eleIds = [], responseType }) {
-  const args = ['-file', fileName, '-time', name === 'Element' ? '-ele' : '-node'];
+  const args = [name,'-file', fileName, '-time', name === 'Element' ? '-ele' : '-node'];
   if (name === 'Node') {
-    args.push( ...nodeIds, '-dof', ...dofs, responseType);
+    args.push(...nodeIds, '-dof', ...dofs, responseType);
   } else if (name === 'Element') {
-    args.push( ...eleIds, responseType);
+    args.push(...eleIds, responseType);
   }
   return args;
 }
 
-// Create a default recorder metadata object
 function makeDefaultRecorder({ name, fileName, responseType, nodeIds = [], dofs = [], eleIds = [] }) {
   const id = generateId();
   const args = buildRecorderArgs({ name, fileName, nodeIds, dofs, eleIds, responseType });
@@ -53,7 +50,7 @@ export const useAnalysisStore = create((set, get) => ({
       { name: 'Element', fileName: 'elem_basicForce.txt', responseType: 'basicForce' },
       { name: 'Element', fileName: 'elem_stiffness.txt', responseType: 'stiffness' },
     ];
-    const recorderCmds = defaults.map(def => 
+    const recorderCmds = defaults.map(def =>
       makeDefaultRecorder({ name: def.name, fileName: def.fileName, responseType: def.responseType, nodeIds, dofs, eleIds })
     );
     set(() => ({ recorders: recorderCmds }));
@@ -70,7 +67,14 @@ export const useAnalysisStore = create((set, get) => ({
         } else if (r.name === 'Element') {
           if (Array.isArray(eleIds)) updated.eleIds = [...eleIds];
         }
-        updated.args = buildRecorderArgs({ name: updated.name, fileName: updated.fileName, nodeIds: updated.nodeIds, dofs: updated.dofs, eleIds: updated.eleIds, responseType: updated.responseType });
+        updated.args = buildRecorderArgs({
+          name: updated.name,
+          fileName: updated.fileName,
+          nodeIds: updated.nodeIds,
+          dofs: updated.dofs,
+          eleIds: updated.eleIds,
+          responseType: updated.responseType
+        });
         return updated;
       });
       return { recorders: recs };
@@ -85,26 +89,21 @@ export const useAnalysisStore = create((set, get) => ({
     }
     const id = generateId();
     const args = buildRecorderArgs({ name, fileName, nodeIds, dofs, eleIds, responseType });
-    const cmdObj = { id, category: 'recorder', command: 'recorder', name, fileName, responseType, nodeIds: [...nodeIds], dofs: [...dofs], eleIds: [...eleIds], args, immutable: false };
+    const cmdObj = {
+      id,
+      category: 'recorder',
+      command: 'recorder',
+      name,
+      fileName,
+      responseType,
+      nodeIds: [...nodeIds],
+      dofs: [...dofs],
+      eleIds: [...eleIds],
+      args,
+      immutable: false
+    };
     set(state => ({ recorders: [...state.recorders, cmdObj] }));
   },
-  updateSequenceArgs: (id, newArgs) => {
-    set(state => ({
-      sequence: state.sequence.map(item =>
-        item.id === id ? { ...item, args: newArgs } : item
-      )
-    }));
-  },
-
-  // YOU ALREADY ADDED this, but for clarity:
-  updateRecorderArgs: (id, newArgs) => {
-    set(state => ({
-      recorders: state.recorders.map(r =>
-        r.id === id ? { ...r, args: newArgs } : r
-      )
-    }));
-  },
-
 
   removeRecorder: (id) => {
     const recs = get().recorders;
@@ -118,11 +117,32 @@ export const useAnalysisStore = create((set, get) => ({
   },
 
   addComponent: (category, templateName, params) => {
+    const id = generateId();
+
+    if (category === 'analyze') {
+      // CHANGED: handle 'analyze' specially
+      const steps = (params && params.steps) || 1;
+      const item = {
+        id,
+        category: 'analyze',
+        command: 'analyze',
+        args: [steps]
+      };
+      set(state => ({ sequence: [...state.sequence, item] }));
+      return;
+    }
+
+    // For other categories, use generateCommand if template-based
     const template = getTemplateByName(category, templateName);
     if (!template) return;
-    const id = generateId();
     const cmdObj = generateCommand(template, params);
-    const item = { id, command: cmdObj.command, args: cmdObj.args, category };
+    const item = {
+      id,
+      category,
+      command: cmdObj.command,
+      args: cmdObj.args
+    };
+    // attach metadata if needed
     if (['generator', 'timeSeries', 'uniaxialMaterial', 'section', 'geomTransf', 'beamIntegration', 'element'].includes(category)) {
       item.templateName = templateName;
       item.params = { ...params };

@@ -17,8 +17,6 @@ export default function JsonEditor() {
     beamIntegration:    useModelStore(s => s.beamIntegration, shallow),
     patterns:           useModelStore(s => s.patterns, shallow),
     loads:              useModelStore(s => s.loads, shallow),
-    eleLoads:           useModelStore(s => s.eleLoads, shallow),
-    sps:                useModelStore(s => s.sps, shallow),
     timeSeries:         useModelStore(s => s.timeSeries, shallow),
   };
 

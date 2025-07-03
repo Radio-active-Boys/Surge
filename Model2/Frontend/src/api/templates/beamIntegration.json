@@ -3,77 +3,89 @@
     "category": "beamIntegration",
     "name": "Lobatto",
     "defaultParams": {
-      "tag": 1
+      "tag":    1,
+      "secTag": 1,
+      "N":      2
     },
     "command": {
       "name": "beamIntegration",
-      "args": ["Lobatto", "$tag"]
+      "args": ["Lobatto", "$tag", "$secTag", "$N"]
     }
   },
   {
     "category": "beamIntegration",
     "name": "Legendre",
     "defaultParams": {
-      "tag": 2
+      "tag":    2,
+      "secTag": 1,
+      "N":      2
     },
     "command": {
       "name": "beamIntegration",
-      "args": ["Legendre", "$tag"]
+      "args": ["Legendre", "$tag", "$secTag", "$N"]
     }
   },
   {
     "category": "beamIntegration",
     "name": "NewtonCotes",
     "defaultParams": {
-      "tag": 3
+      "tag":    3,
+      "secTag": 1,
+      "N":      3
     },
     "command": {
       "name": "beamIntegration",
-      "args": ["NewtonCotes", "$tag"]
+      "args": ["NewtonCotes", "$tag", "$secTag", "$N"]
     }
   },
   {
     "category": "beamIntegration",
     "name": "Radau",
     "defaultParams": {
-      "tag": 4
+      "tag":    4,
+      "secTag": 1,
+      "N":      2
     },
     "command": {
       "name": "beamIntegration",
-      "args": ["Radau", "$tag"]
+      "args": ["Radau", "$tag", "$secTag", "$N"]
     }
   },
   {
     "category": "beamIntegration",
     "name": "Trapezoidal",
     "defaultParams": {
-      "tag": 5
+      "tag":    5,
+      "secTag": 1,
+      "N":      2
     },
     "command": {
       "name": "beamIntegration",
-      "args": ["Trapezoidal", "$tag"]
+      "args": ["Trapezoidal", "$tag", "$secTag", "$N"]
     }
   },
   {
     "category": "beamIntegration",
     "name": "CompositeSimpson",
     "defaultParams": {
-      "tag": 6
+      "tag":    6,
+      "secTag": 1,
+      "N":      4
     },
     "command": {
       "name": "beamIntegration",
-      "args": ["CompositeSimpson", "$tag"]
+      "args": ["CompositeSimpson", "$tag", "$secTag", "$N"]
     }
   },
   {
     "category": "beamIntegration",
     "name": "UserDefined",
     "defaultParams": {
-      "tag": 7,
-      "N": 5,
+      "tag":     7,
+      "N":       5,
       "secTags": [1, 2, 2, 2, 1],
-      "locs": [0.1, 0.3, 0.5, 0.7, 0.9],
-      "wts":  [0.2, 0.15, 0.3, 0.15, 0.2]
+      "locs":    [0.1, 0.3, 0.5, 0.7, 0.9],
+      "wts":     [0.2, 0.15, 0.3, 0.15, 0.2]
     },
     "command": {
       "name": "beamIntegration",
@@ -84,10 +96,10 @@
     "category": "beamIntegration",
     "name": "FixedLocation",
     "defaultParams": {
-      "tag": 8,
-      "N": 5,
+      "tag":     8,
+      "N":       5,
       "secTags": [1, 2, 2, 2, 1],
-      "locs":  [0.0, 0.25, 0.5, 0.75, 1.0]
+      "locs":    [0.0, 0.25, 0.5, 0.75, 1.0]
     },
     "command": {
       "name": "beamIntegration",
@@ -98,11 +110,11 @@
     "category": "beamIntegration",
     "name": "LowOrder",
     "defaultParams": {
-      "tag": 9,
-      "N": 5,
+      "tag":     9,
+      "N":       5,
       "secTags": [1, 2, 2, 2, 1],
-      "locs":  [0.0, 0.2, 0.5, 0.8, 1.0],
-      "wts":   [0.2, 0.2]
+      "locs":    [0.0, 0.2, 0.5, 0.8, 1.0],
+      "wts":     [0.2, 0.2, 0.2, 0.2, 0.2]
     },
     "command": {
       "name": "beamIntegration",
@@ -113,10 +125,10 @@
     "category": "beamIntegration",
     "name": "MidDistance",
     "defaultParams": {
-      "tag": 10,
-      "N": 5,
+      "tag":     10,
+      "N":       5,
       "secTags": [1, 2, 2, 2, 1],
-      "locs":  [0.0, 0.2, 0.5, 0.8, 1.0]
+      "locs":    [0.0, 0.2, 0.5, 0.8, 1.0]
     },
     "command": {
       "name": "beamIntegration",
@@ -127,16 +139,16 @@
     "category": "beamIntegration",
     "name": "UserHinge",
     "defaultParams": {
-      "tag": 11,
-      "secE": 5,
-      "npI": 2,
-      "secsI": [1, 2],
-      "locsI": [0.1, 0.2],
-      "wtsI":  [0.1, 0.05],
-      "npJ": 2,
-      "secsJ": [3, 4],
-      "locsJ": [0.8, 0.9],
-      "wtsJ":  [0.05, 0.1]
+      "tag":    11,
+      "secE":   5,
+      "npI":    2,
+      "secsI":  [1, 2],
+      "locsI":  [0.1, 0.2],
+      "wtsI":   [0.1, 0.05],
+      "npJ":    2,
+      "secsJ":  [3, 4],
+      "locsJ":  [0.8, 0.9],
+      "wtsJ":   [0.05, 0.1]
     },
     "command": {
       "name": "beamIntegration",
@@ -151,11 +163,11 @@
     "category": "beamIntegration",
     "name": "HingeMidpoint",
     "defaultParams": {
-      "tag": 12,
+      "tag":  12,
       "secI": 1,
-      "lpI": 0.1,
+      "lpI":  0.1,
       "secJ": 2,
-      "lpJ": 0.2,
+      "lpJ":  0.2,
       "secE": 5
     },
     "command": {
@@ -167,11 +179,11 @@
     "category": "beamIntegration",
     "name": "HingeRadau",
     "defaultParams": {
-      "tag": 13,
+      "tag":  13,
       "secI": 1,
-      "lpI": 0.1,
+      "lpI":  0.1,
       "secJ": 2,
-      "lpJ": 0.2,
+      "lpJ":  0.2,
       "secE": 5
     },
     "command": {
@@ -183,11 +195,11 @@
     "category": "beamIntegration",
     "name": "HingeRadauTwo",
     "defaultParams": {
-      "tag": 14,
+      "tag":  14,
       "secI": 1,
-      "lpI": 0.1,
+      "lpI":  0.1,
       "secJ": 2,
-      "lpJ": 0.2,
+      "lpJ":  0.2,
       "secE": 5
     },
     "command": {
@@ -199,11 +211,11 @@
     "category": "beamIntegration",
     "name": "HingeEndpoint",
     "defaultParams": {
-      "tag": 15,
+      "tag":  15,
       "secI": 1,
-      "lpI": 0.1,
+      "lpI":  0.1,
       "secJ": 2,
-      "lpJ": 0.2,
+      "lpJ":  0.2,
       "secE": 5
     },
     "command": {

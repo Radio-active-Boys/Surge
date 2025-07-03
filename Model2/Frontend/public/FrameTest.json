@@ -1,0 +1,94 @@
+{
+  "model_config": { "ndm": 2, "ndf": 3 },
+
+  "nodes": [
+    { "command": "node", "args": [1, 0.0, 0.0] },
+    { "command": "node", "args": [2, 5.0, 0.0] },
+    { "command": "node", "args": [3, 8.0, 0.0] },
+    { "command": "node", "args": [4, 0.0, 4.0] },
+    { "command": "node", "args": [5, 5.0, 4.0] },
+    { "command": "node", "args": [6, 8.0, 4.0] }
+  ],
+
+  "boundary_conditions": [
+    { "command": "fix", "args": [1, 1, 1, 1] },
+    { "command": "fix", "args": [2, 1, 1, 1] },
+    { "command": "fix", "args": [3, 1, 1, 1] }
+  ],
+
+  "sections": [],
+
+  "transformations": [
+    {
+      "command": "geomTransf",
+      "name": "Linear",
+      "args": ["Linear", 1]
+    }
+  ],
+
+  "elements": [
+    { "command": "element", "name": "elasticBeamColumn", "args": ["elasticBeamColumn", 1, 1, 4, 0.003, 2e11, 2e-5, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": ["elasticBeamColumn", 2, 2, 5, 0.003, 2e11, 2e-5, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": ["elasticBeamColumn", 3, 3, 6, 0.003, 2e11, 2e-5, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": ["elasticBeamColumn", 4, 4, 5, 0.005, 2e11, 3e-5, 1] },
+    { "command": "element", "name": "elasticBeamColumn", "args": ["elasticBeamColumn", 5, 5, 6, 0.005, 2e11, 3e-5, 1] }
+  ],
+
+  "time_series": [
+    { "command": "timeSeries", "name": "Linear", "args": ["Linear", 1] }
+  ],
+
+  "patterns": [
+    {
+      "command": "pattern",
+      "name": "Plain",
+      "args": ["Plain", 1, 1],
+      "loads": [
+        { "command": "load", "args": [5, 0.0, -20000.0, 0.0] },
+        {
+          "command": "eleLoad",
+          "args": [
+            "-ele", 4,
+            "-type", "beamUniform",
+            -15000.0
+          ]
+        },
+        {
+          "command": "eleLoad",
+          "args": [
+            "-ele", 5,
+            "-type", "beamUniform",
+            -2000.0, 0.0,
+            0.2, 0.9,
+            -4000.0, 0.0
+          ]
+        }
+      ]
+    }
+  ],
+
+  "analysis_sequence": [
+    { "command": "constraints", "args": ["Transformation"] },
+    { "command": "numberer", "args": ["RCM"] },
+    { "command": "system", "args": ["BandGeneral"] },
+    { "command": "test", "args": ["NormDispIncr", 1.0e-6, 10] },
+    { "command": "algorithm", "args": ["Linear"] },
+    { "command": "integrator", "name": "LoadControl", "args": ["LoadControl", 1.0] },
+    { "command": "analysis", "args": ["Static"] },
+    { "command": "analyze", "args": [100] }
+  ],
+
+  "recorders": [
+
+
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_disp.txt", "-time", "-node",  1, 2, 3, 4, 5, 6,  "-dof", 1,2,3, "disp"] },
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_reactions.txt", "-time", "-node",  1, 2, 3, 4, 5, 6,  "-dof", 1,2,3, "reaction"] },
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_vel.txt", "-time", "-node",  1, 2, 3, 4, 5, 6,  "-dof", 1,2,3, "vel"] },
+    { "command": "recorder", "name": "Node", "args": [ "Node","-file", "node_accel.txt", "-time", "-node",  1, 2, 3, 4, 5, 6,  "-dof", 1,2,3, "accel"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_force.txt", "-time", "-ele",1, 2, 3, 4, 5, "force"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_localForce.txt", "-time", "-ele",1, 2, 3, 4, 5, "localForce"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_axialForce.txt", "-time", "-ele",1, 2, 3, 4, 5, "axialForce"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_basicDeformation.txt", "-time", "-ele",1, 2, 3, 4, 5, "basicDeformation"] },
+    { "command": "recorder", "name": "Element", "args": [ "Element","-file", "elem_stiffness.txt", "-time", "-ele",1, 2, 3, 4, 5, "stiffness"] }
+  ]
+}
