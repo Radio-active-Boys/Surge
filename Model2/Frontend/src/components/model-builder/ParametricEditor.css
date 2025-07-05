@@ -1,9 +1,10 @@
-.param-editor {
+.model-param-editor {
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  max-width: 600px;
+  width: 50vw;
+  max-width: 500px;
   margin: 20px auto;
   font-family: 'Segoe UI', sans-serif;
 }
@@ -106,4 +107,32 @@
   padding: 20px;
   text-align: center;
   color: #777;
+}
+
+
+/* ParametricEditor.css */
+
+.param-editor .model-type-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #004a9f;      /* emerald‑500 */
+  background-color: #ffffff;
+  color: #005bbb;
+  border-radius: 9999px;            /* pill shape */
+  font-weight: 500;
+  cursor: pointer;
+  transition: 
+    background-color 0.2s ease, 
+    color 0.2s ease, 
+    box-shadow 0.2s ease;
+}
+
+.param-editor .model-type-button:hover {
+  background-color: #005bbb;  
+  color: #ffffff;       /* emerald‑50 */
+}
+
+.param-editor .model-type-button.active {
+  background-color: #005bbb;        /* emerald‑500 */
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(21, 20, 20, 0.1);
 }

@@ -6,6 +6,7 @@ import AnalysisEditor from '../components/analysis/AnalysisEditor';
 import { useAnalysisStore } from '../stores/useAnalysisStore';
 import AnalysisConfig from '../components/analysis/AnalysisConfig';
 import { useModelStore } from '../stores/useModelStore';
+import { useUserTypeStore } from '../utils/storeUserType';
 import './AnalysisPage.css';
 
 const AnalysisPage = () => {
@@ -14,6 +15,12 @@ const AnalysisPage = () => {
   const modelNodes = useModelStore(state => state.node);
   const modelElements = useModelStore(state => state.element);
   const ndf = useModelStore(state => state.modelConfig.ndf); // CHANGED: subscribe to ndf
+  const initializeDefaults = useModelStore(s => s.initializeDefaults);
+  const status = useUserTypeStore(s => s.status);
+
+    useEffect(() => {
+      initializeDefaults();
+    }, [status, initializeDefaults]);
 
   useEffect(() => {
     // Extract node IDs and element IDs

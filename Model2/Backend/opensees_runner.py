@@ -407,22 +407,42 @@ class OpenSeesRunner:
 
     def run(self):
         try:
+            # Build the model
             if not self.build_model():
                 return self.results
+
+            # ---- New: bail out if no DOF to solve ----
+            num_nodes = len(self.data.get("nodes", []))
+            ndf       = self.data.get("model_config", {}).get("ndf", 0)
+            total_dof = num_nodes * ndf
+            if total_dof == 0:
+                self.results["status"] = "no_dof; analysis skipped"
+                return self.results
+            # -------------------------------------------
+
+            # Set up recorders and run the analysis
             self.setup_recorders()
             self.run_analysis_sequence()
+
+            # If you have monitoring but disabled capture during run
             if "monitoring" in self.data and not self.data["monitoring"].get("capture_during_analysis", True):
                 self.capture_monitoring_data()
+
+            # Capture final state, wipe, collect recorder output
             self.capture_final_state()
-            ops.wipe()  
+            import openseespy.opensees as ops
+            ops.wipe()
             self.collect_recorder_data()
-            
+
             return self.results
+
         except Exception as e:
             self.results["status"]    = f"critical_error: {e}"
             self.results["traceback"] = traceback.format_exc()
             return self.results
+
         finally:
+            # Always return to original working dir
             os.chdir(self.original_dir)
 
     def cleanup_output(self):

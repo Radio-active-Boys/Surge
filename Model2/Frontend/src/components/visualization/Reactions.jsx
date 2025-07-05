@@ -2,11 +2,36 @@
 
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
+import { saveAs } from "file-saver"; 
 import { usePlotParser } from "../../utils/plotParser";
-
-export default function Reaction({ width = 1000, height = 600, margin = 40 }) {
+import './Reaction.css'
+export default function Reaction({width = 1200, height = 470, margin = 40 }) {
   const { nodeCoordinates, elementConnectivity, supports, nodeReactionSeries, ndf, ndm } = usePlotParser();
   const svgRef = useRef();
+  // Export SVG as PNG
+const exportPNG = () => {
+  const svgEl = svgRef.current;
+  const bbox = svgEl.getBBox();
+  const xml = new XMLSerializer().serializeToString(svgEl);
+  const svg64 = btoa(unescape(encodeURIComponent(xml))); // safer encoding
+  const img = new Image();
+  img.src = `data:image/svg+xml;base64,${svg64}`;
+
+  img.onload = () => {
+    const scale = 2; // ← Increase for higher quality (e.g., 2x, 3x)
+    const canvas = document.createElement("canvas");
+    canvas.width = (bbox.width + margin * 2) * scale;
+    canvas.height = (bbox.height + margin * 2) * scale;
+    const ctx = canvas.getContext("2d");
+
+    ctx.scale(scale, scale); // ← Scale drawing context
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
+    ctx.drawImage(img, -bbox.x + margin, -bbox.y + margin);
+
+    canvas.toBlob(blob => saveAs(blob, "reaction-force.png"));
+  };
+};
 
   useEffect(() => {
     if (!nodeCoordinates || Object.keys(nodeCoordinates).length === 0) return;
@@ -34,7 +59,14 @@ export default function Reaction({ width = 1000, height = 600, margin = 40 }) {
     DrawReactions(gReactions, nodeReactionSeries, nodeCoordinates, xScale, yScale, ndf, ndm);
   }, [nodeCoordinates, elementConnectivity, supports, nodeReactionSeries, ndf, ndm, width, height, margin]);
 
-  return <svg ref={svgRef} width={width} height={height} style={{ border: "1px solid #ccc", background: "#fafafa" }} />;
+  return (
+    <div className="reaction-container">
+      <div className="force-controls">
+      <button onClick={exportPNG}>Save PNG</button>
+      </div>
+      <svg ref={svgRef} width={width} height={height} className="reaction-svg" />
+    </div>
+  );
 }
 
 // ─── DRAW ELEMENTS ────────────────────────────────────────────────────────
@@ -103,16 +135,26 @@ function DrawElements(g, elements, coords, xScale, yScale) {
     g.append("text")
       .attr("x", tx + 3)
       .attr("y", ty - 3)
-      .text("x")
+      .text("X")
       .attr("fill", "red")
-      .attr("font-size", 12);
+      .attr("font-size", 5);
 
     g.append("text")
-      .attr("x", qx + 3)
+      .attr("x", qx - 6)
       .attr("y", qy - 3)
-      .text("y")
+      .text("Y")
       .attr("fill", "green")
-      .attr("font-size", 12);
+      .attr("font-size", 5);
+
+    // Better-positioned element ID label
+    g.append("text")
+      .attr("x", (tx+qx)/2)
+      .attr("y", (ty+qy)/2)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 7)
+      .attr("fill", "blue")
+      .text(`E${el.id}`);
+  
   });
 }
 
@@ -131,6 +173,19 @@ function DrawNodes(g, coords, xScale, yScale) {
     .merge(sel)
       .attr("cx", d => xScale(d.x))
       .attr("cy", d => yScale(d.y));
+  // Draw node labels
+  const labels = g.selectAll("text.node-label").data(data, d => d.id);
+  labels.exit().remove();
+  labels.enter()
+    .append("text")
+      .attr("class", "node-label")
+      .attr("font-size", 7)
+      .attr("fill", "#007bff")
+      .attr("text-anchor", "start")
+    .merge(labels)
+      .attr("x", d => xScale(d.x) + 5)
+      .attr("y", d => yScale(d.y) - 5)
+      .text(d => `N${d.id}`);
 }
 
 // ─── DRAW SUPPORTS ───────────────────────────────────────────────────────
@@ -209,7 +264,8 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
 
 // ─── DRAW Reactions ─────────────────────────────────────────────────────
 function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
-  const data = (series[0] || { data: {} }).data;
+  const last = series.length > 0 ? series[series.length - 1] : { data: {} };
+  const data = last.data;
   g.selectAll("*").remove();
 
   Object.entries(data).forEach(([nodeId, vecRaw]) => {
@@ -232,7 +288,7 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
     // RX
     if (ndf >= 1 && Math.abs(rx) > 1e-6) {
       const sign = rx > 0 ? 1 : -1;
-      const color = "cyan";
+      const color = "blue";
       g.append("line")
         .attr("x1", x).attr("y1", y)
         .attr("x2", x + sign * len).attr("y2", y)
@@ -240,9 +296,9 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
         .attr("marker-end", `url(#arrowhead-${color})`);
 
       g.append("text")
-        .attr("x", x + sign * len + 5)
+        .attr("x", x + sign * len *2.5)
         .attr("y", y - 5)
-        .text(rx.toFixed(2))
+        .text(Math.abs(rx.toFixed(2)))
         .attr("fill", color)
         .attr("font-size", 10);
     }
@@ -253,14 +309,14 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
       const color = "magenta";
       g.append("line")
         .attr("x1", x).attr("y1", y)
-        .attr("x2", x).attr("y2", y + sign * len)
+        .attr("x2", x).attr("y2", y + sign * len )
         .attr("stroke", color).attr("stroke-width", 2)
         .attr("marker-end", `url(#arrowhead-${color})`);
 
       g.append("text")
         .attr("x", x + 5)
-        .attr("y", y + sign * len - 5)
-        .text(ry.toFixed(2))
+        .attr("y", y + sign * len * 2)
+        .text(Math.abs(ry.toFixed(2)))
         .attr("fill", color)
         .attr("font-size", 10);
     }
@@ -308,7 +364,7 @@ if (ndf === 3 && Math.abs(mz) > 1e-6) {
   g.append("text")
     .attr("x", x + 5)
     .attr("y", y - r +4)
-    .text(mz.toFixed(2))
+    .text(Math.abs(mz.toFixed(2)))
     .attr("fill", color)
     .attr("font-size", 10);
 }
@@ -321,7 +377,7 @@ function defineArrowMarkers(svg) {
   const defs = svg.append("defs");
 
   // Utility to define colored arrowheads
-  const colors = ["yellow", "green", "red", "cyan", "magenta"]; 
+  const colors = ["yellow", "green", "red", "blue", "magenta"]; 
   colors.forEach(color => {
     defs.append("marker")
       .attr("id", `arrowhead-${color}`)

@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import * as d3 from "d3";
+import { saveAs } from "file-saver"; 
 import { usePlotParser } from "../../utils/plotParser";
-
-export default function DeflectedShape({ width = 1000, height = 600, margin = 40 }) {
+import './DeflectedShape.css'
+export default function DeflectedShape({ width = 1200, height = 430, margin = 40 }) {
   const svgRef = useRef(null);
   const zoomRef = useRef(null);
   const rootRef = useRef(null);
@@ -20,204 +21,252 @@ export default function DeflectedShape({ width = 1000, height = 600, margin = 40
   const [userScale, setUserScale] = useState(1);
   const nep = 17;
 
+  // Query state: user can fill either nodeID or elementID + xLoc
+  const [queryNodeId, setQueryNodeId] = useState('');
+  const [queryElId, setQueryElId] = useState('');
+  const [queryXLoc, setQueryXLoc] = useState(0);
+  const [deflResult, setDeflResult] = useState(null);
+  const [deflError, setDeflError] = useState('');
+
   // Compute base scale factor
-  const baseSfac = useMemo(
-    () =>
-      defo_scale(
-        nep,
-        elementConnectivity,
-        nodeCoordinates,
-        nodeDispSeries?.[0]?.data || {},
-        ndm,
-        ndf
-      ),
+  const baseSfac = useMemo(() =>
+    defo_scale(
+      nep,
+      elementConnectivity,
+      nodeCoordinates,
+      nodeDispSeries?.[0]?.data || {},
+      ndm,
+      ndf
+    ),
     [elementConnectivity, nodeCoordinates, nodeDispSeries, ndm, ndf]
   );
   const sfac = baseSfac * userScale;
 
+const exportPNG = () => {
+  const svgEl = svgRef.current;
+  const bbox = svgEl.getBBox();
+  const xml = new XMLSerializer().serializeToString(svgEl);
+  const svg64 = btoa(unescape(encodeURIComponent(xml))); // safer encoding
+  const img = new Image();
+  img.src = `data:image/svg+xml;base64,${svg64}`;
+
+  img.onload = () => {
+    const scale = 2; // ← Increase for higher quality (e.g., 2x, 3x)
+    const canvas = document.createElement("canvas");
+    canvas.width = (bbox.width + margin * 2) * scale;
+    canvas.height = (bbox.height + margin * 2) * scale;
+    const ctx = canvas.getContext("2d");
+
+    ctx.scale(scale, scale); // ← Scale drawing context
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
+    ctx.drawImage(img, -bbox.x + margin, -bbox.y + margin);
+
+    canvas.toBlob(blob => saveAs(blob, "deflected-shape.png"));
+  };
+};
+
+
   // Animation loop
   useEffect(() => {
     let timer;
-    if (isPlaying && nodeDispSeries && nodeDispSeries.length > 0) {
+    if (isPlaying && nodeDispSeries && nodeDispSeries.length) {
       timer = setInterval(() => {
-        setTimeIndex((idx) => (idx + 1) % nodeDispSeries.length);
+        setTimeIndex(idx => (idx + 1) % nodeDispSeries.length);
       }, 200);
     }
     return () => clearInterval(timer);
   }, [isPlaying, nodeDispSeries]);
 
-  // Initialize SVG and zoom
+  // Init SVG & zoom
   useEffect(() => {
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     defineArrowMarkers(svg);
-
     const root = svg.append("g").attr("class", "viewport");
     rootRef.current = root;
-
     const zoom = d3.zoom()
       .scaleExtent([0.2, 5])
-      .on("zoom", (event) => {
-        root.attr("transform", event.transform);
-      });
-
+      .on("zoom", e => root.attr("transform", e.transform));
     zoomRef.current = zoom;
     svg.call(zoom).on("dblclick.zoom", null);
   }, []);
 
-  // Main drawing
+  // Main draw
   useEffect(() => {
-    if (!rootRef.current) return;
-    if (!nodeCoordinates || Object.keys(nodeCoordinates).length === 0) return;
-
+    if (!rootRef.current || !nodeCoordinates) return;
     const svg = d3.select(svgRef.current);
     const root = rootRef.current;
     root.selectAll(".original, .elements, .nodes, .supports").remove();
 
-    // Gather original coordinates
-    const xs0 = Object.values(nodeCoordinates).map((d) => d.x);
-    const ys0 = Object.values(nodeCoordinates).map((d) => d.y);
-
-    // Build displacement map for current time
+    const coords = nodeCoordinates;
     const dispMap = nodeDispSeries?.[timeIndex]?.data || {};
 
-    // Compute domains
-    let [xMin, xMax] = d3.extent(xs0);
-    let [yMin, yMax] = d3.extent(ys0);
-
-    // Handle degenerate X domain
-    if (xMin === xMax) {
-      xMin -= 1;
-      xMax += 1;
-    }
-
-    // Handle degenerate Y domain by padding with max deflection
+    // original extents
+    const xs = Object.values(coords).map(d => d.x);
+    const ys = Object.values(coords).map(d => d.y);
+    let [xMin, xMax] = d3.extent(xs);
+    let [yMin, yMax] = d3.extent(ys);
+    if (xMin === xMax) { xMin -= 1; xMax += 1; }
     if (yMin === yMax) {
-      const maxUy =
-        d3.max(Object.values(dispMap), (d) => Math.abs(d?.["2"]) * sfac) || 1;
-      yMin -= maxUy;
-      yMax += maxUy;
+      const uYmax = d3.max(Object.values(dispMap), d => Math.abs(d?.['2']*sfac)) || 1;
+      yMin -= uYmax; yMax += uYmax;
     }
+    const xScale = d3.scaleLinear().domain([xMin, xMax]).range([margin, width - margin]);
+    const yScale = d3.scaleLinear().domain([yMin, yMax]).range([height - margin, margin]);
 
-    const xScale = d3.scaleLinear()
-      .domain([xMin, xMax])
-      .range([margin, width - margin]);
-    const yScale = d3.scaleLinear()
-      .domain([yMin, yMax])
-      .range([height - margin, margin]);
-
-    // Layers: draw original
-    const gOriginal = root.append("g").attr("class", "original");
-    elementConnectivity.forEach((el) => {
-      const p1 = nodeCoordinates[el.i];
-      const p2 = nodeCoordinates[el.j];
-      if (!p1 || !p2) return;
-      gOriginal
-        .append("line")
-        .attr("x1", xScale(p1.x))
-        .attr("y1", yScale(p1.y))
-        .attr("x2", xScale(p2.x))
-        .attr("y2", yScale(p2.y))
-        .attr("stroke", "grey")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "4 2")
-        .attr("opacity", 0.6);
+    // draw original
+    const g0 = root.append("g").attr("class", "original");
+    elementConnectivity.forEach(el => {
+      const p1 = coords[el.i], p2 = coords[el.j];
+      if (!p1||!p2) return;
+      g0.append("line")
+        .attr("x1", xScale(p1.x)).attr("y1", yScale(p1.y))
+        .attr("x2", xScale(p2.x)).attr("y2", yScale(p2.y))
+        .attr("stroke", "grey").attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4 2").attr("opacity", 0.6);
     });
 
-    // Layers
-    const gElements = root.append("g").attr("class", "elements");
-    const gNodes = root.append("g").attr("class", "nodes");
-    const gSupports = root.append("g").attr("class", "supports");
-
+    // draw deflected
     DrawElementsDeflected(
-      gElements,
-      elementConnectivity,
-      nodeCoordinates,
-      dispMap,
-      xScale,
-      yScale,
-      sfac,
-      ndm,
-      ndf
+      root.append("g").attr("class","elements"),
+      elementConnectivity, coords, dispMap, xScale, yScale, sfac, ndm, ndf
     );
     DrawNodesDeflected(
-      gNodes,
-      nodeCoordinates,
-      dispMap,
-      xScale,
-      yScale,
-      sfac
+      root.append("g").attr("class","nodes"), coords, dispMap, xScale, yScale, sfac
     );
     DrawSupportsDeflected(
-      gSupports,
-      supports,
-      nodeCoordinates,
-      dispMap,
-      xScale,
-      yScale,
-      sfac
+      root.append("g").attr("class","supports"), supports, coords, dispMap, xScale, yScale, sfac
     );
-  }, [
-    nodeCoordinates,
-    elementConnectivity,
-    supports,
-    timeIndex,
-    width,
-    height,
-    margin,
-    sfac,
-  ]);
+  }, [nodeCoordinates, elementConnectivity, supports, nodeDispSeries, timeIndex, width, height, margin, sfac]);
+
+  // Handle query: nodeId OR (elId + xLoc)
+  function handleQuery() {
+    const dispMap = nodeDispSeries?.[timeIndex]?.data || {};
+    setDeflResult(null);
+    setDeflError('');
+
+    if (queryNodeId) {
+      // node deflection
+      const u = dispMap[String(queryNodeId)];
+      if (!u) {
+        setDeflError(`Node ${queryNodeId} not found`);
+        return;
+      }
+      setDeflResult({ dx: u['1']||0, dy: u['2']||0 });
+      return;
+    }
+
+    // element deflection
+    const el = elementConnectivity.find(e => e.id.toString() === String(queryElId));
+    if (!el) {
+      setDeflError(`Element ${queryElId} not found`);
+      return;
+    }
+    const p1 = nodeCoordinates[el.i], p2 = nodeCoordinates[el.j];
+    const L  = Math.hypot(p2.x - p1.x, p2.y - p1.y) || 1;
+    if (queryXLoc < 0 || queryXLoc > L) {
+      setDeflError(`x must be between 0 and ${L.toFixed(3)}`);
+      return;
+    }
+
+    // build local disp map
+    const localDisp = {
+      [String(el.i)]: [
+        dispMap[el.i]?.['1']||0,
+        dispMap[el.i]?.['2']||0,
+        dispMap[el.i]?.['3']||0,
+      ],
+      [String(el.j)]: [
+        dispMap[el.j]?.['1']||0,
+        dispMap[el.j]?.['2']||0,
+        dispMap[el.j]?.['3']||0,
+      ],
+    };
+
+    const interp = beam_defo_interp_2d(nep, el, sfac, nodeCoordinates, localDisp, ndm, ndf);
+    if (!interp) {
+      setDeflError('Interpolation failed');
+      return;
+    }
+
+    // original position
+    const origX = p1.x + (p2.x - p1.x) * (queryXLoc / L);
+    const origY = p1.y + (p2.y - p1.y) * (queryXLoc / L);
+
+    // find nearest idx
+    let best=0, bestD=Infinity;
+    interp.crd_xc.forEach((x,i) => {
+      const y = interp.crd_yc[i];
+      const d = Math.hypot(x - origX, y - origY);
+      if (d < bestD) { bestD = d; best = i; }
+    });
+
+    const defX = interp.crd_xc[best];
+    const defY = interp.crd_yc[best];
+    setDeflResult({ dx: (defX - origX)/sfac, dy: (defY - origY)/sfac });
+  }
 
   return (
-    <div>
-      <svg
-        ref={svgRef}
-        width={width}
-        height={height}
-        style={{ border: "1px solid #ccc", background: "#fafafa" }}
-      />
-      {nodeDispSeries && nodeDispSeries.length > 0 && (
-        <div
-          style={{
-            marginTop: "8px",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
-          <button onClick={() => setIsPlaying((p) => !p)}>
-            {isPlaying ? "Pause" : "Play"}
-          </button>
+    <div className="deflected-container">
+      <div className="controls">
+        <button onClick={exportPNG}>Save PNG</button>
+        <button onClick={() => setIsPlaying(p=>!p)}>
+          {isPlaying ? 'Stop' : 'Play'}
+        </button>
+        <label>
+          Scale:
           <input
-            type="range"
-            min={0}
-            max={nodeDispSeries.length - 1}
-            value={timeIndex}
-            onChange={(e) => {
-              setTimeIndex(+e.target.value);
-              setIsPlaying(false);
-            }}
-          />
-          <span>{nodeDispSeries[timeIndex]?.time?.toFixed(3) ?? ""}s</span>
-          <label>
-            Scale:
-            <input
-              type="range"
-              min={0.1}
-              max={5}
-              step={0.1}
-              value={userScale}
-              onChange={(e) => setUserScale(parseFloat(e.target.value))}
-              style={{ marginLeft: "5px" }}
-            />
-            {userScale.toFixed(1)}x
-          </label>
+            type="range" min={0.1} max={5} step={0.1}
+            value={userScale}
+            onChange={e => setUserScale(parseFloat(e.target.value))}
+          /> {userScale.toFixed(1)}x
+        </label>
+      </div>
+
+      <div className="query-controls">
+        <input
+          type="text"
+          placeholder="Node ID"
+          value={queryNodeId}
+          onChange={e => { setQueryNodeId(e.target.value); setQueryElId(''); }}
+          disabled={queryElId}
+        />
+        <input
+          type="text"
+          placeholder="Element ID"
+          value={queryElId}
+          onChange={e => { setQueryElId(e.target.value); setQueryNodeId(''); }}
+        />
+        <input
+          type="number"
+          placeholder="x from start"
+          value={queryXLoc}
+          onChange={e => setQueryXLoc(parseFloat(e.target.value))}
+          disabled={!queryElId}
+        />
+        <button onClick={handleQuery}>Get Δx, Δy</button>
+      </div>
+      {deflError && (
+        <div className="query-error" style={{ borderLeft: "4px solid #dc2626" /* red */ }}>
+          <strong>Error:</strong> {deflError}
         </div>
       )}
+
+    {deflResult && !deflError && (
+      <div className="query-result">
+        {queryNodeId
+          ? `At node ${queryNodeId}: Δx=${deflResult.dx.toFixed(4)}, Δy=${deflResult.dy.toFixed(4)}`
+          : `At x=${queryXLoc.toFixed(2)} on element ${queryElId}: Δx=${deflResult.dx.toFixed(4)}, Δy=${deflResult.dy.toFixed(4)}`
+        }
+      </div>
+    )}
+
+
+      <svg ref={svgRef} width={width} height={height} className="deflected-svg" />
     </div>
   );
 }
-
 // New implementation of DrawElementsDeflected using beam_defo_interp_2d
 function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfac, ndm, ndf) {
   g.selectAll("*").remove();

@@ -3,11 +3,16 @@
   padding: 24px;
   border-radius: 12px;
   border: 1px solid #ddd;
-  max-width: 700px;
-  margin: 30px auto;
+  max-width: 760px;
+  /* margin: 10px auto; */
   font-family: 'Segoe UI', sans-serif;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  /* NEW: height and scroll styling */
+  height: 50vh; /* or 100%, or any height you need */
+  overflow-y: auto;
 }
+
 
 .param-header {
   display: flex;
@@ -20,14 +25,14 @@
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
-  min-width: 200px;
+
 }
 
 .params {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .param-row {

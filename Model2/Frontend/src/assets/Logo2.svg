@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300">
+  <style>
+    .beam {
+      stroke: #2C3E50;
+      stroke-width: 10;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .joint {
+      fill: #1ABC9C;
+    }
+    .strong-x {
+      stroke: #F39C12;
+      stroke-width: 8;
+      fill: none;
+      stroke-linecap: square;
+    }
+    .text {
+      font: bold 64px 'Segoe UI', sans-serif;
+      fill: #2C3E50;
+    }
+    .arrow {
+      stroke: #E74C3C;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .support-line {
+      stroke: #95A5A6;
+      stroke-width: 2;
+      fill: none;
+    }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#E74C3C" />
+    </marker>
+  </defs>
+
+  <!-- Portal Frame -->
+  <g transform="translate(120, 180)">
+    <!-- Columns -->
+    <line class="beam" x1="0" y1="0" x2="0" y2="-100"/>
+    <line class="beam" x1="120" y1="0" x2="120" y2="-100"/>
+    <!-- Beam -->
+    <line class="beam" x1="0" y1="-100" x2="120" y2="-100"/>
+
+    <!-- Joints -->
+    <circle class="joint" cx="0" cy="0" r="5"/>
+    <circle class="joint" cx="120" cy="0" r="5"/>
+    <circle class="joint" cx="0" cy="-100" r="5"/>
+    <circle class="joint" cx="120" cy="-100" r="5"/>
+
+    <!-- Internal Structure – Custom X Inspired by 𐋄 -->
+    <line class="strong-x" x1="40" y1="-20" x2="80" y2="-80"/>
+    <line class="strong-x" x1="80" y1="-20" x2="40" y2="-80"/>
+    <line class="strong-x" x1="60" y1="-20" x2="60" y2="-80"/>
+    <line class="strong-x" x1="40" y1="-50" x2="80" y2="-50"/>
+
+    <!-- Fixed Support Left -->
+    <polygon class="support-line" points="-10,10 10,10 0,0"/>
+    <line class="support-line" x1="-12" y1="13" x2="12" y2="13"/>
+    <line class="support-line" x1="-10" y1="16" x2="10" y2="16"/>
+
+    <!-- Pinned Support Right -->
+    <polygon class="support-line" points="110,10 130,10 120,0"/>
+
+    <!-- Horizontal Arrow from Top-Right Node -->
+    <line class="arrow" x1="120" y1="-100" x2="160" y2="-100"/>
+  </g>
+
+  <!-- Logo Text -->
+  <text x="330" y="185" class="text">Frame𝕏</text>
+</svg>

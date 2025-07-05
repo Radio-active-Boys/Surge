@@ -1,0 +1,119 @@
+[
+  {
+    "category": "pattern",
+    "name": "Plain",
+    "defaultParams": {
+      "Pattern ID": 1
+    },
+    "command": {
+      "name": "pattern",
+      "args": ["Plain", "$Pattern ID", 1, "-fact", 1.0]
+    }
+  },
+  {
+    "category": "load",
+    "name": "Truss Nodal Load",
+    "defaultParams": {
+      "Node ID": 1,
+      "X Load": 0.0,
+      "Y Load": 0.0
+    },
+    "command": {
+      "name": "load",
+      "args": ["$Node ID", "$X Load", "$Y Load"]
+    }
+  },
+  {
+    "category": "load",
+    "name": "Frame Nodal Load",
+    "defaultParams": {
+      "Node ID": 1,
+      "X Load": 0.0,
+      "Y Load": 0.0,
+      "Moment":0.0
+
+    },
+    "command": {
+      "name": "load",
+      "args": ["$Node ID", "$X Load", "$Y Load", "$Moment"]
+    }
+  },
+
+
+  {
+    "category": "eleLoad",
+    "name": "BeamUniformLoad",
+    "defaultParams": {
+      "Element ID's": [1],
+      "useRange": false,
+      "eleTag1": 1,
+      "eleTag2": 1,
+      "Wy": -5000.0,
+      "Wx": 0.0
+    },
+    "command": {
+      "name": "eleLoad",
+      "args": [
+        { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
+        { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
+        "-type", "beamUniform",
+        "$Wy",
+        "$Wx"
+      ]
+    }
+  },
+  {
+    "category": "eleLoad",
+    "name": "BeamPointLoad",
+    "defaultParams": {
+      "Element ID's": [1],
+      "useRange": false,
+      "eleTag1": 1,
+      "eleTag2": 1,
+      "Py": -1000.0,
+      "xL": 0.5,
+      "Px": 0.0
+    },
+    "command": {
+      "name": "eleLoad",
+      "args": [
+        { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
+        { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
+        "-type", "beamPoint",
+        "$Py",
+        "$xL",
+        "$Px"
+      ]
+    }
+  },
+  {
+    "category": "eleLoad",
+    "name": "BeamTrapezoidalLoad",
+    "defaultParams": {
+      "Element ID's": [1],
+      "useRange": false,
+      "eleTag1": 1,
+      "eleTag2": 1,
+      "Wy_start": -2000.0,
+      "Wx_start": 0.0,
+      "aL": 0.2,
+      "bL": 0.9,
+      "Wy_end": -4000.0,
+      "Wx_end": 0.0
+    },
+    "command": {
+      "name": "eleLoad",
+      "args": [
+        { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
+        { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
+        "-type", "beamUniform",
+        "$Wy_start",
+        "$Wx_start",
+        "$aL",
+        "$bL",
+        "$Wy_end",
+        "$Wx_end"
+      ]
+    }
+  }
+]

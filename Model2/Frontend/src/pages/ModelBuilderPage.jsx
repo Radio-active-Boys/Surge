@@ -4,12 +4,19 @@ import ParametricEditor from '../components/model-builder/ParametricEditor';
 import PatternEditor from '../components/model-builder/PatternEditor';
 import SectionEditor from '../components/model-builder/SectionEditor';
 import ModelViewer from '../components/visualization/ModelViewer';
+import { useUserTypeStore } from '../utils/storeUserType';
 import { useModelStore } from '../stores/useModelStore';
 import './ModelBuilderPage.css';
 
 const ModelBuilderPage = () => {
   const [modelJson, setModelJson] = useState(useModelStore.getState().toJson());
+  const status = useUserTypeStore(s => s.status);
+  const initializeDefaults = useModelStore(s => s.initializeDefaults);
 
+  useEffect(() => {
+    console.log('ModelBuilderPage sees status:', status);
+    initializeDefaults();
+  }, [status, initializeDefaults]);
   useEffect(() => {
     const unsubscribe = useModelStore.subscribe(() => 
       setModelJson(useModelStore.getState().toJson())
@@ -48,7 +55,7 @@ const ModelBuilderPage = () => {
 
   return (
     <div className="model-builder">
-      <div className="editors-panel">
+      <div className="model-editors-panel">
         <div className="tabs">
           {[
             'model',

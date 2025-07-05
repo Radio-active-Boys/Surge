@@ -283,7 +283,7 @@ export function usePlotParser() {
   const modelConfig = useModelStore(state => state.modelConfig);
   const ndf = modelConfig?.ndf || 2;
   const ndm = modelConfig?.ndm || 2;
-
+console.log("model data in plotter ",useModelStore())
   return useMemo(() => {
     return parseResults(
       modelNodes,

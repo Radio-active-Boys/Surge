@@ -1,0 +1,39 @@
+[
+      {
+    "name": "Constraint Truss",
+    "category": "constraint",
+    "defaultParams": {
+      "Node ID": 1,
+      "X Constrain":1,
+      "Y Constrain":1
+    },
+    "command": {
+      "name": "fix",
+      "args": [
+        "$Node ID",
+        "$X Constrain",
+        "$Y Constrain"
+      ]
+    }
+  },
+  {
+    "name": "Constraint Frame-Beam-Column",
+    "category": "constraint",
+    "defaultParams": {
+      "Node ID": 1,
+      "X Constrain":1,
+      "Y Constrain":1,
+      "Rotational Constrain":0
+    },
+    "command": {
+      "name": "fix",
+      "args": [
+        "$Node ID",
+        "$X Constrain",
+        "$Y Constrain",
+        "$Rotational Constrain"
+      ]
+    }
+  }
+
+]

@@ -1,31 +1,25 @@
 // src/components/analysis/AnalysisConfig.jsx
-
 import { useState } from 'react';
 import { useAnalysisStore } from '../../stores/useAnalysisStore';
 import { useModelStore } from '../../stores/useModelStore';
 import { useResultStore } from '../../stores/useResultStore';
 import { runAnalysis } from '../../api/openseesService';
-import ResultsVisualizer from './ResultsVisualizer';
 import { importModel } from '../../utils/modelUtils';
 import './AnalysisConfig.css';
 
 const AnalysisConfig = () => {
-  // Local UI state
   const [results, setResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // State for imported JSON payload
   const [importedJson, setImportedJson] = useState(null);
   const [importError, setImportError] = useState(null);
   const [importFileName, setImportFileName] = useState('');
   const [inputKey, setInputKey] = useState(0);
 
-  // Zustand store actions
   const setResultData = useResultStore((state) => state.setResultData);
   const clearResults = useResultStore((state) => state.clearResults);
 
-  // Handler for file input change
   const handleFileChange = (e) => {
     setImportError(null);
     setImportedJson(null);
@@ -62,9 +56,8 @@ const AnalysisConfig = () => {
     setIsLoading(true);
     setError(null);
     setResults(null);
-    clearResults(); // clear previous result data in store
+    clearResults();
 
-    // Build payload
     let fullPayload;
     if (importedJson) {
       fullPayload = importedJson;
@@ -75,25 +68,31 @@ const AnalysisConfig = () => {
       fullPayload = { ...modelJson, ...analysisJson };
     }
 
+    if (!fullPayload.nodes || fullPayload.nodes.length === 0) {
+      setError("You must define at least one node before running analysis.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await runAnalysis(fullPayload);
 
-      if (response.status === 'success') {
+      if (response.status === "success") {
         setResults(response);
         setResultData(response);
       } else {
-        let msg = response.message || 'Analysis failed.';
+        let msg = response.message || "Analysis failed.";
         if (Array.isArray(response.errors)) {
           const errorMsgs = response.errors.map(e =>
-            typeof e === 'string'
+            typeof e === "string"
               ? e
               : e.stderr || e.error || JSON.stringify(e)
           );
-          msg += ' ' + errorMsgs.join('; ');
+          msg += " " + errorMsgs.join("; ");
         }
         setError(msg);
         setResultData({
-          status: 'failure',
+          status: "failure",
           errors: response.errors || [msg],
           warnings: response.warnings || [],
           monitoring: null,
@@ -103,11 +102,11 @@ const AnalysisConfig = () => {
         });
       }
     } catch (err) {
-      console.error('Unexpected error:', err);
-      const msg = err.message || 'An unexpected error occurred.';
+      console.error("Unexpected error:", err);
+      const msg = err.message || "An unexpected error occurred.";
       setError(msg);
       setResultData({
-        status: 'error',
+        status: "error",
         errors: [msg],
         warnings: [],
         monitoring: null,
@@ -129,80 +128,75 @@ const AnalysisConfig = () => {
 
   return (
     <div className="analysis-container">
-      {/* Import & Download Controls */}
-      <div className="import-section mb-4">
-
-        <div className="flex items-center gap-4">
-            <div className="file-upload-wrapper">
-              <input
-                id="json-upload"
-                key={inputKey}
-                type="file"
-                accept=".json,application/json"
-                onChange={handleFileChange}
-                className="hidden-input"
-              />
-              <label htmlFor="json-upload" className="import-button">
-                📁 Import Model
-              </label>
-            </div>
-
-          <button
-            className="download-button"
-            onClick={() => {
-              const modelJson = useModelStore.getState().toJson();
-              const analysisJson = useAnalysisStore.getState().toJson();
-              const fullPayload = { ...modelJson, ...analysisJson };
-              const blob = new Blob(
-                [JSON.stringify(fullPayload, null, 2)],
-                { type: 'application/json' }
-              );
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(blob);
-              link.download = 'model_config.json';
-              link.click();
-            }}
-          >
-            ⬇️ Download Model
-          </button>
+      <div className="button-row">
+        <div className="file-upload-wrapper">
+          <input
+            id="json-upload"
+            key={inputKey}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleFileChange}
+            className="hidden-input"
+          />
+          <label htmlFor="json-upload" className="import-button">
+            📁 Import Model
+          </label>
         </div>
 
-{importFileName && (
-  <div className="file-pill mt-3">
-    <span className="file-name">{importFileName}</span>
-    <button
-      onClick={handleClearImport}
-      className="file-clear-btn"
-      type="button"
-      aria-label="Clear imported file"
-    >
-      ✖
-    </button>
-  </div>
-)}
+        <button
+          className="download-button"
+          onClick={() => {
+            const modelJson = useModelStore.getState().toJson();
+            const analysisJson = useAnalysisStore.getState().toJson();
+            const fullPayload = { ...modelJson, ...analysisJson };
+            const blob = new Blob(
+              [JSON.stringify(fullPayload, null, 2)],
+              { type: 'application/json' }
+            );
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'model_config.json';
+            link.click();
+          }}
+        >
+          ⬇️ Download Model
+        </button>
 
-        {importError && (
-          <div className="import-error text-red-600 text-sm mt-1">
-            {importError}
-          </div>
-        )}
+        <button
+          onClick={handleRunAnalysis}
+          disabled={isLoading}
+          className={`analysis-button ${isLoading ? 'loading' : ''}`}
+        >
+          {isLoading ? (
+            <span className="button-content">
+              <span className="spinner"></span>
+              Running Analysis...
+            </span>
+          ) : (
+            '🚀 Run Analysis'
+          )}
+        </button>
       </div>
 
-      {/* Run Analysis */}
-      <button
-        onClick={handleRunAnalysis}
-        disabled={isLoading}
-        className={`analysis-button ${isLoading ? 'loading' : ''}`}
-      >
-        {isLoading ? (
-          <span className="button-content">
-            <span className="spinner"></span>
-            Running Analysis...
-          </span>
-        ) : (
-          '🚀 Run Analysis'
-        )}
-      </button>
+      {importFileName && (
+        <div className="file-pill mt-3">
+          <span className="file-name">{importFileName}</span>
+          <button
+            onClick={handleClearImport}
+            className="file-clear-btn"
+            type="button"
+            aria-label="Clear imported file"
+          >
+            ✖
+          </button>
+        </div>
+      )}
+
+      {importError && (
+        <div className="import-error text-red-600 text-sm mt-1">
+          {importError}
+        </div>
+      )}
 
       {error && (
         <div className="error-message mt-4">
@@ -213,7 +207,6 @@ const AnalysisConfig = () => {
       {results && (
         <div className="result-message mt-4">
           <strong>✅ Results are ready!</strong>
-          <ResultsVisualizer data={results} />
         </div>
       )}
     </div>

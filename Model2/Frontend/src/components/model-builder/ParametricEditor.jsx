@@ -83,7 +83,7 @@ const ParametricEditor = ({ category }) => {
   };
 
   return (
-    <div className="param-editor">
+    <div className="model-param-editor">
       <div className="param-header">
         <label>Template:</label>
         <select

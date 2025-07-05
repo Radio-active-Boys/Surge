@@ -2,10 +2,11 @@
 import { create } from 'zustand';
 import { generateCommand, getTemplateByName } from '../api/jsonTemplates';
 import { generateId } from '../utils/idGenerator';
+import { useUserTypeStore } from '../utils/storeUserType';
 
 export const useModelStore = create((set, get) => ({
+  
   modelConfig: { ndm: 2, ndf: 2 },
-
   // core arrays
   node: [],
   boundaryConditions: [],
@@ -21,6 +22,67 @@ export const useModelStore = create((set, get) => ({
   // merge without overwriting
   setModelConfig: config =>
     set(state => ({ modelConfig: { ...state.modelConfig, ...config } })),
+  // call this whenever you want to reset/populate defaults
+initializeDefaults: () => {
+  // 1) pull both status and modelConfig from their stores
+  const status = useUserTypeStore.getState().status;
+  const { modelConfig } = get();
+
+  console.log("status in model store:", status, "ndf:", modelConfig.ndf);
+
+  // default components for lite users
+  const defaultSections = [
+    { id: null, command: 'section', templateName: 'Elastic2D',
+      args: ['Elastic', 1, 200000000000, 0.01, 0.00000833], fibers: [] }
+  ];
+  const defaultTransformations = [
+    { id: null, command: 'geomTransf', templateName: 'Linear', args: ['Linear', 1] }
+  ];
+  const defaultIntegrations = [
+    { id: null, command: 'beamIntegration', templateName: 'Lobatto', args: ['Lobatto', 1, 1, 2] }
+  ];
+  const defaultTimeSeries = [
+    { id: null, command: 'timeSeries', templateName: 'Constant', args: ['Constant', 1, '-factor', 1] }
+  ];
+
+  // 2) now the condition will actually see modelConfig.ndf
+
+
+  if (status === 'lite') {
+      if (modelConfig.ndf === 2) {
+              set({
+      timeSeries: defaultTimeSeries.map(def => ({ ...def, id: generateId() }))
+    });
+      }
+  else if (modelConfig.ndf === 3) {
+    set({
+      section: defaultSections.map(def => ({ ...def, id: generateId() })),
+      geomTransf: defaultTransformations.map(def => ({ ...def, id: generateId() })),
+      beamIntegration: defaultIntegrations.map(def => ({ ...def, id: generateId() })),
+      timeSeries: defaultTimeSeries.map(def => ({ ...def, id: generateId() }))
+    });
+  }
+  else {
+    // In case you add a 4‑DOF or something later…
+    set({
+      section: [],
+      geomTransf: [],
+      beamIntegration: [],
+      timeSeries: []
+    });
+  }
+} else {
+  // non‑lite users
+  set({
+    section: [],
+    geomTransf: [],
+    beamIntegration: [],
+    timeSeries: []
+  });
+}
+
+},
+
 
   // universal addComponent
   addComponent: (category, templateName, params, parentId = null) => {
@@ -30,7 +92,7 @@ export const useModelStore = create((set, get) => ({
     const { command, args } = generateCommand(tpl, params);
 
     // 1) section
-    if (category === 'section') {
+    if (category === 'section' || category === 'sectionLite') {
       set(state => ({
         section: [
           ...state.section,
@@ -56,7 +118,7 @@ export const useModelStore = create((set, get) => ({
     }
 
     // 3) pattern
-    if (category === 'pattern') {
+    if (category === 'pattern' || category === 'patternLite') {
       set(state => ({
         patterns: [
           ...state.patterns,
@@ -79,7 +141,17 @@ export const useModelStore = create((set, get) => ({
     }
 
     // 5) all other generic categories
-    const arrMap = {
+    const status = useUserTypeStore.getState().status;
+  const arrMapLite = {
+      nodeLite: 'node',
+      boundaryConditionsLite: 'boundaryConditions',
+      uniaxialMaterialLite: 'uniaxialMaterial',
+      elementLite: 'element',
+      geomTransfLite: 'geomTransf',
+      beamIntegrationLite: 'beamIntegration',
+      timeSeriesLite: 'timeSeries'
+  };
+    const arrMapAdvance = {
       node: 'node',
       boundaryConditions: 'boundaryConditions',
       uniaxialMaterial: 'uniaxialMaterial',
@@ -88,9 +160,11 @@ export const useModelStore = create((set, get) => ({
       beamIntegration: 'beamIntegration',
       timeSeries: 'timeSeries'
     };
+    const arrMap = status === 'lite' ? arrMapLite : arrMapAdvance;
     const arrName = arrMap[category] || null;
-    if (!arrName) return;
 
+      console.log({ status, category, arrMap });
+      category = arrName
     const item = { id, command, args, category };
     if (['uniaxialMaterial','element','timeSeries','section','geomTransf','beamIntegration'].includes(category)) {
       item.templateName = templateName;
@@ -104,10 +178,10 @@ export const useModelStore = create((set, get) => ({
     const state = get();
 
     // section
-    if (category === 'section') {
+    if (category === 'section' || category === 'sectionLite') {
       const sec = state.section.find(s => s.id === id);
       if (!sec) return;
-      const tpl = getTemplateByName('section', sec.templateName);
+      const tpl = getTemplateByName(category, sec.templateName);
       if (!tpl) return;
       const { command, args } = generateCommand(tpl, newParams);
       set(state => ({
@@ -138,10 +212,11 @@ export const useModelStore = create((set, get) => ({
     }
 
     // pattern
-    if (category === 'pattern') {
+    if (category === 'pattern' || category === 'patternLite') {
+      
       const pat = state.patterns.find(p => p.id === id);
       if (!pat) return;
-      const tpl = getTemplateByName('pattern', pat.templateName);
+      const tpl = getTemplateByName(category, pat.templateName);
       if (!tpl) return;
       const { command, args } = generateCommand(tpl, newParams);
       set(state => ({
@@ -156,7 +231,7 @@ export const useModelStore = create((set, get) => ({
   // unified removeComponent
   removeComponent: (category, id) => {
     // section
-    if (category === 'section') {
+    if (category === 'section' || category === 'sectionLite') {
       set(state => ({ section: state.section.filter(s => s.id !== id) }));
       return;
     }
@@ -171,7 +246,7 @@ export const useModelStore = create((set, get) => ({
       return;
     }
     // pattern
-    if (category === 'pattern') {
+    if (category === 'pattern' || category === 'patternLite') {
       set(state => ({
         patterns: state.patterns.filter(p => p.id !== id),
         loads: state.loads.filter(l => l.patternId !== id)
@@ -184,7 +259,17 @@ export const useModelStore = create((set, get) => ({
       return;
     }
     // generic arrays
-    const arrMap = {
+    const status = useUserTypeStore.getState().status;
+  const arrMapLite = {
+      nodeLite: 'node',
+      boundaryConditionsLite: 'boundaryConditions',
+      uniaxialMaterialLite: 'uniaxialMaterial',
+      elementLite: 'element',
+      geomTransfLite: 'geomTransf',
+      beamIntegrationLite: 'beamIntegration',
+      timeSeriesLite: 'timeSeries'
+  };
+    const arrMapAdvance = {
       node: 'node',
       boundaryConditions: 'boundaryConditions',
       uniaxialMaterial: 'uniaxialMaterial',
@@ -193,7 +278,10 @@ export const useModelStore = create((set, get) => ({
       beamIntegration: 'beamIntegration',
       timeSeries: 'timeSeries'
     };
-    const arrName = arrMap[category];
+    const arrMap = status === 'lite' ? arrMapLite : arrMapAdvance;
+    console.log({ status, category, arrMap });
+    const arrName = arrMap[category] || null;
+
     if (arrName) {
       set(state => ({
         [arrName]: state[arrName].filter(item => item.id !== id)
@@ -233,7 +321,6 @@ updateComponentArgs: (category, id, newArgs) => {
     return;
   }
 
-  // STANDARD categories (node, element, etc.)
   const arrMap = {
     node: 'node',
     boundaryConditions: 'boundaryConditions',
@@ -241,9 +328,11 @@ updateComponentArgs: (category, id, newArgs) => {
     element: 'element',
     geomTransf: 'geomTransf',
     beamIntegration: 'beamIntegration',
-    timeSeries: 'timeSeries',
+    timeSeries: 'timeSeries'
   };
-  const arrName = arrMap[category];
+
+  const arrName = arrMap[category] || null;
+
   if (!arrName) return;
 
   set(state => ({

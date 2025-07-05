@@ -1,0 +1,15 @@
+[
+  {
+    "category": "section",
+    "name": "Elastic2D",
+    "defaultParams": {
+      "Section": 1,
+      "Elasticity": 200000000000,
+      "Area": 0.01
+    },
+    "command": {
+      "name": "section",
+      "args": ["Elastic", "$Section", "$Elasticity", "$Area"]
+    }
+  }
+]

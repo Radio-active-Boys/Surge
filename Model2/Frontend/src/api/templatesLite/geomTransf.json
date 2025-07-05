@@ -1,0 +1,127 @@
+[
+  {
+    "category": "geomTransf",
+    "name": "Linear",
+    "description": "Linear transformation without specifying vecxz or joint offsets",
+    "defaultParams": {
+      "transfTag": 1,
+      "vecxz": null,
+      "jntOffset_i": null,
+      "jntOffset_j": null
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["Linear","$transfTag"]
+    }
+  },
+
+  {
+    "category": "geomTransf",
+    "name": "Linear+JntOffset",
+    "description": "Linear transformation with joint offsets",
+    "defaultParams": {
+      "transfTag": 1,
+      "vecxz": null,
+      "jntOffset_i": [0, 0, 0],
+      "jntOffset_j": [0, 0, 0]
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["Linear", "$transfTag", "-jntOffset", "*$jntOffset_i", "*$jntOffset_j"]
+    }
+  },
+  {
+    "category": "geomTransf",
+    "name": "Linear+Vec+JntOffset",
+    "description": "Linear transformation with vecxz vector and joint offsets",
+    "defaultParams": {
+      "transfTag": 1,
+      "vecxz": [0, 1, 0],
+      "jntOffset_i": [0, 0, 0],
+      "jntOffset_j": [0, 0, 0]
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["Linear", "$transfTag", "*$vecxz", "-jntOffset", "*$jntOffset_i", "*$jntOffset_j"]
+    }
+  },
+
+  {
+    "category": "geomTransf",
+    "name": "PDelta",
+    "description": "PDelta transformation without vecxz or joint offsets",
+    "defaultParams": {
+      "transfTag": 2,
+      "vecxz": null,
+      "jntOffset_i": null,
+      "jntOffset_j": null
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": [ "PDelta","$transfTag"]
+    }
+  },
+
+  {
+    "category": "geomTransf",
+    "name": "PDelta+JntOffset",
+    "description": "PDelta transformation with joint offsets",
+    "defaultParams": {
+      "transfTag": 2,
+      "vecxz": null,
+      "jntOffset_i": [0, 0, 0],
+      "jntOffset_j": [0, 0, 0]
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["PDelta", "$transfTag", "-jntOffset", "*$jntOffset_i", "*$jntOffset_j"]
+    }
+  },
+  {
+    "category": "geomTransf",
+    "name": "PDelta+Vec+JntOffset",
+    "description": "PDelta transformation with vecxz vector and joint offsets",
+    "defaultParams": {
+      "transfTag": 2,
+      "vecxz": [0, 1, 0],
+      "jntOffset_i": [0, 0, 0],
+      "jntOffset_j": [0, 0, 0]
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["PDelta", "$transfTag", "*$vecxz", "-jntOffset", "*$jntOffset_i", "*$jntOffset_j"]
+    }
+  },
+
+  {
+    "category": "geomTransf",
+    "name": "Corotational",
+    "description": "Corotational transformation without vecxz or joint offsets",
+    "defaultParams": {
+      "transfTag": 3,
+      "vecxz": null,
+      "jntOffset_i": null,
+      "jntOffset_j": null
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["Corotational","$transfTag"]
+    }
+  },
+
+  {
+    "category": "geomTransf",
+    "name": "Corotational+JntOffset",
+    "description": "Corotational transformation with joint offsets",
+    "defaultParams": {
+      "transfTag": 3,
+      "vecxz": null,
+      "jntOffset_i": [0, 0, 0],
+      "jntOffset_j": [0, 0, 0]
+    },
+    "command": {
+      "name": "geomTransf",
+      "args": ["Corotational", "$transfTag", "-jntOffset", "*$jntOffset_i", "*$jntOffset_j"]
+    }
+  }
+]

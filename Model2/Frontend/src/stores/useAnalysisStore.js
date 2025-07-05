@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { generateCommand, getTemplateByName } from '../api/jsonTemplates';
 import { generateId } from '../utils/idGenerator';
-
+import { useUserTypeStore } from '../utils/storeUserType';
 // Helper: build args array for a recorder given its metadata
 function buildRecorderArgs({ name, fileName, nodeIds = [], dofs = [], eleIds = [], responseType }) {
   const args = [name,'-file', fileName, '-time', name === 'Element' ? '-ele' : '-node'];
@@ -32,29 +32,54 @@ function makeDefaultRecorder({ name, fileName, responseType, nodeIds = [], dofs 
   };
 }
 
+
 export const useAnalysisStore = create((set, get) => ({
   sequence: [],
   recorders: [],
 
-  initializeDefaultRecorders: ({ nodeIds = [], dofs = [1, 2], eleIds = [] }) => {
-    const defaults = [
-      { name: 'Node', fileName: 'node_disp.txt', responseType: 'disp' },
-      { name: 'Node', fileName: 'node_reaction.txt', responseType: 'reaction' },
-      { name: 'Node', fileName: 'node_vel.txt', responseType: 'vel' },
-      { name: 'Node', fileName: 'node_accel.txt', responseType: 'accel' },
-      { name: 'Element', fileName: 'elem_force_global.txt', responseType: 'force' },
-      { name: 'Element', fileName: 'elem_localForce.txt', responseType: 'localForce' },
-      { name: 'Element', fileName: 'elem_deformation.txt', responseType: 'deformation' },
-      { name: 'Element', fileName: 'elem_axialForce.txt', responseType: 'axialForce' },
-      { name: 'Element', fileName: 'elem_basicDeformation.txt', responseType: 'basicDeformation' },
-      { name: 'Element', fileName: 'elem_basicForce.txt', responseType: 'basicForce' },
-      { name: 'Element', fileName: 'elem_stiffness.txt', responseType: 'stiffness' },
-    ];
-    const recorderCmds = defaults.map(def =>
-      makeDefaultRecorder({ name: def.name, fileName: def.fileName, responseType: def.responseType, nodeIds, dofs, eleIds })
-    );
-    set(() => ({ recorders: recorderCmds }));
-  },
+initializeDefaultRecorders: ({ nodeIds = [], dofs = [1, 2], eleIds = [] }) => {
+  const status = useUserTypeStore.getState().status;
+
+  const defaults = [
+    { name: 'Node', fileName: 'node_disp.txt', responseType: 'disp' },
+    { name: 'Node', fileName: 'node_reaction.txt', responseType: 'reaction' },
+    { name: 'Node', fileName: 'node_vel.txt', responseType: 'vel' },
+    { name: 'Node', fileName: 'node_accel.txt', responseType: 'accel' },
+    { name: 'Element', fileName: 'elem_force_global.txt', responseType: 'force' },
+    { name: 'Element', fileName: 'elem_localForce.txt', responseType: 'localForce' },
+    { name: 'Element', fileName: 'elem_deformation.txt', responseType: 'deformation' },
+    { name: 'Element', fileName: 'elem_axialForce.txt', responseType: 'axialForce' },
+    { name: 'Element', fileName: 'elem_basicDeformation.txt', responseType: 'basicDeformation' },
+    { name: 'Element', fileName: 'elem_basicForce.txt', responseType: 'basicForce' },
+    { name: 'Element', fileName: 'elem_stiffness.txt', responseType: 'stiffness' },
+  ];
+  const defaultAnalysisSequence = [
+    { command: "constraints", args: ["Transformation"] },
+    { command: "numberer", args: ["RCM"] },
+    { command: "system", args: ["BandGeneral"] },
+    { command: "algorithm", args: ["Linear"] },
+    { command: "integrator", args: ["LoadControl", 1.0] },
+    { command: "analysis", args: ["Static"] },
+    { command: "analyze", args: [100] }
+  ];
+  const recorderCmds = defaults.map(def =>
+    makeDefaultRecorder({ name: def.name, fileName: def.fileName, responseType: def.responseType, nodeIds, dofs, eleIds })
+  );
+
+  const update = { recorders: recorderCmds };
+
+  if (status === 'lite') {
+    update.sequence = defaultAnalysisSequence.map(item => ({
+      ...item,
+      id: generateId(),
+      category: item.command === 'analyze' ? 'analyze' : 'analysis'
+    }));
+  } else {
+    update.sequence = []; // ❗ Clear for advance user
+  }
+
+  set(() => update);
+},
 
   updateRecorder: ({ id, nodeIds, dofs, eleIds }) => {
     set(state => {

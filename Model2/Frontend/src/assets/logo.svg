@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <style>
+    .text1 { font: bold 48px 'Segoe UI', sans-serif; fill: #002F6C; }
+    .text2 { font: 24px 'Segoe UI', sans-serif; fill: #002F6C; }
+    .shape { fill: none; stroke: #111; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+  <!-- Geometric Logo (Icosahedron-like shape) -->
+  <g transform="translate(600,200) scale(2)">
+    <polygon class="shape" points="-50,-86.6 50,-86.6 100,0 50,86.6 -50,86.6 -100,0" />
+    <line class="shape" x1="-50" y1="-86.6" x2="0" y2="0"/>
+    <line class="shape" x1="50" y1="-86.6" x2="0" y2="0"/>
+    <line class="shape" x1="100" y1="0" x2="0" y2="0"/>
+    <line class="shape" x1="50" y1="86.6" x2="0" y2="0"/>
+    <line class="shape" x1="-50" y1="86.6" x2="0" y2="0"/>
+    <line class="shape" x1="-100" y1="0" x2="0" y2="0"/>
+  </g>
+
+  <!-- Text -->
+  <text x="50%" y="420" class="text1" dominant-baseline="middle" text-anchor="middle">
+    FRAMEX, STRUCTURE ANALYSIS SOFTWARE
+  </text>
+  <text x="50%" y="470" class="text2" dominant-baseline="middle" text-anchor="middle">
+    FRAMEX, STRUCTURE ANALYSIS SOFTWARE USING OPENSEES
+  </text>
+</svg>

@@ -1,0 +1,49 @@
+[
+  {
+    "name": "AnalyzeStatic",
+    "category": "analyze",
+    "defaultParams": {
+      "numIncr": 1
+    },
+    "command": {
+      "name": "analyze",
+      "args": [1]
+    }
+  },
+  {
+    "name": "AnalyzeTransient",
+    "category": "analyze",
+    "defaultParams": {
+      "numIncr": 1,
+      "dt": 0.01
+    },
+    "command": {
+      "name": "analyze",
+      "args": [1, 0.01]
+    }
+  },
+  {
+    "name": "AnalyzeVariableTransient",
+    "category": "analyze",
+    "defaultParams": {
+      "numIncr": 1,
+      "dt": 0.01,
+      "dtMin": 0.001,
+      "dtMax": 0.05,
+      "Jd": 10
+    },
+    "command": {
+      "name": "analyze",
+      "args": [1, 0.01, 0.001, 0.05, 10]
+    }
+  },
+  {
+    "name": "AnalyzePFEM",
+    "category": "analyze",
+    "defaultParams": {},
+    "command": {
+      "name": "analyze",
+      "args": []
+    }
+  }
+]

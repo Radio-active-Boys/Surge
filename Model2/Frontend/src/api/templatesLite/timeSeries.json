@@ -1,0 +1,146 @@
+[
+  {
+    "category": "timeSeries",
+    "name": "Constant",
+    "defaultParams": {
+      "tsTag": 1,
+      "factor": 1.0
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [ "Constant","$tsTag", "-factor", "$factor"]
+    }
+  },
+  {
+    "category": "timeSeries",
+    "name": "Linear",
+    "defaultParams": {
+      "tsTag": 2,
+      "factor": 1.0
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [ "Linear","$tsTag", "-factor", "$factor"]
+    }
+  },
+  {
+    "category": "timeSeries",
+    "name": "Trig",
+    "defaultParams": {
+      "tsTag": 3,
+      "tStart": 0.0,
+      "tEnd": 1.0,
+      "period": 1.0,
+      "factor": 1.0,
+      "shift": 0.0,
+      "zeroShift": 0.0
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [
+        "Trig", "$tsTag",
+        "$tStart", "$tEnd", "$period",
+        "-factor", "$factor",
+        "-shift", "$shift",
+        "-zeroShift", "$zeroShift"
+      ]
+    }
+  },
+  {
+    "category": "timeSeries",
+    "name": "Triangle",
+    "defaultParams": {
+      "tsTag": 4,
+      "tStart": 0.0,
+      "tEnd": 1.0,
+      "period": 1.0,
+      "factor": 1.0,
+      "shift": 0.0,
+      "zeroShift": 0.0
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [
+        "Triangle", "$tsTag",
+        "$tStart", "$tEnd", "$period",
+        "-factor", "$factor",
+        "-shift", "$shift",
+        "-zeroShift", "$zeroShift"
+      ]
+    }
+  },
+  {
+    "category": "timeSeries",
+    "name": "Rectangular",
+    "defaultParams": {
+      "tsTag": 5,
+      "tStart": 0.0,
+      "tEnd": 1.0,
+      "factor": 1.0
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [
+         "$tsTag",
+        "$tStart", "$tEnd",
+        "-factor", "$factor"
+      ]
+    }
+  },
+  {
+    "category": "timeSeries",
+    "name": "Pulse",
+    "defaultParams": {
+      "tsTag": 6,
+      "tStart": 0.0,
+      "tEnd": 1.0,
+      "period": 1.0,
+      "width": 0.5,
+      "shift": 0.0,
+      "factor": 1.0,
+      "zeroShift": 0.0
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [
+       "$tsTag",
+        "$tStart", "$tEnd", "$period",
+        "-width", "$width",
+        "-shift", "$shift",
+        "-factor", "$factor",
+        "-zeroShift", "$zeroShift"
+      ]
+    }
+  },
+  {
+    "category": "timeSeries",
+    "name": "Path",
+    "defaultParams": {
+      "tsTag": 7,
+      "dt": 0.0,
+      "values": [],
+      "time": [],
+      "filePath": "",
+      "fileTime": "",
+      "factor": 1.0,
+      "startTime": 0.0,
+      "useLast": false,
+      "prependZero": false
+    },
+    "command": {
+      "name": "timeSeries",
+      "args": [
+      "$tsTag",
+        "-dt", "$dt",
+        "-values", "*$values",
+        "-time", "*$time",
+        "-filePath", "$filePath",
+        "-fileTime", "$fileTime",
+        "-factor", "$factor",
+        "-startTime", "$startTime",
+        "${useLast:?\"-useLast\"}",
+        "${prependZero:?\"-prependZero\"}"
+      ]
+    }
+  }
+]

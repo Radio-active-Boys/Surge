@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Plain",
+    "category": "numberer",
+    "defaultParams": {},
+    "command": {
+      "name": "numberer",
+      "args": [
+        "Plain"
+      ]
+    }
+  },
+  {
+    "name": "RCM",
+    "category": "numberer",
+    "defaultParams": {},
+    "command": {
+      "name": "numberer",
+      "args": [
+        "RCM"
+      ]
+    }
+  },
+  {
+    "name": "AMD",
+    "category": "numberer",
+    "defaultParams": {},
+    "command": {
+      "name": "numberer",
+      "args": [
+        "AMD"
+      ]
+    }
+  },
+  {
+    "name": "ParallelPlain",
+    "category": "numberer",
+    "defaultParams": {},
+    "command": {
+      "name": "numberer",
+      "args": [
+        "ParallelPlain"
+      ]
+    }
+  },
+  {
+    "name": "ParallelRCM",
+    "category": "numberer",
+    "defaultParams": {},
+    "command": {
+      "name": "numberer",
+      "args": [
+        "ParallelRCM"
+      ]
+    }
+  }
+]

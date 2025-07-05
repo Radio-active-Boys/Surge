@@ -376,7 +376,7 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
       const len = Math.hypot(dx, dy);
       const ux = dx / len, uy = dy / len;
       const nx = -uy, ny = ux;
-      const arrowLen = Math.min(4, len * 0.08);
+      const arrowLen = Math.min(10, len * 2);
 
       function drawArrow(baseX, baseY, dirX, dirY, color, label) {
         const tipX = baseX + dirX * arrowLen;

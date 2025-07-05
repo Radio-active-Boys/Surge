@@ -24,6 +24,8 @@ button,
   text-decoration: none;
   white-space: nowrap;
   user-select: none;
+  min-width: 160px;
+  text-align: center;
 }
 
 /* Import Button */
@@ -68,10 +70,9 @@ button,
 .analysis-button {
   background-color: #3b82f6;
   color: white;
-  margin-top: 2rem;
-  padding: 0.75rem 1.6rem;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   border: none;
   cursor: pointer;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
@@ -199,4 +200,18 @@ button,
 
 .file-clear-btn:hover {
   color: #b91c1c;
+}
+
+/* Buttons Row */
+.button-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.button-row > button,
+.button-row > .file-upload-wrapper {
+  flex-shrink: 0;
 }

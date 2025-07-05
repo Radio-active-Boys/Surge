@@ -10,10 +10,19 @@ CORS(app)
 @app.route('/run-analysis', methods=['POST'])
 def run_analysis():
     try:
-        data = request.json
+        data = request.json or {}
+        nodes = data.get("nodes", [])
+        # 1) Quick validation: must have at least one node
+        if not nodes:
+            return jsonify({
+                "status": "validation_error",
+                "message": "Cannot run analysis: no nodes defined in the model."
+            }), 400
+
         runner = OpenSeesRunner(data)
         results = runner.run()
         return jsonify(results)
+
     except Exception as e:
         return jsonify({
             "status": "server_error",

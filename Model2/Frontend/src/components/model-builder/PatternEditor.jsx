@@ -21,9 +21,9 @@ export default function PatternEditor() {
       if (key === 'useRange')        return true;             // always show checkbox
       if (key === 'range')           return params.useRange;   // show 'range' only when useRange=true
       if (key === 'eleTag1'|| key==='eleTag2') return params.useRange;   // show eleTag1/2 only when range
-      if (key === 'eleTags')         return !params.useRange;  // show eleTags only when NOT range
+      // if (key === 'eleTags')         return !params.useRange;  // show eleTags only when NOT range
       // hide the mutual-exclusion keys from the "other" list
-      return !['range','eleTag1','eleTag2','eleTags'].includes(key);
+      return !['range','eleTag1','eleTag2'].includes(key);
     })
     .map(([key, def]) => (
       <div key={key} className="pattern-editor-param-row">

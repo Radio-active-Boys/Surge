@@ -1,5 +1,7 @@
 // api/jsonTemplates.js
+import { useUserTypeStore } from '../utils/storeUserType';
 
+// Advance User
 import patternTemplates from './templates/pattern.json';
 import beamIntegration from './templates/beamIntegration.json';
 import uniaxialMaterial from './templates/uniaxialMaterial.json';
@@ -31,7 +33,7 @@ const loadTemplates = patternTemplates.filter(t => t.category === 'load');
 const eleLoadTemplates = patternTemplates.filter(t => t.category === 'eleLoad');
 const spTemplates = patternTemplates.filter(t => t.category === 'sp');
 
-const TEMPLATES = {
+const AdvanceTemplates = {
   // Model-level
   model,
   node,
@@ -65,8 +67,89 @@ const TEMPLATES = {
   recorder,
 };
 
-export const getTemplates = (category) => TEMPLATES[category] || [];
-export const getTemplateByName = (category, name) => getTemplates(category).find(t => t.name === name);
+// Lite User
+import patternTemplatesLite from './templatesLite/pattern.json';
+import beamIntegrationLite from './templatesLite/beamIntegration.json';
+import uniaxialMaterialLite from './templatesLite/uniaxialMaterial.json';
+import elementLite from './templatesLite/element.json';
+import geomTransfLite from './templatesLite/geomTransf.json';
+import timeSeriesLite from './templatesLite/timeSeries.json';
+import nodeLite from './templatesLite/node.json';
+import modelLite from './templatesLite/model.json';
+import boundaryConditionsLite from './templatesLite/boundryConditions.json';
+
+import constraintsLite from './templatesLite/constraints.json';
+import numbererLite from './templatesLite/numberer.json';
+import systemLite from './templatesLite/system.json';
+import algorithmLite from './templatesLite/algorithm.json';
+import integratorLite from './templatesLite/integrator.json';
+import analysisLite from './templatesLite/analysis.json';
+import analyzeLite from './templatesLite/analyze.json';
+
+import recorderLite from './templatesLite/recorder.json';
+
+// Section/fiber/patch/layer templates
+import sectionTemplatesLite from './templatesLite/section.json';
+import fiberTemplatesLite from './templatesLite/fiber.json';
+import patchTemplatesLite from './templatesLite/patch.json';
+import layerTemplatesLite from './templatesLite/layer.json';
+
+const patternOnlyTemplatesLite = patternTemplatesLite.filter(t => t.category === 'pattern');
+const loadTemplatesLite = patternTemplatesLite.filter(t => t.category === 'load');
+const eleLoadTemplatesLite = patternTemplatesLite.filter(t => t.category === 'eleLoad');
+const spTemplatesLite = patternTemplatesLite.filter(t => t.category === 'sp');
+const LiteTemplates = {
+  // Model-level
+  modelLite,
+  nodeLite,
+  boundaryConditionsLite,
+  beamIntegrationLite,
+  uniaxialMaterialLite,
+  elementLite,
+  geomTransfLite,
+  timeSeriesLite,
+  section: sectionTemplatesLite,
+  fiber: fiberTemplatesLite,
+  patch: patchTemplatesLite,
+  layer: layerTemplatesLite,
+
+  // Patterns & nested
+  pattern: patternOnlyTemplatesLite,
+  load: loadTemplatesLite,
+  eleLoad: eleLoadTemplatesLite,
+  sp: spTemplatesLite,
+
+  // Analysis
+  constraintsLite,
+  numbererLite,
+  systemLite,
+  algorithmLite,
+  integratorLite,
+  analysisLite,
+  analyzeLite,
+  // Output
+  recorderLite,
+};
+
+// ✅ Helper to get correct mode templates
+const getTemplateStore = () => {
+  const status = useUserTypeStore.getState().status;
+  console.log("Status",status)
+  return status === 'advanced' ? AdvanceTemplates : LiteTemplates;
+};
+
+// ✅ Get all templates of a category
+export const getTemplates = (category) => {
+  const store = getTemplateStore();
+  console.log("store",store)
+  console.log("category",category)
+  return store[category] || [];
+};
+
+// ✅ Get a specific template by name in a category
+export const getTemplateByName = (category, name) => {
+  return getTemplates(category).find(t => t.name === name);
+};
 
 /**
  * Generate an OpenSees command from a template and parameter set.

@@ -1,0 +1,34 @@
+[
+  {
+    "name": "BasicBuilder2D",
+    "category": "model",
+    "defaultParams": {
+      "ndm": 2,
+      "ndf": 3
+    },
+    "command": {
+      "name": "model",
+      "args": [
+        "basic",     
+        "-ndm", "$ndm",
+        "-ndf", "$ndf"
+      ]
+    }
+  },
+  {
+    "name": "BasicBuilder3D",
+    "category": "model",
+    "defaultParams": {
+      "ndm": 3,
+      "ndf": 6
+    },
+    "command": {
+      "name": "model",
+      "args": [
+        "basic",
+        "-ndm", "$ndm",
+        "-ndf", "$ndf"
+      ]
+    }
+  }
+]

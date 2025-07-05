@@ -1,39 +1,155 @@
+/* SectionForce.css */
+
+/* Container */
 .section-force-container {
   padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 12px;
   font-family: 'Segoe UI', sans-serif;
+  max-width: 1280px;
+  margin: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  color: #1f2937;
 }
 
+/* Top controls (force type + save) */
 .force-controls {
   display: flex;
-  align-items: center;
-  margin-bottom: 12px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
 }
-
 .force-controls label {
-  margin-right: 8px;
-  font-weight: 500;
-  color: #374151; /* Tailwind Gray-700 */
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  gap: 0.5rem;
+  color: #222;
 }
-
 .force-controls select {
-  padding: 4px 8px;
-  border: 1px solid #d1d5db; /* Tailwind Gray-300 */
-  border-radius: 4px;
-  background-color: white;
-  color: #111827; /* Tailwind Gray-900 */
-  font-size: 0.875rem;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .force-controls select:focus {
   outline: none;
-  border-color: #3b82f6; /* Tailwind Blue-500 */
-  box-shadow: 0 0 0 1px #3b82f6;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+}
+.force-controls button {
+  padding: 0.6rem 1.2rem;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.force-controls button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+.force-controls button:active {
+  background: #1e40af;
+  transform: translateY(0);
 }
 
-.section-force-svg {
 
-  border: 1px solid #e5e7eb; /* Tailwind Gray-200 */
-  border-radius: 4px;
-  background-color: #fafafa;
+
+/* Query controls (element ID + x + button) */
+.query-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.query-controls input {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 120px;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.query-controls input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+}
+.query-controls button {
+  padding: 0.6rem 1.2rem;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.query-controls button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+.query-controls button:active {
+  background: #1e40af;
+  transform: translateY(0);
+}
+
+/* Result & Error */
+.query-error {
+  max-width: 50%;
+  margin: 0.5rem auto;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+    background: #fef2f2;          /* red‑50 */
+  border-left: 4px solid #ef4444; /* red‑500 */
+  color: #991b1b;    
+  
+}
+.query-result {
+  background: #ecfdf5;          /* green‑50 */
+  border-left: 4px solid #10b981; /* green‑500 */
+  color: #065f46;               /* green‑800 */
+  max-width: 50%;
+  margin: 0.5rem auto;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+/* SVG canvas */
+.section-force-svg {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 6px;
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+  max-height: 85vh;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .force-controls,
+  .query-controls {
+    flex-direction: column;
+  }
+  .force-controls select,
+  .query-controls input,
+  .force-controls button,
+  .query-controls button {
+    width: 100%;
+  }
 }

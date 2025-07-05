@@ -1,0 +1,188 @@
+[
+  {
+    "name": "Linear",
+    "category": "algorithm",
+    "defaultParams": {
+      "secant": false,
+      "initial": false,
+      "factorOnce": false
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "Linear",
+        "$secant",
+        "$initial",
+        "$factorOnce"
+      ]
+    }
+  },
+  {
+    "name": "Newton",
+    "category": "algorithm",
+    "defaultParams": {
+      "secant": false,
+      "initial": false,
+      "initialThenCurrent": false
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "Newton",
+        "$secant",
+        "$initial",
+        "$initialThenCurrent"
+      ]
+    }
+  },
+  {
+    "name": "NewtonLineSearch",
+    "category": "algorithm",
+    "defaultParams": {
+      "Bisection": false,
+      "Secant": false,
+      "RegulaFalsi": false,
+      "InitialInterpolated": false,
+      "tol": 0.8,
+      "maxIter": 10,
+      "minEta": 0.1,
+      "maxEta": 10.0
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "NewtonLineSearch",
+        "$Bisection",
+        "$Secant",
+        "$RegulaFalsi",
+        "$InitialInterpolated",
+        "$tol",
+        "$maxIter",
+        "$minEta",
+        "$maxEta"
+      ]
+    }
+  },
+  {
+    "name": "ModifiedNewton",
+    "category": "algorithm",
+    "defaultParams": {
+      "secant": false,
+      "initial": false
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "ModifiedNewton",
+        "$secant",
+        "$initial"
+      ]
+    }
+  },
+  {
+    "name": "KrylovNewton",
+    "category": "algorithm",
+    "defaultParams": {
+      "iterate": "current",
+      "increment": "current",
+      "maxDim": 3
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "KrylovNewton",
+        "$iterate",
+        "$increment",
+        "$maxDim"
+      ]
+    }
+  },
+  {
+    "name": "SecantNewton",
+    "category": "algorithm",
+    "defaultParams": {
+      "iterate": "current",
+      "increment": "current",
+      "maxDim": 3
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "SecantNewton",
+        "$iterate",
+        "$increment",
+        "$maxDim"
+      ]
+    }
+  },
+  {
+    "name": "RaphsonNewton",
+    "category": "algorithm",
+    "defaultParams": {
+      "iterate": "current",
+      "increment": "current"
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "RaphsonNewton",
+        "$iterate",
+        "$increment"
+      ]
+    }
+  },
+  {
+    "name": "PeriodicNewton",
+    "category": "algorithm",
+    "defaultParams": {
+      "iterate": "current",
+      "increment": "current",
+      "maxDim": 3
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "PeriodicNewton",
+        "$iterate",
+        "$increment",
+        "$maxDim"
+      ]
+    }
+  },
+  {
+    "name": "BFGS",
+    "category": "algorithm",
+    "defaultParams": {
+      "secant": false,
+      "initial": false,
+      "count": 10
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "BFGS",
+        "$secant",
+        "$initial",
+        "$count"
+      ]
+    }
+  },
+  {
+    "name": "Broyden",
+    "category": "algorithm",
+    "defaultParams": {
+      "secant": false,
+      "initial": false,
+      "count": 10
+    },
+    "command": {
+      "name": "algorithm",
+      "args": [
+        "Broyden",
+        "$secant",
+        "$initial",
+        "$count"
+      ]
+    }
+  }
+]
