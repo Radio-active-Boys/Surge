@@ -2,3 +2,7 @@
 .myenv
 __pycache__
 Core
+
+*.pdf
+
+*.docx
