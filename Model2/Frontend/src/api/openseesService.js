@@ -1,7 +1,7 @@
  // api/openseesService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://surge-0i1z.onrender.com';
 
 export const runAnalysis = async (modelData) => {
   console.log("Data send to backend",modelData)
