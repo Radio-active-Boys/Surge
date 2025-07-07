@@ -13,17 +13,18 @@ export default function PatternEditor() {
   const allLoads        = useModelStore(s => s.loads);
 
   // — Shared render logic for both Add & Edit forms —
-  const renderParams = (tplName, params, setParams) =>
-    Object.entries(
-      templates.find(t => t.name === tplName).defaultParams
-    )
+const renderParams = (tplName, params, setParams) => {
+  const tpl = templates.find(t => t.name === tplName);
+  if (!tpl || !tpl.defaultParams) {
+    return <div className="warning">❌ Template "{tplName}" not found.</div>;
+  }
+
+  return Object.entries(tpl.defaultParams)
     .filter(([key]) => {
-      if (key === 'useRange')        return true;             // always show checkbox
-      if (key === 'range')           return params.useRange;   // show 'range' only when useRange=true
-      if (key === 'eleTag1'|| key==='eleTag2') return params.useRange;   // show eleTag1/2 only when range
-      // if (key === 'eleTags')         return !params.useRange;  // show eleTags only when NOT range
-      // hide the mutual-exclusion keys from the "other" list
-      return !['range','eleTag1','eleTag2'].includes(key);
+      if (key === 'useRange') return true;
+      if (key === 'range') return params.useRange;
+      if (key === 'eleTag1' || key === 'eleTag2') return params.useRange;
+      return !['range', 'eleTag1', 'eleTag2'].includes(key);
     })
     .map(([key, def]) => (
       <div key={key} className="pattern-editor-param-row">
@@ -51,6 +52,7 @@ export default function PatternEditor() {
         )}
       </div>
     ));
+};
 
   // — Add New Pattern —
   const [newTpl, setNewTpl]       = useState(templates[0]?.name || '');
@@ -158,9 +160,11 @@ function NestedCommandsEditor({
   const [params, setParams]               = useState({});
 
   useEffect(() => {
-    const tpls = getTemplates(subCategory);
+    const tpls = getTemplates(subCategory)
+    .filter(t => t.defaultParams != null);
     setTemplatesList(tpls);
-    if (tpls[0]) {
+
+    if (tpls.length > 0 && tpls[0]?.defaultParams) {
       setSelectedTpl(tpls[0]);
       setParams({ ...tpls[0].defaultParams });
     } else {
@@ -223,9 +227,15 @@ function NestedCommandsEditor({
             <select
               value={selectedTpl?.name || ''}
               onChange={e => {
-                const tpl = templatesList.find(t => t.name === e.target.value);
+              const tpl = templatesList.find(t => t.name === e.target.value);
+              if (tpl && tpl.defaultParams) {
                 setSelectedTpl(tpl);
                 setParams({ ...tpl.defaultParams });
+              } else {
+                setSelectedTpl(null);
+                setParams({});
+              }
+
               }}
             >
               {templatesList.map(t => (
@@ -277,7 +287,7 @@ function NestedCommandsEditor({
           )}
 
           {/* — OTHER eleLoad PARAMS — */}
-          {Object.entries(selectedTpl.defaultParams)
+          {Object.entries(selectedTpl?.defaultParams ?? {})
             .filter(([key]) => !['useRange','element','eleTag1','eleTag2','eleTags'].includes(key))
             .map(([key, def]) => (
               <div key={key} className="pattern-editor-param-row">
@@ -314,11 +324,17 @@ function NestedCommandsEditor({
             <label>Template:</label>
             <select
               value={selectedTpl.name}
-              onChange={e => {
-                const tpl = templatesList.find(t => t.name === e.target.value);
+            onChange={e => {
+              const tpl = templatesList.find(t => t.name === e.target.value);
+              if (tpl && tpl.defaultParams) {
                 setSelectedTpl(tpl);
                 setParams({ ...tpl.defaultParams });
-              }}
+              } else {
+                setSelectedTpl(null);
+                setParams({});
+              }
+            }}
+
             >
               {templatesList.map(t => (
                 <option key={t.name} value={t.name}>{t.name}</option>

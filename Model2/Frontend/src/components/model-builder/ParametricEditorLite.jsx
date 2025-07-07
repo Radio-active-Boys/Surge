@@ -1,4 +1,3 @@
-// src/components/model-builder/ParametricEditorLite.jsx
 import React, { useState, useEffect } from 'react';
 import { getTemplates } from '../../api/jsonTemplates';
 import { useModelStore } from '../../stores/useModelStore';
@@ -7,19 +6,17 @@ import './ParametricEditor.css';
 const ParametricEditorLite = ({ category }) => {
   const [templates, setTemplates] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [params, setParams] = useState({});
+  const [rawParams, setRawParams] = useState({});
   const addComponent = useModelStore(state => state.addComponent);
   const setModelConfig = useModelStore(state => state.setModelConfig);
-  const modelConfig = useModelStore(state => state.modelConfig); // CHANGED: subscribe to modelConfig
+  const modelConfig = useModelStore(state => state.modelConfig);
   const patterns = useModelStore(state => state.patterns);
   const [patternId, setPatternId] = useState(null);
 
-  // Local state for lite model type
   const [modelType, setModelType] = useState(
     modelConfig.ndf === 3 ? 'frame' : 'truss'
   );
 
-  // Sync modelType selection to config
   useEffect(() => {
     if (modelType === 'truss') {
       setModelConfig({ ndm: 2, ndf: 2 });
@@ -34,19 +31,62 @@ const ParametricEditorLite = ({ category }) => {
       setTemplates(tpls);
       if (tpls.length) {
         setSelected(tpls[0]);
-        setParams(tpls[0].defaultParams);
+        setRawParams(convertToRawParams(tpls[0].defaultParams));
       } else {
         setSelected(null);
-        setParams({});
+        setRawParams({});
       }
       setPatternId(null);
     } else {
       setTemplates([]);
       setSelected(null);
-      setParams({});
+      setRawParams({});
       setPatternId(null);
     }
   }, [category]);
+
+  const convertToRawParams = (params) => {
+    return Object.fromEntries(
+      Object.entries(params).map(([k, v]) => [
+        k,
+        Array.isArray(v) ? v.map(String) : String(v),
+      ])
+    );
+  };
+
+  const parseParamValues = () => {
+    const parsed = {};
+    for (const [key, val] of Object.entries(rawParams)) {
+      if (Array.isArray(val)) {
+        const nums = val.map(v => parseFloat(v));
+        if (nums.some(n => isNaN(n))) return null;
+        parsed[key] = nums;
+      } else {
+        const num = parseFloat(val);
+        if (isNaN(num)) return null;
+        parsed[key] = num;
+      }
+    }
+    return parsed;
+  };
+
+  const handleParamChange = (key, value) => {
+    setRawParams(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (['load', 'eleLoad', 'sp'].includes(category) && !patternId) {
+      alert('Please select a pattern to attach this command');
+      return;
+    }
+    const parsed = parseParamValues();
+    if (!parsed) {
+      alert('One or more parameter values are invalid.');
+      return;
+    }
+    addComponent(category, selected.name, parsed, patternId);
+    setRawParams(convertToRawParams(selected.defaultParams));
+  };
 
   if (category === 'modelLite') {
     return (
@@ -55,10 +95,7 @@ const ParametricEditorLite = ({ category }) => {
         <div className="button-group">
           {['truss', 'frame'].map(type => {
             const isActive = modelType === type;
-            const label = type === 'truss'
-              ? 'Truss'
-              : 'Frame / Beam / Column';
-
+            const label = type === 'truss' ? 'Truss' : 'Frame / Beam / Column';
             return (
               <button
                 key={type}
@@ -74,23 +111,7 @@ const ParametricEditorLite = ({ category }) => {
     );
   }
 
-
   if (!selected) return <div className="loading">Loading...</div>;
-
-  const handleParamChange = (key, value) => {
-    setParams(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = () => {
-    if (['load','eleLoad','sp'].includes(category) && !patternId) {
-      alert('Please select a pattern to attach this command');
-      return;
-    }
-    console.log('[ParametricEditor] adding:', { category, template: selected.name, params, patternId }); // CHANGED: debug log
-    addComponent(category, selected.name, params, patternId);
-    // reset to defaults
-    setParams(selected.defaultParams);
-  };
 
   return (
     <div className="model-param-editor">
@@ -100,7 +121,7 @@ const ParametricEditorLite = ({ category }) => {
           onChange={e => {
             const tpl = templates.find(t => t.name === e.target.value);
             setSelected(tpl);
-            setParams(tpl.defaultParams);
+            setRawParams(convertToRawParams(tpl.defaultParams));
           }}
         >
           {templates.map(t => (
@@ -110,7 +131,7 @@ const ParametricEditorLite = ({ category }) => {
       </div>
 
       <div className="params">
-        {['load','eleLoad','sp'].includes(category) && (
+        {['load', 'eleLoad', 'sp'].includes(category) && (
           <div className="param-row">
             <label>Pattern</label>
             <select
@@ -132,14 +153,15 @@ const ParametricEditorLite = ({ category }) => {
             <label>{key}</label>
             {Array.isArray(def) ? (
               <ArrayInput
-                values={params[key] || []}
+                values={rawParams[key] || []}
                 onChange={v => handleParamChange(key, v)}
               />
             ) : (
               <input
-                type="number"
-                value={params[key] ?? ''}
-                onChange={e => handleParamChange(key, parseFloat(e.target.value))}
+                type="text"
+                value={rawParams[key] ?? ''}
+                onChange={e => handleParamChange(key, e.target.value)}
+                className={isNaN(parseFloat(rawParams[key])) ? 'invalid' : ''}
               />
             )}
           </div>
@@ -147,31 +169,51 @@ const ParametricEditorLite = ({ category }) => {
       </div>
 
       <button className="submit-btn" onClick={handleSubmit}>
-        Add ➕ 
+        Add ➕
       </button>
     </div>
   );
 };
 
 const ArrayInput = ({ values, onChange }) => {
+  const [rawValues, setRawValues] = useState(values);
+
+  useEffect(() => {
+    setRawValues(values);
+  }, [values]);
+
   const handleChange = (i, val) => {
-    const arr = [...values];
-    arr[i] = parseFloat(val);
-    onChange(arr);
+    const updated = [...rawValues];
+    updated[i] = val;
+    setRawValues(updated);
+
+    const parsed = updated.map(v => parseFloat(v));
+    if (!parsed.some(n => isNaN(n))) {
+      onChange(updated);
+    }
   };
-  const addItem = () => onChange([...values, 0]);
+
+  const addItem = () => {
+    const updated = [...rawValues, '0'];
+    setRawValues(updated);
+    onChange(updated);
+  };
+
   const removeItem = i => {
-    const arr = values.filter((_, idx) => idx !== i);
-    onChange(arr);
+    const updated = rawValues.filter((_, idx) => idx !== i);
+    setRawValues(updated);
+    onChange(updated);
   };
+
   return (
     <div className="array-input">
-      {values.map((v, i) => (
+      {rawValues.map((v, i) => (
         <div key={i} className="array-row">
           <input
-            type="number"
+            type="text"
             value={v}
             onChange={e => handleChange(i, e.target.value)}
+            className={isNaN(parseFloat(v)) ? 'invalid' : ''}
           />
           <button type="button" className="remove-btn" onClick={() => removeItem(i)}>×</button>
         </div>

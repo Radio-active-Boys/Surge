@@ -4,11 +4,11 @@
     "name": "Elastic",
     "defaultParams": {
       "Material ID": 1,
-      "Elasticity": 200000000000
+      "Elasticity N/m²": 200000000000
     },
     "command": {
       "name": "uniaxialMaterial",
-      "args": [ "Elastic","$Material ID", "$Elasticity"]
+      "args": [ "Elastic","$Material ID", "$Elasticity N/m²"]
     }
   },
 

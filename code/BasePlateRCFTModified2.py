@@ -23,8 +23,8 @@ pi = 3.141592653589793
 Ab = pi * db**2 / 4  # Bolt area
 
 # Reduce fiber count to avoid file system limits
-Ny = 20  # y-direction (reduced from 50)
-Nz = 20  # z-direction (reduced from 50)
+Ny = 50  # y-direction (reduced from 50)
+Nz = 50  # z-direction (reduced from 50)
 
 # Number of bolts
 Nbz = 10  # along z-direction

@@ -1,4 +1,3 @@
-// src/components/model-builder/ParametricEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { getTemplates } from '../../api/jsonTemplates';
 import { useModelStore } from '../../stores/useModelStore';
@@ -10,7 +9,7 @@ const ParametricEditor = ({ category }) => {
   const [params, setParams] = useState({});
   const addComponent = useModelStore(state => state.addComponent);
   const setModelConfig = useModelStore(state => state.setModelConfig);
-  const modelConfig = useModelStore(state => state.modelConfig); // CHANGED: subscribe to modelConfig
+  const modelConfig = useModelStore(state => state.modelConfig);
   const patterns = useModelStore(state => state.patterns);
   const [patternId, setPatternId] = useState(null);
 
@@ -27,7 +26,6 @@ const ParametricEditor = ({ category }) => {
       }
       setPatternId(null);
     } else {
-      // For 'model' category: no templates; we only edit modelConfig
       setTemplates([]);
       setSelected(null);
       setParams({});
@@ -36,10 +34,8 @@ const ParametricEditor = ({ category }) => {
   }, [category]);
 
   if (category === 'model') {
-    // RENDER inputs for modelConfig (ndm, ndf, maybe more later)
     const handleConfigChange = (key, value) => {
-      // merge into existing config
-      setModelConfig({ [key]: value }); // setModelConfig now merges by default
+      setModelConfig({ [key]: value });
     };
     return (
       <div className="param-editor">
@@ -47,20 +43,29 @@ const ParametricEditor = ({ category }) => {
         <div className="param-row">
           <label>ndm</label>
           <input
-            type="number"
+            type="text"
             value={modelConfig.ndm}
-            onChange={e => handleConfigChange('ndm', parseInt(e.target.value, 10) || 0)}
+            onChange={e => handleConfigChange('ndm', e.target.value)}
+            onBlur={e => {
+              const val = parseInt(e.target.value, 10);
+              if (isNaN(val)) alert("ndm must be a number");
+              else handleConfigChange('ndm', val);
+            }}
           />
         </div>
         <div className="param-row">
           <label>ndf</label>
           <input
-            type="number"
+            type="text"
             value={modelConfig.ndf}
-            onChange={e => handleConfigChange('ndf', parseInt(e.target.value, 10) || 0)}
+            onChange={e => handleConfigChange('ndf', e.target.value)}
+            onBlur={e => {
+              const val = parseInt(e.target.value, 10);
+              if (isNaN(val)) alert("ndf must be a number");
+              else handleConfigChange('ndf', val);
+            }}
           />
         </div>
-        {/* Add other modelConfig fields here if needed */}
       </div>
     );
   }
@@ -72,13 +77,32 @@ const ParametricEditor = ({ category }) => {
   };
 
   const handleSubmit = () => {
-    if (['load','eleLoad','sp'].includes(category) && !patternId) {
+    if (['load', 'eleLoad', 'sp'].includes(category) && !patternId) {
       alert('Please select a pattern to attach this command');
       return;
     }
-    console.log('[ParametricEditor] adding:', { category, template: selected.name, params, patternId }); // CHANGED: debug log
-    addComponent(category, selected.name, params, patternId);
-    // reset to defaults
+
+    const parsedParams = {};
+    try {
+      for (const [k, v] of Object.entries(params)) {
+        if (Array.isArray(v)) {
+          parsedParams[k] = v.map(x => {
+            const num = parseFloat(x);
+            if (isNaN(num)) throw new Error(`Invalid number in array param '${k}'`);
+            return num;
+          });
+        } else {
+          const num = parseFloat(v);
+          if (isNaN(num)) throw new Error(`Parameter '${k}' must be a number`);
+          parsedParams[k] = num;
+        }
+      }
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
+
+    addComponent(category, selected.name, parsedParams, patternId);
     setParams(selected.defaultParams);
   };
 
@@ -90,8 +114,13 @@ const ParametricEditor = ({ category }) => {
           value={selected.name}
           onChange={e => {
             const tpl = templates.find(t => t.name === e.target.value);
-            setSelected(tpl);
-            setParams(tpl.defaultParams);
+            if (tpl) {
+              setSelected(tpl);
+              setParams(tpl.defaultParams);
+            } else {
+              setSelected(null);
+              setParams({});
+            }
           }}
         >
           {templates.map(t => (
@@ -101,7 +130,7 @@ const ParametricEditor = ({ category }) => {
       </div>
 
       <div className="params">
-        {['load','eleLoad','sp'].includes(category) && (
+        {['load', 'eleLoad', 'sp'].includes(category) && (
           <div className="param-row">
             <label>Pattern</label>
             <select
@@ -128,9 +157,17 @@ const ParametricEditor = ({ category }) => {
               />
             ) : (
               <input
-                type="number"
+                type="text"
                 value={params[key] ?? ''}
-                onChange={e => handleParamChange(key, parseFloat(e.target.value))}
+                onChange={e => handleParamChange(key, e.target.value)}
+                onBlur={e => {
+                  const val = e.target.value.trim();
+                  if (val === '' || isNaN(val)) {
+                    alert(`${key} must be a number`);
+                  } else {
+                    handleParamChange(key, parseFloat(val));
+                  }
+                }}
               />
             )}
           </div>
@@ -147,22 +184,36 @@ const ParametricEditor = ({ category }) => {
 const ArrayInput = ({ values, onChange }) => {
   const handleChange = (i, val) => {
     const arr = [...values];
-    arr[i] = parseFloat(val);
+    arr[i] = val;
     onChange(arr);
   };
-  const addItem = () => onChange([...values, 0]);
+
+  const handleBlur = (i, val) => {
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+      alert(`Array value at position ${i + 1} must be a number`);
+    } else {
+      const arr = [...values];
+      arr[i] = num;
+      onChange(arr);
+    }
+  };
+
+  const addItem = () => onChange([...values, '']);
   const removeItem = i => {
     const arr = values.filter((_, idx) => idx !== i);
     onChange(arr);
   };
+
   return (
     <div className="array-input">
       {values.map((v, i) => (
         <div key={i} className="array-row">
           <input
-            type="number"
+            type="text"
             value={v}
             onChange={e => handleChange(i, e.target.value)}
+            onBlur={e => handleBlur(i, e.target.value)}
           />
           <button type="button" className="remove-btn" onClick={() => removeItem(i)}>×</button>
         </div>

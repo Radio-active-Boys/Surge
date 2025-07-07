@@ -4,6 +4,28 @@ import { generateCommand, getTemplateByName } from '../api/jsonTemplates';
 import { generateId } from '../utils/idGenerator';
 import { useUserTypeStore } from '../utils/storeUserType';
 
+// Helper to extract the OpenSeES tag from args
+// Helper to extract an OpenSees tag from a command’s args
+const getOpenseesTag = (category, args) => {
+  if (['node', 'nodeLite'].includes(category))     return args[0];
+  if (['element', 'elementLite'].includes(category)) return args[1];
+  return null;
+};
+
+// Given a category and a candidate tag, check across the store
+const isTagUnique = (state, category, tag) => {
+  // decide which array we’re checking
+  let arrName = null;
+  if (['node','nodeLite'].includes(category))       arrName = 'node';
+  else if (['element','elementLite'].includes(category)) arrName = 'element';
+  else return true; // only enforce on node/element
+
+  return !state[arrName].some(item =>
+    getOpenseesTag(category, item.args) === tag
+  );
+};
+
+
 export const useModelStore = create((set, get) => ({
   
   modelConfig: { ndm: 2, ndf: 2 },
@@ -28,7 +50,6 @@ initializeDefaults: () => {
   const status = useUserTypeStore.getState().status;
   const { modelConfig } = get();
 
-  console.log("status in model store:", status, "ndf:", modelConfig.ndf);
 
   // default components for lite users
   const defaultSections = [
@@ -85,148 +106,155 @@ initializeDefaults: () => {
 
 
   // universal addComponent
-  addComponent: (category, templateName, params, parentId = null) => {
-    const tpl = getTemplateByName(category, templateName);
-    if (!tpl) return;
-    const id = generateId();
-    const { command, args } = generateCommand(tpl, params);
+ // inside your create((set, get) => ({ … }))
+// ────────────────────────────────────────────────────────────────────────────
+// 1) addComponent with tag‑uniqueness guard
+addComponent: (category, templateName, params, parentId = null) => {
+  const tpl = getTemplateByName(category, templateName);
+  if (!tpl) return;
+  const id = generateId();
+  const { command, args } = generateCommand(tpl, params);
 
-    // 1) section
-    if (category === 'section' || category === 'sectionLite') {
-      set(state => ({
-        section: [
-          ...state.section,
-          { id, command, templateName, args, params: { ...params }, fibers: [] }
-        ]
-      }));
-      return;
-    }
-
-    // 2) fiber / patch / layer
-    if (['fiber','patch','layer'].includes(category)) {
-      if (!parentId) return;
-      const fiberId = generateId();
-      const newFiber = { id: fiberId, category, command, templateName, args, params: { ...params } };
-      set(state => ({
-        section: state.section.map(sec =>
-          sec.id !== parentId
-            ? sec
-            : { ...sec, fibers: [...(sec.fibers||[]), newFiber] }
-        )
-      }));
-      return;
-    }
-
-    // 3) pattern
-    if (category === 'pattern' || category === 'patternLite') {
-      set(state => ({
-        patterns: [
-          ...state.patterns,
-          { id, category, templateName, params: { ...params }, command, args }
-        ]
-      }));
-      return;
-    }
-
-    // 4) loads / eleLoad / sp — all into `loads[]`
-    if (['load','eleLoad','sp'].includes(category)) {
-      if (!parentId) return;
-      set(state => ({
-        loads: [
-          ...state.loads,
-          { id, patternId: parentId, category, command, args }
-        ]
-      }));
-      return;
-    }
-
-    // 5) all other generic categories
-    const status = useUserTypeStore.getState().status;
-  const arrMapLite = {
-      nodeLite: 'node',
-      boundaryConditionsLite: 'boundaryConditions',
-      uniaxialMaterialLite: 'uniaxialMaterial',
-      elementLite: 'element',
-      geomTransfLite: 'geomTransf',
-      beamIntegrationLite: 'beamIntegration',
-      timeSeriesLite: 'timeSeries'
-  };
-    const arrMapAdvance = {
-      node: 'node',
-      boundaryConditions: 'boundaryConditions',
-      uniaxialMaterial: 'uniaxialMaterial',
-      element: 'element',
-      geomTransf: 'geomTransf',
-      beamIntegration: 'beamIntegration',
-      timeSeries: 'timeSeries'
-    };
-    const arrMap = status === 'lite' ? arrMapLite : arrMapAdvance;
-    const arrName = arrMap[category] || null;
-
-      console.log({ status, category, arrMap });
-      category = arrName
-    const item = { id, command, args, category };
-    if (['uniaxialMaterial','element','timeSeries','section','geomTransf','beamIntegration'].includes(category)) {
-      item.templateName = templateName;
-      item.params = { ...params };
-    }
-    set(state => ({ [arrName]: [...(state[arrName]||[]), item] }));
-  },
-
-  // update section / fibers / pattern
-  updateComponent: (category, id, newParams) => {
+  // Determine if we should enforce uniqueness (node → args[0], element → args[1])
+  let arrName, tagArgIndex;
+  if (category === 'node' || category === 'nodeLite') {
+    arrName = 'node';
+    tagArgIndex = 0;
+  } else if (category === 'element' || category === 'elementLite') {
+    arrName = 'element';
+    tagArgIndex = 1;
+  }
+  // If it’s a node/element, check existing tags
+  if (arrName) {
     const state = get();
+    const existingTags = state[arrName].map(item => item.args[tagArgIndex]);
+    const newTag = args[tagArgIndex];
 
-    // section
-    if (category === 'section' || category === 'sectionLite') {
-      const sec = state.section.find(s => s.id === id);
-      if (!sec) return;
-      const tpl = getTemplateByName(category, sec.templateName);
-      if (!tpl) return;
-      const { command, args } = generateCommand(tpl, newParams);
-      set(state => ({
-        section: state.section.map(s =>
-          s.id !== id ? s : { ...s, params: { ...newParams }, command, args }
-        )
-      }));
-      return;
+    if (existingTags.includes(newTag)) {
+      window.alert(
+        `${arrName} id "${newTag}" already exists`
+      );
+      return; 
     }
+  }
 
-    // fiber / patch / layer
-    if (['fiber','patch','layer'].includes(category)) {
-      set(state => ({
-        section: state.section.map(sec => {
-          const idx = sec.fibers.findIndex(f => f.id === id);
-          if (idx === -1) return sec;
-          const fiber = sec.fibers[idx];
-          const tpl = getTemplateByName(category, fiber.templateName);
-          if (!tpl) return sec;
-          const { command, args } = generateCommand(tpl, newParams);
-          const updated = { ...fiber, params: { ...newParams }, command, args };
-          const fibers = [...sec.fibers];
-          fibers[idx] = updated;
-          return { ...sec, fibers };
-        })
-      }));
-      return;
-    }
+  // Now proceed with the usual add logic…
+  if (category === 'section' || category === 'sectionLite') {
+    set(state => ({
+      section: [
+        ...state.section,
+        { id, command, templateName, args, params: { ...params }, fibers: [] }
+      ]
+    }));
+    return;
+  }
+  if (['fiber','patch','layer'].includes(category)) {
+    if (!parentId) return;
+    const fiberId = generateId();
+    const newFiber = { id: fiberId, category, command, templateName, args, params: { ...params } };
+    set(state => ({
+      section: state.section.map(sec =>
+        sec.id !== parentId
+          ? sec
+          : { ...sec, fibers: [...(sec.fibers||[]), newFiber] }
+      )
+    }));
+    return;
+  }
+  if (category === 'pattern' || category === 'patternLite') {
+    set(state => ({
+      patterns: [
+        ...state.patterns,
+        { id, category, templateName, params: { ...params }, command, args }
+      ]
+    }));
+    return;
+  }
+  if (['load','eleLoad','sp'].includes(category)) {
+    if (!parentId) return;
+    set(state => ({
+      loads: [
+        ...state.loads,
+        { id, patternId: parentId, category, command, args }
+      ]
+    }));
+    return;
+  }
+  // generic arrays (node, element, etc. for advanced users)
+  const status = useUserTypeStore.getState().status;
+  const arrMapLite = {
+    nodeLite: 'node', elementLite: 'element',
+    boundaryConditionsLite: 'boundaryConditions',
+    uniaxialMaterialLite: 'uniaxialMaterial',
+    geomTransfLite: 'geomTransf',
+    beamIntegrationLite: 'beamIntegration',
+    timeSeriesLite: 'timeSeries'
+  };
+  const arrMapAdvance = {
+    node: 'node', element: 'element',
+    boundaryConditions: 'boundaryConditions',
+    uniaxialMaterial: 'uniaxialMaterial',
+    geomTransf: 'geomTransf',
+    beamIntegration: 'beamIntegration',
+    timeSeries: 'timeSeries'
+  };
+  const arrMap = status === 'lite' ? arrMapLite : arrMapAdvance;
+  const arrKey = arrMap[category];
+  if (!arrKey) return;
 
-    // pattern
-    if (category === 'pattern' || category === 'patternLite') {
-      
-      const pat = state.patterns.find(p => p.id === id);
-      if (!pat) return;
-      const tpl = getTemplateByName(category, pat.templateName);
-      if (!tpl) return;
-      const { command, args } = generateCommand(tpl, newParams);
-      set(state => ({
-        patterns: state.patterns.map(p =>
-          p.id !== id ? p : { ...p, params: { ...newParams }, command, args }
-        )
-      }));
-      return;
+  const item = { id, command, args, category: arrKey };
+  if (['uniaxialMaterial','element','timeSeries','section','geomTransf','beamIntegration'].includes(arrKey)) {
+    item.templateName = templateName;
+    item.params = { ...params };
+  }
+  set(state => ({ [arrKey]: [...(state[arrKey]||[]), item] }));
+},
+
+// ────────────────────────────────────────────────────────────────────────────
+// 2) updateComponentArgs with the same uniqueness guard
+updateComponentArgs: (category, id, newArgs) => {
+  // Only nodes (args[0]) and elements (args[1]) need checking
+  let arrName, tagArgIndex;
+  if (category === 'node') {
+    arrName = 'node'; tagArgIndex = 0;
+  } else if (category === 'element') {
+    arrName = 'element'; tagArgIndex = 1;
+  }
+  if (arrName) {
+    const state = get();
+    const existingTags = state[arrName]
+      .filter(item => item.id !== id)      // exclude the one we’re editing
+      .map(item => item.args[tagArgIndex]);
+    const newTag = newArgs[tagArgIndex];
+
+    if (existingTags.includes(newTag)) {
+      window.alert(
+        `${arrName} id "${newTag}" already exists`
+      );
+      return; // bail out on duplicate
     }
-  },
+  }
+
+  // Delegate to your existing updateComponentArgs logic:
+  const arrMap = {
+    node: 'node',
+    boundaryConditions: 'boundaryConditions',
+    uniaxialMaterial: 'uniaxialMaterial',
+    element: 'element',
+    geomTransf: 'geomTransf',
+    beamIntegration: 'beamIntegration',
+    timeSeries: 'timeSeries'
+  };
+  const arrKey = arrMap[category];
+  if (!arrKey) return;
+
+  set(state => ({
+    [arrKey]: state[arrKey].map(item =>
+      item.id === id ? { ...item, args: newArgs } : item
+    )
+  }));
+},
+// ────────────────────────────────────────────────────────────────────────────
 
   // unified removeComponent
   removeComponent: (category, id) => {
@@ -279,7 +307,7 @@ initializeDefaults: () => {
       timeSeries: 'timeSeries'
     };
     const arrMap = status === 'lite' ? arrMapLite : arrMapAdvance;
-    console.log({ status, category, arrMap });
+
     const arrName = arrMap[category] || null;
 
     if (arrName) {
@@ -291,11 +319,44 @@ initializeDefaults: () => {
 updateComponentArgs: (category, id, newArgs) => {
   const state = get();
 
+  //
+  // ── 1) DUPLICATE‑TAG GUARD FOR NODE/ELEMENT ────────────────────────────────
+  //
+  let arrName, tagArgIndex;
+  if (category === 'node') {
+    arrName      = 'node';
+    tagArgIndex  = 0;
+  } else if (category === 'element') {
+    arrName      = 'element';
+    tagArgIndex  = 1;
+  }
+
+  if (arrName) {
+    // collect all tags except the one being edited
+    const existingTags = state[arrName]
+      .filter(item => item.id !== id)
+      .map(item => item.args[tagArgIndex]);
+
+    const newTag = newArgs[tagArgIndex];
+
+    if (existingTags.includes(newTag)) {
+      // you can swap this for console.warn if you prefer
+      window.alert(
+        `Cannot rename ${arrName} to tag "${newTag}" — that tag is already in use.`
+      );
+      return;
+    }
+  }
+
+  //
+  // ── 2) YOUR ORIGINAL UPDATE LOGIC ───────────────────────────────────────────
+  //
+
   // SECTION
   if (category === 'section') {
-    set(state => ({
-      section: state.section.map(s =>
-        s.id === id ? { ...s, args: newArgs } : s
+    set(s => ({
+      section: s.section.map(sec =>
+        sec.id === id ? { ...sec, args: newArgs } : sec
       )
     }));
     return;
@@ -303,8 +364,8 @@ updateComponentArgs: (category, id, newArgs) => {
 
   // PATTERNS
   if (category === 'patterns') {
-    set(state => ({
-      patterns: state.patterns.map(p =>
+    set(s => ({
+      patterns: s.patterns.map(p =>
         p.id === id ? { ...p, args: newArgs } : p
       )
     }));
@@ -313,14 +374,15 @@ updateComponentArgs: (category, id, newArgs) => {
 
   // LOADS (load / eleLoad / sp)
   if (category === 'loads') {
-    set(state => ({
-      loads: state.loads.map(l =>
+    set(s => ({
+      loads: s.loads.map(l =>
         l.id === id ? { ...l, args: newArgs } : l
       )
     }));
     return;
   }
 
+  // GENERIC ARRAYS
   const arrMap = {
     node: 'node',
     boundaryConditions: 'boundaryConditions',
@@ -330,17 +392,16 @@ updateComponentArgs: (category, id, newArgs) => {
     beamIntegration: 'beamIntegration',
     timeSeries: 'timeSeries'
   };
+  const arrKey = arrMap[category];
+  if (!arrKey) return;
 
-  const arrName = arrMap[category] || null;
-
-  if (!arrName) return;
-
-  set(state => ({
-    [arrName]: state[arrName].map(item =>
+  set(s => ({
+    [arrKey]: s[arrKey].map(item =>
       item.id === id ? { ...item, args: newArgs } : item
     )
   }));
 },
+
 
   // export to JSON
   toJson: () => {

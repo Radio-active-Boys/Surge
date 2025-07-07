@@ -28,6 +28,7 @@ export default function Navbar() {
 
   return (
     <>
+    <>
       <header className="navbar">
         <div className="navbar-container">
           <div className="navbar-logo">
@@ -35,8 +36,8 @@ export default function Navbar() {
           </div>
 
           <nav className="nav-links">
-            <NavLink to="/" className="nav-link">Model Builder</NavLink>
-            <NavLink to="/analysis" className="nav-link">Analysis</NavLink>
+            <NavLink to="/model" className="nav-link">Model Builder</NavLink>
+            <NavLink to="/" className="nav-link">Analysis</NavLink>
             <NavLink to="/recorder" className="nav-link">Results</NavLink>
           </nav>
 
@@ -57,13 +58,15 @@ export default function Navbar() {
         </div>
       </header>
 
-      {showDisclaimer && (
+
+      <JsonTogglePanel />
+    </>
+          {showDisclaimer && (
         <DisclaimerModal
           onConfirm={confirmSwitch}
           onCancel={cancelSwitch}
         />
       )}
-      <JsonTogglePanel />
     </>
   );
 }

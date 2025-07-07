@@ -97,7 +97,6 @@ import layerTemplatesLite from './templatesLite/layer.json';
 const patternOnlyTemplatesLite = patternTemplatesLite.filter(t => t.category === 'pattern');
 const loadTemplatesLite = patternTemplatesLite.filter(t => t.category === 'load');
 const eleLoadTemplatesLite = patternTemplatesLite.filter(t => t.category === 'eleLoad');
-const spTemplatesLite = patternTemplatesLite.filter(t => t.category === 'sp');
 const LiteTemplates = {
   // Model-level
   modelLite,
@@ -117,7 +116,6 @@ const LiteTemplates = {
   pattern: patternOnlyTemplatesLite,
   load: loadTemplatesLite,
   eleLoad: eleLoadTemplatesLite,
-  sp: spTemplatesLite,
 
   // Analysis
   constraintsLite,
@@ -134,15 +132,14 @@ const LiteTemplates = {
 // ✅ Helper to get correct mode templates
 const getTemplateStore = () => {
   const status = useUserTypeStore.getState().status;
-  console.log("Status",status)
+
   return status === 'advanced' ? AdvanceTemplates : LiteTemplates;
 };
 
 // ✅ Get all templates of a category
 export const getTemplates = (category) => {
   const store = getTemplateStore();
-  console.log("store",store)
-  console.log("category",category)
+
   return store[category] || [];
 };
 

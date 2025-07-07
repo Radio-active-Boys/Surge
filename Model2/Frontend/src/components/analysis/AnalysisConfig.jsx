@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useAnalysisStore } from '../../stores/useAnalysisStore';
 import { useModelStore } from '../../stores/useModelStore';
 import { useResultStore } from '../../stores/useResultStore';
-import { runAnalysis } from '../../api/openseesService';
+import { runAnalysis,cleanupOutput } from '../../api/openseesService';
 import { importModel } from '../../utils/modelUtils';
 import './AnalysisConfig.css';
 
@@ -52,72 +52,98 @@ const AnalysisConfig = () => {
     reader.readAsText(file);
   };
 
-  const handleRunAnalysis = async () => {
-    setIsLoading(true);
-    setError(null);
-    setResults(null);
-    clearResults();
+const handleRunAnalysis = async () => {
+  setIsLoading(true);
+  setError(null);
+  setResults(null);
+  clearResults();
 
-    let fullPayload;
-    if (importedJson) {
-      fullPayload = importedJson;
-      importModel(fullPayload);
-    } else {
-      const modelJson = useModelStore.getState().toJson();
-      const analysisJson = useAnalysisStore.getState().toJson();
-      fullPayload = { ...modelJson, ...analysisJson };
-    }
+  let fullPayload;
+  if (importedJson) {
+    fullPayload = importedJson;
+    importModel(fullPayload);
+  } else {
+    const modelJson = useModelStore.getState().toJson();
+    const analysisJson = useAnalysisStore.getState().toJson();
+    fullPayload = { ...modelJson, ...analysisJson };
+  }
 
-    if (!fullPayload.nodes || fullPayload.nodes.length === 0) {
-      setError("You must define at least one node before running analysis.");
-      setIsLoading(false);
-      return;
-    }
+  if (!fullPayload.nodes || fullPayload.nodes.length === 0) {
+    setError("You must define at least one node before running analysis.");
+    setIsLoading(false);
+    return;
+  }
 
-    try {
-      const response = await runAnalysis(fullPayload);
+  try {
+    const response = await runAnalysis(fullPayload);
 
-      if (response.status === "success") {
-        setResults(response);
-        setResultData(response);
-      } else {
-        let msg = response.message || "Analysis failed.";
-        if (Array.isArray(response.errors)) {
-          const errorMsgs = response.errors.map(e =>
-            typeof e === "string"
-              ? e
-              : e.stderr || e.error || JSON.stringify(e)
-          );
-          msg += " " + errorMsgs.join("; ");
-        }
-        setError(msg);
-        setResultData({
-          status: "failure",
-          errors: response.errors || [msg],
-          warnings: response.warnings || [],
-          monitoring: null,
-          recorders: null,
-          model: null,
-          output_dir: response.output_dir || null,
+    if (response.status === "success") {
+      setResults(response);
+      setResultData(response);
+
+      // ✅ Automatically run cleanup in the background
+      if (response.output_dir) {
+        cleanupOutput(response.output_dir).catch((err) => {
+          console.warn("Cleanup failed:", err);
         });
       }
-    } catch (err) {
-      console.error("Unexpected error:", err);
-      const msg = err.message || "An unexpected error occurred.";
+
+    } else {
+      let msg = "Analysis failed. Please verify loading and boundary conditions.";
+
+      if (Array.isArray(response.errors) && response.errors.length > 0) {
+        const errorMsgs = response.errors.map(e => {
+          if (typeof e === "string") return e;
+
+          // Safely construct a detailed error message
+          const command = e.command || "unknown";
+          const args = Array.isArray(e.args) ? e.args.join(", ") : e.args || "none";
+          const errorText = e.error || "";
+
+          return `Model build failed due to "${command}" command with args [${args}]`;
+        });
+
+        msg = errorMsgs.join("; ");
+      } else if (typeof response.message === "string" && response.message.trim() !== "") {
+        msg = response.message;
+      }
+
       setError(msg);
+
       setResultData({
-        status: "error",
-        errors: [msg],
-        warnings: [],
+        status: false,
+        errors: response.errors || [msg],
+        warnings: response.warnings || [],
         monitoring: null,
         recorders: null,
         model: null,
-        output_dir: null,
+        output_dir: response.output_dir || null,
       });
-    } finally {
-      setIsLoading(false);
+
+      // Optional: you can still clean up even if it failed
+      if (response.output_dir) {
+        cleanupOutput(response.output_dir).catch((err) => {
+          console.warn("Cleanup failed :", err);
+        });
+      }
     }
-  };
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    const msg = err.message || "An unexpected error occurred.";
+    setError(msg);
+    setResultData({
+      status: false,
+      errors: [msg],
+      warnings: [],
+      monitoring: null,
+      recorders: null,
+      model: null,
+      output_dir: null,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleClearImport = () => {
     setImportedJson(null);
@@ -179,7 +205,7 @@ const AnalysisConfig = () => {
       </div>
 
       {importFileName && (
-        <div className="file-pill mt-3">
+        <div className="file-pill ">
           <span className="file-name">{importFileName}</span>
           <button
             onClick={handleClearImport}

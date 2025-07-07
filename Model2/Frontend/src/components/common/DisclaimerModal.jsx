@@ -21,7 +21,7 @@ export default function DisclaimerModal({ onConfirm, onCancel }) {
           >
             OpenSeesPy documentation ↗
           </a>
-          before proceeding.
+           before proceeding.
         </p>
 
         <div className="modal-actions">

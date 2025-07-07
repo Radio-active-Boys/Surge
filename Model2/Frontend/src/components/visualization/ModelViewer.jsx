@@ -251,20 +251,57 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
       nodeG.selectAll("*").remove();
       const v = d.value, ndf = v.length;
 
-      function drawTriangle(sel) {
-        const w = triangleWidth / 2, h = triangleHeight / 2;
-        sel.append("path")
-           .attr("d", `M${-w} ${h} L${w} ${h} L0 ${-h} Z`)
-           .attr("fill", supportColor);
-      }
-      function drawRollers(sel) {
-        const yPos = triangleHeight/2 + rollerCircleGap + rollerCircleRadius;
-        sel.append("circle").attr("cx", -rollerCircleXOffset).attr("cy", yPos).attr("r", rollerCircleRadius).attr("fill", supportColor);
-        sel.append("circle").attr("cx",  rollerCircleXOffset).attr("cy", yPos).attr("r", rollerCircleRadius).attr("fill", supportColor);
-      }
+function drawTriangle(sel) {
+  const w = triangleWidth / 2, h = triangleHeight / 2;
+  const trianglePath = `M${-w} ${h} L${w} ${h} L0 ${-h} Z`;
+  sel.append("path")
+    .attr("d", trianglePath)
+    .attr("fill", supportColor);
+}
+
+function drawRollers(sel, direction = "x") {
+  if (direction === "x") {
+    // X roller: triangle + rollers below (default orientation)
+    drawTriangle(sel);
+    const yPos = triangleHeight / 2 + rollerCircleGap + rollerCircleRadius;
+    sel.append("circle")
+      .attr("cx", -rollerCircleXOffset)
+      .attr("cy", yPos)
+      .attr("r", rollerCircleRadius)
+      .attr("fill", supportColor);
+    sel.append("circle")
+      .attr("cx", rollerCircleXOffset)
+      .attr("cy", yPos)
+      .attr("r", rollerCircleRadius)
+      .attr("fill", supportColor);
+
+  }   else if (direction === "y") {
+  // Y roller: translate first (normal space), then rotate
+  const group = sel.append("g")
+    .attr("transform", `translate(${triangleHeight - 1.5}, ${(-triangleWidth / 2)+0.5}) rotate(-90)`);
+
+  drawTriangle(group);
+
+  const yPos = triangleHeight / 2 + rollerCircleGap + rollerCircleRadius;
+  group.append("circle")
+    .attr("cx", -rollerCircleXOffset)
+    .attr("cy", yPos)
+    .attr("r", rollerCircleRadius)
+    .attr("fill", supportColor);
+  group.append("circle")
+    .attr("cx", rollerCircleXOffset)
+    .attr("cy", yPos)
+    .attr("r", rollerCircleRadius)
+    .attr("fill", supportColor);
+}
+
+
+}
+
       function drawBox(sel) {
         sel.append("rect")
-           .attr("x", -triangleWidth/2).attr("y", -triangleHeight/2)
+           .attr("x", -triangleWidth / 2)
+           .attr("y", -triangleHeight / 2)
            .attr("width", triangleWidth)
            .attr("height", triangleHeight)
            .attr("fill", supportColor);
@@ -272,20 +309,28 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
 
       if (ndf === 2) {
         const [fx, fy] = v;
-        if (fx && fy) drawTriangle(nodeG);
-        else if (fx || fy) { drawTriangle(nodeG); drawRollers(nodeG); }
+        if (fx && fy) {
+          drawTriangle(nodeG); // pinned
+        } else if (fx || fy) {
+          if (fx && !fy) drawRollers(nodeG, "y"); // Y roller blocks X
+          if (!fx && fy) drawRollers(nodeG, "x"); // X roller blocks Y
+        }
       } else {
         const [ux, uy, rz] = v;
-        if (ux && uy && rz) drawBox(nodeG);
-        else if (ux && uy) drawTriangle(nodeG);
-        else if (ux || uy) { drawTriangle(nodeG); drawRollers(nodeG); }
+        if (ux && uy && rz) drawBox(nodeG); // fixed
+        else if (ux && uy) drawTriangle(nodeG); // pinned
+        else if (ux || uy) {
+          if (ux && !uy) drawRollers(nodeG, "y"); // Y roller blocks X
+          if (!ux && uy) drawRollers(nodeG, "x"); // X roller blocks Y
+        }
       }
     });
 }
 
+
 // ─── DRAW NODAL LOADS ─────────────────────────────────────────────────────
 function DrawLoads(g, loads, coords, xScale, yScale) {
-  const colorX = "#007bff", colorY = "#28a745";
+  const colorX = "#007bff", colorY = "#28a745", colorM = "red";
   const arrowLength = 6, headLength = 1.5, headWidth = 2.2;
 
   const sel = g.selectAll("g.load").data(loads, d => d.nodeId);
@@ -301,7 +346,7 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
     })
     .each(function (d) {
       const nodeG = d3.select(this);
-      const [fx = 0, fy = 0] = d.values;
+      const [fx = 0, fy = 0, mz = 0] = d.values;
       nodeG.select(".arrow-x").selectAll("*").remove();
       nodeG.select(".arrow-y").selectAll("*").remove();
 
@@ -310,14 +355,12 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
         const tipX = dx * L, tipY = dy * L;
         const shaftX = dx * (L - headLength), shaftY = dy * (L - headLength);
 
-        // Shaft
         subG.append("line")
           .attr("x1", 0).attr("y1", 0)
           .attr("x2", shaftX).attr("y2", shaftY)
           .attr("stroke", color)
           .attr("stroke-width", 0.8);
 
-        // Arrowhead (wide triangle)
         const baseLeftX = tipX - dx * headLength - dy * headWidth / 2;
         const baseLeftY = tipY - dy * headLength + dx * headWidth / 2;
         const baseRightX = tipX - dx * headLength + dy * headWidth / 2;
@@ -332,7 +375,6 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
           ]))
           .attr("fill", color);
 
-        // Label
         const offset = 5;
         subG.append("text")
           .attr("x", tipX + dx * offset)
@@ -341,11 +383,53 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
           .attr("alignment-baseline", "baseline")
           .attr("font-size", 2.5)
           .attr("fill", color)
-          .text(Math.abs(value))
+          .text(`${Math.abs(value)} kN`);
       }
 
       if (fx) drawArrow(nodeG.select(".arrow-x"), fx > 0 ? 1 : -1, 0, colorX, fx);
       if (fy) drawArrow(nodeG.select(".arrow-y"), 0, fy > 0 ? -1 : 1, colorY, fy);
+
+      // ─── MOMENT AS ARC WITH SYMBOL ─────────────────────────
+      if (Math.abs(mz) > 1e-6) {
+        const r = 6;
+        const x = 0, y = 0; // centered arc at node
+        const direction = mz > 0 ? Math.PI * 1.5 : -Math.PI * 1.5;
+        const arcGen = d3.arc()
+          .innerRadius(r - 1)
+          .outerRadius(r)
+          .startAngle(0)
+          .endAngle(direction);
+
+        nodeG.append("path")
+          .attr("d", arcGen())
+          .attr("transform", `translate(${x},${y})`)
+          .attr("fill", colorM)
+          .attr("stroke", "none");
+
+        const endAngle = direction;
+        const angleDeg = endAngle * 180 / Math.PI;
+
+        let arrowX, arrowY;
+        arrowX = x + r * Math.cos(endAngle);
+        arrowY = y + r * Math.sin(endAngle);
+
+        if (mz > 0) arrowY += r * 0.05;
+        if (mz < 0) arrowY += r * 0.05 - 2 * r;
+
+        nodeG.append("path")
+          .attr("d", d3.symbol().type(d3.symbolTriangle).size(4))
+          .attr("fill", colorM)
+          .attr("transform", `translate(${arrowX},${arrowY + 0.5}) rotate(${angleDeg})`);
+
+        // Moment Label
+        nodeG.append("text")
+          .attr("x", arrowX + 3 )
+          .attr("y", arrowY )
+          .text(`${Math.abs(mz.toFixed(2))} kN-m`)
+          .attr("fill", colorM)
+          .attr("font-size", 2.5)
+          .attr("text-anchor", "start");
+      }
     });
 }
 
@@ -361,8 +445,69 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
   const sampleCount = 30;
   const headLength = 1.5, headWidth = 2.2;
 
+  // ─── Compute Global Max Magnitude ────────────
+  let maxLoadMag = 1; // avoid division by 0
   eleLoads.forEach(load => {
-    const ids = Array.isArray(load.eleIds) ? load.eleIds : (load.range ? expandRange(load.range) : []);
+    if (load.type === "beamPoint") {
+      const { Py, Px } = load.params;
+      maxLoadMag = Math.max(maxLoadMag, Math.abs(Py || 0), Math.abs(Px || 0));
+    } else if (load.type === "beamUniform") {
+      const { Wy, Wy_start, Wy_end } = load.params;
+      const start = Wy_start ?? Wy ?? 0;
+      const end = Wy_end ?? Wy ?? 0;
+      maxLoadMag = Math.max(maxLoadMag, Math.abs(start), Math.abs(end));
+    }
+  });
+
+  // ─── Draw Arrow Helper ─────────────
+  function drawArrow(baseX, baseY, dirX, dirY, color, label, scaleMag = 1, unit = "") {
+    const visualScale = 15;
+    const arrowLen = visualScale * scaleMag;
+
+    const tipX = baseX + dirX * arrowLen;
+    const tipY = baseY + dirY * arrowLen;
+
+    // Shaft
+    g.append("line")
+      .attr("x1", baseX).attr("y1", baseY)
+      .attr("x2", tipX - dirX * headLength).attr("y2", tipY - dirY * headLength)
+      .attr("stroke", color).attr("stroke-width", 0.5);
+
+    // Arrowhead
+    const baseLeftX = tipX - dirX * headLength - dirY * headWidth / 2;
+    const baseLeftY = tipY - dirY * headLength + dirX * headWidth / 2;
+    const baseRightX = tipX - dirX * headLength + dirY * headWidth / 2;
+    const baseRightY = tipY - dirY * headLength - dirX * headWidth / 2;
+
+    g.append("path")
+      .attr("d", d3.line()([
+        [tipX, tipY],
+        [baseLeftX, baseLeftY],
+        [baseRightX, baseRightY],
+        [tipX, tipY]
+      ]))
+      .attr("fill", color);
+
+    // Label
+    const offset = 2.5;
+    if (label !== "") {
+      g.append("text")
+        .attr("x", tipX + dirX * offset)
+        .attr("y", tipY + dirY * offset)
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .attr("font-size", 2.5)
+        .attr("fill", color)
+        .text(`${label} ${unit}`);
+    }
+  }
+
+  // ─── Draw Each Load ─────────────
+  eleLoads.forEach(load => {
+    const ids = Array.isArray(load.eleIds)
+      ? load.eleIds
+      : (load.range ? expandRange(load.range) : []);
+
     ids.forEach(eleId => {
       const el = elements.find(e => e.id === eleId);
       if (!el) return;
@@ -376,43 +521,6 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
       const len = Math.hypot(dx, dy);
       const ux = dx / len, uy = dy / len;
       const nx = -uy, ny = ux;
-      const arrowLen = Math.min(10, len * 2);
-
-      function drawArrow(baseX, baseY, dirX, dirY, color, label) {
-        const tipX = baseX + dirX * arrowLen;
-        const tipY = baseY + dirY * arrowLen;
-
-        // Shaft
-        g.append("line")
-         .attr("x1", baseX).attr("y1", baseY)
-         .attr("x2", tipX - dirX * headLength).attr("y2", tipY - dirY * headLength)
-         .attr("stroke", color).attr("stroke-width", 0.5);
-
-        // Arrowhead
-        const baseLeftX = tipX - dirX * headLength - dirY * headWidth / 2;
-        const baseLeftY = tipY - dirY * headLength + dirX * headWidth / 2;
-        const baseRightX = tipX - dirX * headLength + dirY * headWidth / 2;
-        const baseRightY = tipY - dirY * headLength - dirX * headWidth / 2;
-
-        g.append("path")
-         .attr("d", d3.line()([
-           [tipX, tipY],
-           [baseLeftX, baseLeftY],
-           [baseRightX, baseRightY],
-           [tipX, tipY]
-         ])).attr("fill", color);
-
-        // Label
-        const offset = 2.5;
-        g.append("text")
-         .attr("x", tipX + dirX * offset)
-         .attr("y", tipY + dirY * offset)
-         .attr("text-anchor", "middle")
-         .attr("alignment-baseline", "middle")
-         .attr("font-size", 2.5)
-         .attr("fill", color)
-         .text(label);
-      }
 
       if (load.type === "beamPoint") {
         const { Py, Px, xL } = load.params;
@@ -422,11 +530,25 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
 
         if (Py) {
           const dir = -(Math.sign(Py) || 1);
-          drawArrow(baseX, baseY, nx * dir, ny * dir, "steelblue", Math.abs(Py));
+          drawArrow(
+            baseX, baseY,
+            nx * dir, ny * dir,
+            "steelblue",
+            Math.abs(Py),
+            Math.abs(Py) / maxLoadMag,
+            "kN"
+          );
         }
         if (Px) {
           const dir = -(Math.sign(Px) || 1);
-          drawArrow(baseX, baseY, ux * dir, uy * dir, "gray", Math.abs(Px));
+          drawArrow(
+            baseX, baseY,
+            ux * dir, uy * dir,
+            "gray",
+            Math.abs(Px),
+            Math.abs(Px) / maxLoadMag,
+            "kN"
+          );
         }
 
       } else if (load.type === "beamUniform") {
@@ -439,20 +561,28 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
         }
         if ([p.Wy_start, p.Wy_end, p.aL, p.bL].some(v => v == null)) return;
 
-        const maxM = Math.max(Math.abs(p.Wy_start), Math.abs(p.Wy_end), 1);
         for (let i = 0; i <= sampleCount; i++) {
           const t = p.aL + (p.bL - p.aL) * (i / sampleCount);
           const bx = x1 + ux * (t * len);
           const by = y1 + uy * (t * len);
           const mag = p.Wy_start + (p.Wy_end - p.Wy_start) * ((t - p.aL) / (p.bL - p.aL));
           const dir = -(Math.sign(mag) || 1);
-          const scale = Math.abs(mag) / maxM;
-          drawArrow(bx, by, nx * dir * scale, ny * dir * scale, "purple", (i === 0 || i === sampleCount) ? Math.abs(mag) : "");
+          const scaleMag = Math.abs(mag) / maxLoadMag;
+
+          drawArrow(
+            bx, by,
+            nx * dir, ny * dir,
+            "purple",
+            (i === 0 || i === sampleCount) ? Math.abs(mag) : "",
+            scaleMag,
+            "kN/m"
+          );
         }
       }
     });
   });
 }
+
 
 // ─── SVG MARKER DEFINITIONS ───────────────────────────────────────────────
 function defineArrowMarkers(svg) {

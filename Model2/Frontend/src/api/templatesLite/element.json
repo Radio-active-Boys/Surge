@@ -7,7 +7,7 @@
       "Element ID": 1,
       "Start Node":1,
       "End Node":2,
-      "A": 0.001,
+      "A m²": 0.001,
       "Material ID": 1
     },
     "command": {
@@ -17,7 +17,7 @@
         "$Element ID",
         "$Start Node",
         "$End Node",
-        "$A",
+        "$A m²",
         "$Material ID",
         "-rho", 0.0,
         "-cMass", 0,
@@ -32,8 +32,8 @@
       "Element ID": 1,
       "Start Node":1,
       "End Node":2,
-      "Area": 0.001,
-      "Elasticity": 200e9
+      "Area m²": 0.001,
+      "Elasticity N/m²": 200e9
     },
     "command": {
       "name": "element",
@@ -42,8 +42,8 @@
         "$Element ID",
         "$Start Node",
         "$End Node",
-        "$Area",
-        "$Elasticity",
+        "$Area m²",
+        "$Elasticity N/m²",
         1e-6,
         1,
         "-mass",  0.0,

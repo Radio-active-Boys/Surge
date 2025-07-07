@@ -4,16 +4,20 @@ import { useResultStore } from '../stores/useResultStore';
 import ResultsPlotter from '../components/results/ResultsPlotter';
 import { useUserTypeStore } from '../utils/storeUserType';
 const ResultsPage = () => {
-  const [activeView, setActiveView] = useState('results');
+  const [activeView, setActiveView] = useState('model');
   const status = useResultStore((state) => state.status);
   const errors = useResultStore((state) => state.errors);
   const warnings = useResultStore((state) => state.warnings);
   const fullResults = useResultStore((state) => state.fullResults);
   const statusUser = useUserTypeStore(state => state.status);
-  console.log("Resulr user",statusUser)
+
 
   if (!status) {
-    return <p>No results available. Please run an analysis first.</p>;
+    return (
+        <div className="query-result-note">
+          <strong>Note:</strong> No results available. Please run an analysis first.
+        </div>
+    )
   }
 
   return (

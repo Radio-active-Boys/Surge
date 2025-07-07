@@ -100,33 +100,43 @@ const exportPNG = () => {
     root.selectAll(".original, .elements, .nodes, .supports").remove();
 
     const coords = nodeCoordinates;
-    const dispMap = nodeDispSeries?.[timeIndex]?.data || {};
+    const dispMap = nodeDispSeries?.[0]?.data || {};
 
     // original extents
     const xs = Object.values(coords).map(d => d.x);
     const ys = Object.values(coords).map(d => d.y);
     let [xMin, xMax] = d3.extent(xs);
     let [yMin, yMax] = d3.extent(ys);
-    if (xMin === xMax) { xMin -= 1; xMax += 1; }
+    // console.log("xMin before",xMin)
+    // console.log("xMax before",xMax)
+    // console.log("yMin before",yMin)
+    // console.log("yMax before",yMax)
+    if (xMin === xMax) { 
+      const uXmax = d3.max(Object.values(dispMap), d => Math.abs(d?.['2']*sfac)) || 1;
+      xMin -= uXmax; xMax += uXmax;
+       }
     if (yMin === yMax) {
       const uYmax = d3.max(Object.values(dispMap), d => Math.abs(d?.['2']*sfac)) || 1;
       yMin -= uYmax; yMax += uYmax;
     }
+    // console.log("xMin After",xMin)
+    // console.log("xMax After",xMax)
+    // console.log("yMin After",yMin)
+    // console.log("yMax After",yMax)
+
     const xScale = d3.scaleLinear().domain([xMin, xMax]).range([margin, width - margin]);
     const yScale = d3.scaleLinear().domain([yMin, yMax]).range([height - margin, margin]);
 
+    // console.log("sfac",sfac)
+    // console.log("baseSfac",baseSfac)
+    // console.log("userScale",userScale)
+    // console.log("xScale",xScale)
+    // console.log("yScale",yScale)
+
     // draw original
     const g0 = root.append("g").attr("class", "original");
-    elementConnectivity.forEach(el => {
-      const p1 = coords[el.i], p2 = coords[el.j];
-      if (!p1||!p2) return;
-      g0.append("line")
-        .attr("x1", xScale(p1.x)).attr("y1", yScale(p1.y))
-        .attr("x2", xScale(p2.x)).attr("y2", yScale(p2.y))
-        .attr("stroke", "grey").attr("stroke-width", 1)
-        .attr("stroke-dasharray", "4 2").attr("opacity", 0.6);
-    });
 
+    DrawElements(g0, elementConnectivity, nodeCoordinates, xScale, yScale);
     // draw deflected
     DrawElementsDeflected(
       root.append("g").attr("class","elements"),
@@ -166,7 +176,7 @@ const exportPNG = () => {
     const p1 = nodeCoordinates[el.i], p2 = nodeCoordinates[el.j];
     const L  = Math.hypot(p2.x - p1.x, p2.y - p1.y) || 1;
     if (queryXLoc < 0 || queryXLoc > L) {
-      setDeflError(`x must be between 0 and ${L.toFixed(3)}`);
+      setDeflError(`x = ${queryXLoc.toFixed(2)} is greater than element length = ${L.toFixed(2)} m`);
       return;
     }
 
@@ -211,9 +221,9 @@ const exportPNG = () => {
     <div className="deflected-container">
       <div className="controls">
         <button onClick={exportPNG}>Save PNG</button>
-        <button onClick={() => setIsPlaying(p=>!p)}>
+        {/* <button onClick={() => setIsPlaying(p=>!p)}>
           {isPlaying ? 'Stop' : 'Play'}
-        </button>
+        </button> */}
         <label>
           Scale:
           <input
@@ -256,17 +266,100 @@ const exportPNG = () => {
     {deflResult && !deflError && (
       <div className="query-result">
         {queryNodeId
-          ? `At node ${queryNodeId}: Δx=${deflResult.dx.toFixed(4)}, Δy=${deflResult.dy.toFixed(4)}`
-          : `At x=${queryXLoc.toFixed(2)} on element ${queryElId}: Δx=${deflResult.dx.toFixed(4)}, Δy=${deflResult.dy.toFixed(4)}`
+          ? `At node ${queryNodeId}: Δx=${(deflResult.dx*1000).toFixed(4)} mm, Δy=${(deflResult.dy*1000).toFixed(4)} mm`
+          : `At x=${queryXLoc.toFixed(2)} on element ${queryElId}: Δx=${(deflResult.dx*1000).toFixed(4)} mm, Δy=${(deflResult.dy*1000).toFixed(4)} mm`
         }
       </div>
     )}
-
-
       <svg ref={svgRef} width={width} height={height} className="deflected-svg" />
     </div>
   );
 }
+
+// ─── DRAW ELEMENTS ────────────────────────────────────────────────────────
+function DrawElements(g, elements, coords, xScale, yScale) {
+  g.selectAll("*").remove();
+
+  elements.forEach(el => {
+    const p1 = coords[el.i], p2 = coords[el.j];
+    if (!p1 || !p2) return;
+
+    const x1 = xScale(p1.x), y1 = yScale(p1.y);
+    const x2 = xScale(p2.x), y2 = yScale(p2.y);
+
+    g.append("line")
+      .attr("class", "element")
+      .attr("x1", x1).attr("y1", y1)
+      .attr("x2", x2).attr("y2", y2)
+      .attr("stroke", "#666")
+      .attr("stroke-width", 2);
+
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.hypot(dx, dy);
+    if (len === 0) return;
+    const ux = dx / len, uy = dy / len;
+
+    const tinyFrac = 0.01;
+    const testX = p1.x + ux * (tinyFrac * len);
+    const testY = p1.y + uy * (tinyFrac * len);
+    const sA = [xScale(p1.x), yScale(p1.y)];
+    const sB = [xScale(testX), yScale(testY)];
+    let dirX = sB[0] - sA[0], dirY = sB[1] - sA[1];
+    const norm = Math.hypot(dirX, dirY) || 1;
+    dirX /= norm; dirY /= norm;
+    const perpX = -dirY, perpY = dirX;
+
+    const arrowPx = 12;
+    const tx = mx + dirX * arrowPx;
+    const ty = my + dirY * arrowPx;
+
+    const qx = mx + perpX * -arrowPx;
+    const qy = my + perpY * -arrowPx;
+
+    g.append("line")
+      .attr("x1", mx).attr("y1", my)
+      .attr("x2", tx).attr("y2", ty)
+      .attr("stroke", "red")
+      .style("color", "red")
+      .attr("stroke-width", 1)
+      .attr("marker-end", "url(#arrowhead-axial)");
+
+    g.append("line")
+      .attr("x1", mx).attr("y1", my)
+      .attr("x2", qx).attr("y2", qy)
+      .attr("stroke", "green")
+      .style("color", "green")
+      .attr("stroke-width", 1)
+      .attr("marker-end", "url(#arrowhead-transverse)");
+
+    g.append("text")
+      .attr("x", tx + 3)
+      .attr("y", ty - 3)
+      .text("X")
+      .attr("fill", "red")
+      .attr("font-size", 5);
+
+    g.append("text")
+      .attr("x", qx - 6)
+      .attr("y", qy - 3)
+      .text("Y")
+      .attr("fill", "green")
+      .attr("font-size", 5);
+
+    // Better-positioned element ID label
+    g.append("text")
+      .attr("x", (tx+qx)/2)
+      .attr("y", (ty+qy)/2)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 7)
+      .attr("fill", "blue")
+      .text(`E${el.id}`);
+  });
+}
+
 // New implementation of DrawElementsDeflected using beam_defo_interp_2d
 function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfac, ndm, ndf) {
   g.selectAll("*").remove();
@@ -285,7 +378,7 @@ function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfa
     const nodeJ = String(el.j);
 
     // Get displacements (1-indexed DOFs: UX=1, UY=2, RZ=3)
-    console.log("Disp map",dispMap)
+
     const ux1 = dispMap[nodeI]?.["1"] || 0;
     const uy1 = dispMap[nodeI]?.["2"] || 0;
     const ux2 = dispMap[nodeJ]?.["1"] || 0;
@@ -308,7 +401,7 @@ function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfa
     }
     // Handle beam/column elements
     else if (beamTypes.includes(el.type)) {
-      console.log("el.type",el.type)
+
       const rz1 = dispMap[nodeI]?.["3"] || 0;
       const rz2 = dispMap[nodeJ]?.["3"] || 0;
       
@@ -318,7 +411,7 @@ function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfa
       };
       
       const result = beam_defo_interp_2d(nep, el, sfac, coords, dispMapForInterp, ndm, ndf);
-      console.log("result",result)
+
 
       if (result && result.crd_xc && result.crd_yc) {
         // FIX 1: Account for D3's inverted y-axis in plotting
@@ -341,19 +434,13 @@ function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfa
         
         // FIX 3: Add rigid offsets (Python equivalent)
         // Original node positions with deformation
-        console.log("Deformation node 1 ",ux1," ", uy1," ",rz1)
-        console.log("Deformation node 2 ",ux2," ", uy2," ",rz2)
+
         const x1d = p1.x + ux1 * sfac;
         const y1d = p1.y + uy1 * sfac;
         const x2d = p2.x + ux2 * sfac;
         const y2d = p2.y + uy2 * sfac;
         
-        // Add this after beam_defo_interp_2d call
-        console.log("Original points:",{ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
-        console.log("Deformed endpoints:",{ x1d: x1d, y1d: y1d, x2d: x2d, y2d: y2d });
-        console.log("Interpolated start:",{ x0: result.crd_xc[0], y0: result.crd_yc[0] });
-        console.log("Interpolated end:",{ xn: result.crd_xc.slice(-1)[0], yn: result.crd_yc.slice(-1)[0] });
-        
+    
         g.append("line")
           .attr("x1", xScale(x1d))
           .attr("y1", yScale(y1d))
@@ -644,23 +731,25 @@ function rot_transf_2d(el, coords) {
   return { G, L, cosa, cosb };
 }
 
-// Draw deflected nodes
+// Draw deflected nodes with delta x and y labels
 function DrawNodesDeflected(g, coords, dispMap, xScale, yScale, sfac) {
   g.selectAll("*").remove();
+
   const data = Object.entries(coords).map(([id, p]) => {
-    // Use string keys for DOF access
     const ux = dispMap[id]?.["1"] || 0;
     const uy = dispMap[id]?.["2"] || 0;
-    return { 
-      id: +id, 
-      x: p.x + ux * sfac, 
-      y: p.y + uy * sfac 
+    return {
+      id: +id,
+      x: p.x + ux * sfac,
+      y: p.y + uy * sfac,
+      dx: ux,
+      dy: uy,
     };
   });
-  
+
+  // Draw deflected node circles
   const sel = g.selectAll("circle.node").data(data, d => d.id);
   sel.exit().remove();
-  
   sel.enter()
     .append("circle")
       .attr("class", "node")
@@ -669,6 +758,34 @@ function DrawNodesDeflected(g, coords, dispMap, xScale, yScale, sfac) {
     .merge(sel)
       .attr("cx", d => xScale(d.x))
       .attr("cy", d => yScale(d.y));
+
+  // Draw node ID labels
+  const idLabels = g.selectAll("text.node-id").data(data, d => d.id);
+  idLabels.exit().remove();
+  idLabels.enter()
+    .append("text")
+      .attr("class", "node-id")
+      .attr("font-size", 10)
+      .attr("fill", "#007bff")
+      .attr("text-anchor", "start")
+    .merge(idLabels)
+      .attr("x", d => xScale(d.x) + 5)
+      .attr("y", d => yScale(d.y) - 5)
+      .text(d => `N${d.id}`);
+
+  // Draw Δx, Δy displacement values
+  const dispLabels = g.selectAll("text.node-disp").data(data, d => d.id);
+  dispLabels.exit().remove();
+  dispLabels.enter()
+    .append("text")
+      .attr("class", "node-disp")
+      .attr("font-size", 20)
+      .attr("fill", "#ff6600")
+      .attr("text-anchor", "start")
+    .merge(dispLabels)
+      .attr("x", d => xScale(d.x) + 5)
+      .attr("y", d => yScale(d.y) + 8)
+      .text(d => `Δx=${(d.dx*1000).toFixed(3)} mm, Δy=${(d.dy*1000).toFixed(3)} mm`);
 }
 
 // Draw deflected supports
@@ -678,74 +795,79 @@ function DrawSupportsDeflected(g, supports, coords, dispMap, xScale, yScale, sfa
     const nodeId = d.nodeId;
     const p = coords[nodeId];
     if (!p) return;
-    
+
     const nodeIdStr = String(nodeId);
     const ux = dispMap[nodeIdStr]?.["1"] || 0;
     const uy = dispMap[nodeIdStr]?.["2"] || 0;
-    
+
     const x = xScale(p.x + ux * sfac);
     const y = yScale(p.y + uy * sfac) + 6;
-    
+
     const nodeG = g.append("g").attr("transform", `translate(${x},${y})`);
     const v = d.value;
     const ndf = v.length;
-    
+
     const supportColor = "#FF5722";
     const triangleWidth = 16, triangleHeight = 12;
     const rollerCircleRadius = 4, rollerCircleGap = 2, rollerCircleXOffset = 6;
-    
+
     function drawTriangle(selection) {
       const w = triangleWidth / 2;
       const halfH = triangleHeight / 2;
       const pathData = `M ${-w} ${halfH} L ${w} ${halfH} L 0 ${-halfH} Z`;
       selection.append("path").attr("d", pathData).attr("fill", supportColor);
     }
-    
+
     function drawRollerCircles(selection) {
-      const halfH = triangleHeight / 2;
-      const yPos = halfH + rollerCircleGap + rollerCircleRadius;
-      const xOff = rollerCircleXOffset;
-      selection.append("circle")
-        .attr("cx", -xOff)
-        .attr("cy", yPos)
-        .attr("r", rollerCircleRadius)
-        .attr("fill", supportColor);
-      selection.append("circle")
-        .attr("cx", xOff)
-        .attr("cy", yPos)
-        .attr("r", rollerCircleRadius)
-        .attr("fill", supportColor);
+      const yPos = triangleHeight / 2 + rollerCircleGap + rollerCircleRadius;
+      selection.append("circle").attr("cx", -rollerCircleXOffset).attr("cy", yPos).attr("r", rollerCircleRadius).attr("fill", supportColor);
+      selection.append("circle").attr("cx", rollerCircleXOffset).attr("cy", yPos).attr("r", rollerCircleRadius).attr("fill", supportColor);
     }
-    
+
+    function drawYRollerGroup(selection) {
+      const group = selection.append("g")
+        .attr("transform", `translate(6, -6) rotate(-90)`);  // tweak if needed
+
+      const yPos = triangleHeight / 2 + rollerCircleGap + rollerCircleRadius;
+      drawTriangle(group);
+      group.append("circle").attr("cx", -rollerCircleXOffset).attr("cy", yPos).attr("r", rollerCircleRadius).attr("fill", supportColor);
+      group.append("circle").attr("cx", rollerCircleXOffset).attr("cy", yPos).attr("r", rollerCircleRadius).attr("fill", supportColor);
+    }
+
     function drawFixedBox(selection) {
-      const w = triangleWidth;
       const halfH = triangleHeight / 2;
       selection.append("rect")
-        .attr("x", -w/2)
+        .attr("x", -triangleWidth/2)
         .attr("y", -halfH)
-        .attr("width", w)
+        .attr("width", triangleWidth)
         .attr("height", triangleHeight)
         .attr("fill", supportColor);
     }
-    
+
     if (ndf === 2) {
       const [fx, fy] = v;
-      if (fx === 1 && fy === 1) drawTriangle(nodeG);
-      else if (fx === 1 || fy === 1) { 
-        drawTriangle(nodeG); 
-        drawRollerCircles(nodeG); 
+      if (fx === 1 && fy === 1) {
+        drawTriangle(nodeG); // pinned
+      } else if (fx === 1 && fy === 0) {
+        drawYRollerGroup(nodeG); // Y roller
+      } else if (fx === 0 && fy === 1) {
+        drawTriangle(nodeG); drawRollerCircles(nodeG); // X roller
       }
     } else if (ndf === 3) {
       const [uxc, uyc, rz] = v;
-      if (uxc === 1 && uyc === 1 && rz === 1) drawFixedBox(nodeG);
-      else if (uxc === 1 && uyc === 1 && rz === 0) drawTriangle(nodeG);
-      else if ((uxc === 1 && uyc === 0) || (uxc === 0 && uyc === 1)) { 
-        drawTriangle(nodeG); 
-        drawRollerCircles(nodeG); 
+      if (uxc === 1 && uyc === 1 && rz === 1) {
+        drawFixedBox(nodeG); // fixed
+      } else if (uxc === 1 && uyc === 1 && rz === 0) {
+        drawTriangle(nodeG); // pinned
+      } else if (uxc === 1 && uyc === 0) {
+        drawYRollerGroup(nodeG); // Y roller
+      } else if (uxc === 0 && uyc === 1) {
+        drawTriangle(nodeG); drawRollerCircles(nodeG); // X roller
       }
     }
   });
 }
+
 
 // Arrow markers for visualization
 function defineArrowMarkers(svg) {

@@ -36,13 +36,20 @@ function sectionForceDistribution2D(ecrd, pl, eleLoadData = [['-beamUniform', 0,
 
   // 4) unpack pl
   let N1 = 0, V1 = 0, M1 = 0;
-  if (pl.length === 1) [N1] = pl;
-  else [N1, V1, M1] = pl;
+if (pl.length === 1) [N1] = pl;
+else [N1, V1, M1] = pl;
 
   // 5) baseline arrays
-  const N = Array(nep).fill(-N1);
-  const V = Array(nep).fill(V1);
-  const M = xl.map(x => -M1 + V1 * x);
+const isFrame = (pl.length === 6);
+
+// axial N always exists
+const N = Array(nep).fill(-N1);
+// shear V exists for any pl.length ≥ 2, else zero
+const V = Array(nep).fill(pl.length >= 2 ? V1 : 0);
+// moment M only for full frames, else all zeros
+const M = isFrame
+  ? xl.map(x => -M1 + V1*x)
+  : Array(nep).fill(0);
 
   // 6) superimpose loads
   eleLoadData.forEach(load => {
@@ -56,16 +63,22 @@ function sectionForceDistribution2D(ecrd, pl, eleLoadData = [['-beamUniform', 0,
           M[i] += 0.5 * Wy * x * x;
         });
       } else {
+        
         const [, wta, waa, aL, bL, wtb, wab] = load;
         const a = aL * L, b = bL * L, bma = b - a;
         xl.forEach((x, i) => {
+          
           let Ax = 0, xc = 0;
           if (x < a) {
             // nothing
-          } else if (x <= b) {
+          }else if (x === 0) {
+              Ax = 0;
+              xc = 0;
+            } else if (x <= b) {
             const wtx = wta + (wtb - wta) * ((x - a) / bma);
             Ax = 0.5 * (wta + wtx) * (x - a);
             xc = ((wtx + 2*wta) / (3*(wta + wtx))) * (x - a);
+   
           } else {
             const Ab = 0.5 * (wtb + wta) * bma;
             const xc_full = bma * (wtb + 2*wta) / (3 * (wta + wtb));
@@ -98,11 +111,19 @@ function sectionForceDistribution2D(ecrd, pl, eleLoadData = [['-beamUniform', 0,
     }
   });
 
-  const isFrame = pl.length === 6;
-  const s = xl.map((_, i) =>
-    isFrame ? [N[i], V[i], M[i]] : [N[i]]
-  );
-  return { s, xl };
+
+
+const hasShear = (pl.length >= 2);
+
+// after superposition…
+const s = xl.map((_, i) => [
+  N[i],
+  hasShear ? V[i] : 0,
+  isFrame  ? M[i] : 0
+]);
+
+return { s, xl };
+
 }
 
 // Compute a scale so diagrams fit the structure
@@ -128,22 +149,39 @@ function calculateOptimalScale(elementsData, sfType) {
 // Draw supports at nodes
 function DrawSupports(g, supports, coords, xScale, yScale) {
   if (!supports || !coords) return;
+
   supports.forEach(d => {
     const nodeId = d.nodeId, p = coords[nodeId];
     if (!p) return;
     const x = xScale(p.x), y = yScale(p.y) + 6;
     const nodeG = g.append("g").attr("transform", `translate(${x},${y})`);
+
     const v = d.value, ndf = v.length;
     const color = "#FF5722", triW = 16, triH = 12;
+    const gap = 2, r = 4, off = 6;
+
     const drawTri = sel => sel.append("path")
       .attr("d", `M ${-triW/2} ${triH/2} L ${triW/2} ${triH/2} L 0 ${-triH/2} Z`)
       .attr("fill", color);
+
     const drawRoll = sel => {
-      const gap = 2, r = 4, off = 6;
-      const y0 = triH/2 + gap + r;
+      const y0 = triH / 2 + gap + r;
       sel.append("circle").attr("cx", -off).attr("cy", y0).attr("r", r).attr("fill", color);
       sel.append("circle").attr("cx", off).attr("cy", y0).attr("r", r).attr("fill", color);
     };
+
+    const drawYRoller = sel => {
+      const group = sel.append("g")
+        .attr("transform", `translate(6, -6) rotate(-90)`);  // Adjust these if needed
+
+      const y0 = triH / 2 + gap + r;
+      group.append("path")
+        .attr("d", `M ${-triW/2} ${triH/2} L ${triW/2} ${triH/2} L 0 ${-triH/2} Z`)
+        .attr("fill", color);
+      group.append("circle").attr("cx", -off).attr("cy", y0).attr("r", r).attr("fill", color);
+      group.append("circle").attr("cx", off).attr("cy", y0).attr("r", r).attr("fill", color);
+    };
+
     const drawBox = sel => sel.append("rect")
       .attr("x", -triW/2).attr("y", -triH/2)
       .attr("width", triW).attr("height", triH)
@@ -151,16 +189,30 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
 
     if (ndf === 2) {
       const [fx, fy] = v;
-      if (fx && fy) drawTri(nodeG);
-      else if (fx || fy) { drawTri(nodeG); drawRoll(nodeG); }
+      if (fx && fy) {
+        drawTri(nodeG);
+      } else if (fx && !fy) {
+        drawYRoller(nodeG); // Y roller
+      } else if (!fx && fy) {
+        drawTri(nodeG);
+        drawRoll(nodeG);    // X roller
+      }
     } else {
       const [ux, uy, rz] = v;
-      if (ux && uy && rz) drawBox(nodeG);
-      else if (ux && uy) drawTri(nodeG);
-      else if (ux || uy) { drawTri(nodeG); drawRoll(nodeG); }
+      if (ux && uy && rz) {
+        drawBox(nodeG);
+      } else if (ux && uy) {
+        drawTri(nodeG);
+      } else if (ux && !uy) {
+        drawYRoller(nodeG); // Y roller
+      } else if (!ux && uy) {
+        drawTri(nodeG);
+        drawRoll(nodeG);    // X roller
+      }
     }
   });
 }
+
 // ─── DRAW ELEMENTS ────────────────────────────────────────────────────────
 function DrawElements(g, elements, coords, xScale, yScale) {
   g.selectAll("*").remove();
@@ -289,13 +341,14 @@ export default function SectionForce({
         rootRef = useRef(null);
   const { nodeCoordinates, elementConnectivity, eleLocalForceSeries, eleLoads, supports } = usePlotParser();
 
-  const [sfType, setSfType] = useState("M");
+  const [sfType, setSfType] = useState("N");
   const [diagScale, setDiagScale] = useState(0.1);
   const [queryEl, setQueryEl] = useState("");
   const [queryX, setQueryX] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [userScale, setUserScale] = useState(1);
+  const [flipDirection, setflipDirection] = useState(false);
   // Export SVG as PNG
   const exportPNG = () => {
     const svgEl = svgRef.current;
@@ -330,7 +383,14 @@ export default function SectionForce({
       if (!fl) return null;
       const isFrame = "FX_j" in fl;
       const pl = isFrame
-        ? [fl.FX_i, fl.FY_i, fl.MZ_i, fl.FX_j, fl.FY_j, fl.MZ_j]
+        ? [
+            fl.FX_i,
+            fl.FY_i,
+            fl.MZ_i ?? 0,
+            fl.FX_j,
+            fl.FY_j,
+            fl.MZ_j ?? 0
+          ]
         : [fl.FX_i];
       let loads = eleLoads.filter(l => l.eleIds.includes(id)).map(l => {
         if (l.type === "beamUniform") {
@@ -347,6 +407,7 @@ export default function SectionForce({
       });
       if (!loads.length) loads = [['-beamUniform',0,0]];
       const { s, xl } = sectionForceDistribution2D([[p1.x,p1.y],[p2.x,p2.y]], pl, loads, nep);
+      
       const dx = p2.x-p1.x, dy = p2.y-p1.y, length = Math.hypot(dx,dy)||1;
       return { id, p1, p2, s, xl, length, cosa: dx/length, cosb: dy/length, isFrame };
     }).filter(Boolean);
@@ -394,14 +455,15 @@ export default function SectionForce({
 
     // for each element, draw diagram + labels
     elementsData.forEach(el => {
+      
       const { p1, p2, s, xl, cosa, cosb, isFrame } = el;
       const base = xl.map(x => ({ x: p1.x + x*cosa, y: p1.y + x*cosb }));
       const diag = xl.map((_,i) => {
-      let v = sfType==='N'?s[i][0]:sfType==='V'?s[i][1]:-s[i][2];
+      let raw = sfType === 'N' ? s[i][0] : sfType === 'V' ? s[i][1] : s[i][2];
+      let v = flipDirection ? -raw : raw;
       const scale = diagScale * userScale;
       if (!isFrame && sfType!=='N') return base[i];
       return { x: base[i].x - v*scale*cosb, y: base[i].y + v*scale*cosa };
-
       });
 
       // filled area
@@ -421,38 +483,52 @@ export default function SectionForce({
 
       // label function
       const placed = new Set();
-      const addLabel = (pt,val,ext=false) => {
-        if (!pt||val==null||isNaN(val)) return;
+      const addLabel = (pt, val, ext = false) => {
+        if (!pt || val == null || isNaN(val)) return;
         const key = `${xScale(pt.x).toFixed(1)},${yScale(pt.y).toFixed(1)}`;
         if (placed.has(key)) return;
         placed.add(key);
-        const data = Math.abs(val)
-        const txt = Math.abs(data) > 1000 ? data.toExponential(1) : data.toFixed(0);
+        const data = Math.abs(val);
+        const txt = Math.abs(data) > 1000 ? data.toExponential(2) : data.toFixed(3);
+        const unit = sfType === 'N' || sfType === 'V' ? 'kN' : 'kN-m';
         g.append("text")
-          .attr("x", xScale(pt.x)).attr("y", yScale(pt.y)-8)
-          .attr("text-anchor","middle").attr("dominant-baseline","middle")
-          .attr("font-size", ext?"10px":"9px").attr("font-weight", ext?"bold":"normal")
-          .attr("fill", ext ? "#5550" : "#444")
-          .text(txt);
+          .attr("x", xScale(pt.x))
+          .attr("y", yScale(pt.y) - 8)
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "15px")
+          .attr("font-weight", "normal")
+          .attr("fill", ext ? "#444" : "#666")
+        .text( `${txt} ${unit}`);
       };
 
       // endpoints
-      if (s.length>0) {
-        addLabel(diag[0], sfType==='N'?s[0][0]:sfType==='V'?s[0][1]:s[0][2]);
-        addLabel(diag[diag.length-1], sfType==='N'?s[s.length-1][0]:sfType==='V'?s[s.length-1][1]:s[s.length-1][2]);
+      if (s.length > 0) {
+        const valStart = sfType === 'N' ? s[0][0] : sfType === 'V' ? s[0][1] : (flipDirection ? -s[0][2] : s[0][2]);
+        const valEnd = sfType === 'N' ? s[s.length - 1][0] : sfType === 'V' ? s[s.length - 1][1] : (flipDirection ? -s[s.length - 1][2] : s[s.length - 1][2]);
+        addLabel(diag[0], valStart);
+        addLabel(diag[diag.length - 1], valEnd);
       }
 
-      // local extrema
-      for (let i=1;i<s.length-1;i++){
-        const prev = sfType==='M'?s[i-1][2]:sfType==='V'?s[i-1][1]:s[i-1][0];
-        const cur  = sfType==='M'?s[i  ][2]:sfType==='V'?s[i  ][1]:s[i  ][0];
-        const next = sfType==='M'?s[i+1][2]:sfType==='V'?s[i+1][1]:s[i+1][0];
-        if ((cur-prev)*(next-cur)<0) {
-          addLabel(diag[i], cur, true);
+      // local extrema (max/min)
+      for (let i = 1; i < s.length - 1; i++) {
+        const getVal = v => {
+          const raw = sfType === 'M' ? v[2] : sfType === 'V' ? v[1] : v[0];
+          return sfType === 'M' && flipDirection ? -raw : raw;
+        };
+        const prev = getVal(s[i - 1]);
+        const curr = getVal(s[i]);
+        const next = getVal(s[i + 1]);
+
+        const isLocalMax = curr > prev && curr > next;
+        const isLocalMin = curr < prev && curr < next;
+
+        if (isLocalMax || isLocalMin) {
+          addLabel(diag[i], curr, true);
         }
       }
     });
-  }, [elementsData, sfType, diagScale, userScale,width, height, margin, nodeCoordinates, supports]);
+  }, [elementsData, sfType, diagScale, userScale,width, height, margin, nodeCoordinates, supports,flipDirection]);
 
   // Query handler
 // Query handler
@@ -467,7 +543,7 @@ export default function SectionForce({
     const L = el.length;
     if (queryX > L) {
       setResult(null);
-      setError(`x = ${queryX.toFixed(2)} is greater than element length = ${L.toFixed(2)}`);
+      setError(`x = ${queryX.toFixed(3)} is greater than element length = ${L.toFixed(3)} m`);
       return;
     }
 
@@ -484,7 +560,13 @@ export default function SectionForce({
     <div className="section-force-container">
       <div className="force-controls">
         <label>Force Type:</label>
-        <select value={sfType} onChange={e => setSfType(e.target.value)}>
+          <select
+            value={sfType}
+            onChange={e => {
+              setSfType(e.target.value);
+              setflipDirection(false); // reset flip checkbox
+            }}
+          >
           <option value="N">Axial Force (N)</option>
           <option value="V">Shear Force (V)</option>
           <option value="M">Bending Moment (M)</option>
@@ -498,18 +580,19 @@ export default function SectionForce({
             onChange={e => setUserScale(parseFloat(e.target.value))}
           /> {userScale.toFixed(1)}x
         </label>
+          <label>
+            <input type="checkbox" checked={flipDirection} onChange={e => setflipDirection(e.target.checked)} />
+            Flip Direction
+          </label>
       </div>
 
       <div className="query-controls">
-          <input
-            type="number"
-            placeholder="Element ID"
-            value={queryEl}
-            onChange={e => {
-              const val = parseInt(e.target.value);
-              setQueryEl(isNaN(val) ? "" : val);
-            }}
-          />
+        <input
+          type="text"
+          placeholder="Element ID"
+          value={queryEl}
+          onChange={e => { setQueryEl(e.target.value); }}
+        />
         <input
           type="number"
           placeholder="x from start"
@@ -528,7 +611,7 @@ export default function SectionForce({
       {result && !error && (
         <div className="query-result">
           <strong>At x={queryX.toFixed(2)} on Element {queryEl}:</strong>{" "}
-          N = {result.N.toFixed(2)}, V = {result.V.toFixed(2)}, M = {result.M.toFixed(2)}
+          N = {result.N.toFixed(2)} kN, V = {result.V.toFixed(2)} kN, M = {result.M.toFixed(2)} kN-m
         </div>
       )}
 

@@ -15,12 +15,12 @@
     "name": "Truss Nodal Load",
     "defaultParams": {
       "Node ID": 1,
-      "X Load": 0.0,
-      "Y Load": 0.0
+      "X Load (kN)": 0.0,
+      "Y Load (kN)": 0.0
     },
     "command": {
       "name": "load",
-      "args": ["$Node ID", "$X Load", "$Y Load"]
+      "args": ["$Node ID", "$X Load (kN)", "$Y Load (kN)"]
     }
   },
   {
@@ -28,14 +28,14 @@
     "name": "Frame Nodal Load",
     "defaultParams": {
       "Node ID": 1,
-      "X Load": 0.0,
-      "Y Load": 0.0,
-      "Moment":0.0
+      "X Load (kN)": 0.0,
+      "Y Load (kN)": 0.0,
+      "Moment (kN-m)":0.0
 
     },
     "command": {
       "name": "load",
-      "args": ["$Node ID", "$X Load", "$Y Load", "$Moment"]
+      "args": ["$Node ID", "$X Load (kN)", "$Y Load (kN)", "$Moment (kN-m)"]
     }
   },
 
@@ -48,17 +48,17 @@
       "useRange": false,
       "eleTag1": 1,
       "eleTag2": 1,
-      "Wy": -5000.0,
-      "Wx": 0.0
+      "Wy (kN/m)": -5.0,
+      "Wx (kN/m)": 0.0
     },
     "command": {
       "name": "eleLoad",
       "args": [
         { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
-        { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
+        { "cond":  "$useRange", "value": ["-range", "$Element ID 1", "$Element ID 2"] },
         "-type", "beamUniform",
-        "$Wy",
-        "$Wx"
+        "$Wy (kN/m)",
+        "$Wx (kN/m)"
       ]
     }
   },
@@ -70,9 +70,9 @@
       "useRange": false,
       "eleTag1": 1,
       "eleTag2": 1,
-      "Py": -1000.0,
-      "xL": 0.5,
-      "Px": 0.0
+      "Py (kN)": -1.0,
+      "Location (0 → 1)": 0.5,
+      "Px (kN)": 0.0
     },
     "command": {
       "name": "eleLoad",
@@ -80,9 +80,9 @@
         { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
         { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
         "-type", "beamPoint",
-        "$Py",
-        "$xL",
-        "$Px"
+        "$Py (kN)",
+        "$Location (0 → 1)",
+        "$Px (kN)"
       ]
     }
   },
@@ -94,12 +94,12 @@
       "useRange": false,
       "eleTag1": 1,
       "eleTag2": 1,
-      "Wy_start": -2000.0,
-      "Wx_start": 0.0,
-      "aL": 0.2,
-      "bL": 0.9,
-      "Wy_end": -4000.0,
-      "Wx_end": 0.0
+      "Wy start (kN/m)": -2.0,
+      "Wx start (kN/m)": 0.0,
+      "Starting (0 → 1)": 0.2,
+      "Ending (0 → 1)": 0.9,
+      "Wy end (kN/m)": -4.0,
+      "Wx end (kN/m)": 0.0
     },
     "command": {
       "name": "eleLoad",
@@ -107,12 +107,12 @@
         { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
         { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
         "-type", "beamUniform",
-        "$Wy_start",
-        "$Wx_start",
-        "$aL",
-        "$bL",
-        "$Wy_end",
-        "$Wx_end"
+        "$Wy start (kN/m)",
+        "$Wx start (kN/m)",
+        "$Starting (0 → 1)",
+        "$Ending (0 → 1)",
+        "$Wy end (kN/m)",
+        "$Wx end (kN/m)"
       ]
     }
   }

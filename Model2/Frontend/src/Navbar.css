@@ -46,6 +46,7 @@
   justify-content: flex-start; /* align items to the left */
   height: 100%;
   position: relative;
+    padding-right: 240px;
 }
 
 .navbar-logo {
@@ -71,15 +72,17 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
   overflow: hidden;
-  margin-right: 16vh;
-  margin-left: auto;
+  margin-left: auto; /* Push to right */
+  margin-right: 6%; /* Push to left */
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  width: 220px; /* fixed width to distribute equally */
+  width: 220px;
 }
 
+
 .mode-option {
-  flex: 1; /* force equal width */
+  flex: 1 1 50%; /* allow it to shrink and take up 50% if possible */
+  min-width: 0;  /* allow shrinking to prevent overflow */
   padding: 10px 0;
   font-size: 0.875rem;
   font-weight: 500;
@@ -89,6 +92,9 @@
   cursor: pointer;
   transition: 0.25s ease, color 0.25s ease;
   text-align: center;
+  white-space: nowrap; /* Prevent wrapping text */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mode-option.active {

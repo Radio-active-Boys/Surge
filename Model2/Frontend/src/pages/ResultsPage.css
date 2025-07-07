@@ -10,7 +10,18 @@
   display: flex;
   border-bottom: 1px solid #e5e7eb;
 }
-
+.query-result-note {
+  max-width: 50%;
+  margin: 0.5rem auto;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  text-align: center;
+  background: #f2f6fe;          /* red‑50 */
+  border-left: 4px solid #445bef; /* red‑500 */
+  color: #1b2a99;    
+  
+}
 .tab {
   padding: 0.75rem 1.5rem;
   font-size: 0.875rem;

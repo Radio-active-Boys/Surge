@@ -7,6 +7,7 @@ export const runAnalysis = async (modelData) => {
   console.log("Data send to backend",modelData)
   try {
     const response = await axios.post(`${API_URL}/run-analysis`, modelData);
+    console.log("Respose data ",response)
     return response.data;
   } catch (error) {
     console.error('Analysis failed:', error);

@@ -189,6 +189,7 @@ function DrawNodes(g, coords, xScale, yScale) {
 }
 
 // ─── DRAW SUPPORTS ───────────────────────────────────────────────────────
+// ─── DRAW SUPPORTS ───────────────────────────────────────────────────────
 function DrawSupports(g, supports, coords, xScale, yScale) {
   const supportColor = "#FF5722";
   const triangleWidth = 16;
@@ -200,9 +201,7 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
 
   const sel = g.selectAll("g.support").data(supports, d => d.nodeId);
   sel.exit().remove();
-  const enter = sel.enter()
-    .append("g")
-      .attr("class", "support");
+  const enter = sel.enter().append("g").attr("class", "support");
   enter.merge(sel)
     .attr("transform", d => {
       const { x, y } = coords[d.nodeId];
@@ -213,6 +212,7 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
       nodeG.selectAll("*").remove();
       const v = d.value;
       const ndf = v.length;
+
       function drawTriangle(selection) {
         const w = triangleWidth / 2;
         const halfH = triangleHeight / 2;
@@ -221,6 +221,7 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
           .attr("d", pathData)
           .attr("fill", supportColor);
       }
+
       function drawRollerCircles(selection) {
         const halfH = triangleHeight / 2;
         const yPos = halfH + rollerCircleGap + rollerCircleRadius;
@@ -232,6 +233,27 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
           .attr("cx", xOff).attr("cy", yPos).attr("r", rollerCircleRadius)
           .attr("fill", supportColor);
       }
+
+      function drawYRollerGroup(selection) {
+        const group = selection.append("g")
+          .attr("transform", `translate(6, -6) rotate(-90)`);  // Tweak offsets as needed
+
+        const halfH = triangleHeight / 2;
+        const yPos = halfH + rollerCircleGap + rollerCircleRadius;
+
+        drawTriangle(group);
+        group.append("circle")
+          .attr("cx", -rollerCircleXOffset)
+          .attr("cy", yPos)
+          .attr("r", rollerCircleRadius)
+          .attr("fill", supportColor);
+        group.append("circle")
+          .attr("cx", rollerCircleXOffset)
+          .attr("cy", yPos)
+          .attr("r", rollerCircleRadius)
+          .attr("fill", supportColor);
+      }
+
       function drawFixedBox(selection) {
         const w = triangleWidth;
         const halfH = triangleHeight / 2;
@@ -240,23 +262,28 @@ function DrawSupports(g, supports, coords, xScale, yScale) {
           .attr("width", w).attr("height", triangleHeight)
           .attr("fill", supportColor);
       }
+
       if (ndf === 2) {
         const [fx, fy] = v;
         if (fx === 1 && fy === 1) {
+          drawTriangle(nodeG); // pinned
+        } else if (fx === 1 && fy === 0) {
+          drawYRollerGroup(nodeG); // Y roller
+        } else if (fx === 0 && fy === 1) {
           drawTriangle(nodeG);
-        } else if (fx === 1 || fy === 1) {
-          drawTriangle(nodeG);
-          drawRollerCircles(nodeG);
+          drawRollerCircles(nodeG); // X roller
         }
       } else if (ndf === 3) {
         const [ux, uy, rz] = v;
         if (ux === 1 && uy === 1 && rz === 1) {
-          drawFixedBox(nodeG);
+          drawFixedBox(nodeG); // fixed
         } else if (ux === 1 && uy === 1 && rz === 0) {
+          drawTriangle(nodeG); // pinned
+        } else if (ux === 1 && uy === 0) {
+          drawYRollerGroup(nodeG); // Y roller
+        } else if (ux === 0 && uy === 1) {
           drawTriangle(nodeG);
-        } else if ((ux === 1 && uy === 0) || (ux === 0 && uy === 1)) {
-          drawTriangle(nodeG);
-          drawRollerCircles(nodeG);
+          drawRollerCircles(nodeG); // X roller
         }
       }
     });
@@ -296,9 +323,9 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
         .attr("marker-end", `url(#arrowhead-${color})`);
 
       g.append("text")
-        .attr("x", x + sign * len *2.5)
+        .attr("x", x + sign * len * 2.5)
         .attr("y", y - 5)
-        .text(Math.abs(rx.toFixed(2)))
+        .text(`${Math.abs(rx.toFixed(2))} kN`)
         .attr("fill", color)
         .attr("font-size", 10);
     }
@@ -309,66 +336,56 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
       const color = "magenta";
       g.append("line")
         .attr("x1", x).attr("y1", y)
-        .attr("x2", x).attr("y2", y + sign * len )
+        .attr("x2", x).attr("y2", y + sign * len)
         .attr("stroke", color).attr("stroke-width", 2)
         .attr("marker-end", `url(#arrowhead-${color})`);
 
       g.append("text")
         .attr("x", x + 5)
         .attr("y", y + sign * len * 2)
-        .text(Math.abs(ry.toFixed(2)))
+        .text(`${Math.abs(ry.toFixed(2))} kN`)
         .attr("fill", color)
         .attr("font-size", 10);
     }
 
-    // MZ
-// MZ
-if (ndf === 3 && Math.abs(mz) > 1e-6) {
-  const r = len;
-  const color = "red";
-  const direction = mz > 0 ? Math.PI * 1.5 : -Math.PI * 1.5;
+    // MZ (flipped logic)
+    if (ndf === 3 && Math.abs(mz) > 1e-6) {
+      const r = len;
+      const color = "red";
+      const direction = mz > 0 ? Math.PI * 1.5 : -Math.PI * 1.5; // <-- flipped here
 
-  // Arc path
-  const arcGen = d3.arc()
-    .innerRadius(r - 1)
-    .outerRadius(r)
-    .startAngle(0)
-    .endAngle(direction);
+      const arcGen = d3.arc()
+        .innerRadius(r - 1)
+        .outerRadius(r)
+        .startAngle(0)
+        .endAngle(direction);
 
-  g.append("path")
-    .attr("d", arcGen())
-    .attr("transform", `translate(${x},${y})`)
-    .attr("fill", color)
-    .attr("stroke", "none");
+      g.append("path")
+        .attr("d", arcGen())
+        .attr("transform", `translate(${x},${y})`)
+        .attr("fill", color)
+        .attr("stroke", "none");
 
-  const endAngle = direction;
-  const angleDeg = endAngle * 180 / Math.PI;
+      const endAngle = direction;
+      const angleDeg = endAngle * 180 / Math.PI;
 
-  // 💡 Only arrow position depends on mz sign — simple if-else
-  let arrowX, arrowY;
-  if (mz > 0) {
-    arrowX = x + r * Math.cos(endAngle);
-    arrowY = y + r * Math.sin(endAngle) ;
-  } else {
-    arrowX = x + r * Math.cos(endAngle);
-    arrowY = y + r * Math.sin(endAngle) + r * 0.05 - 2*r; // tweak as needed
-  }
+      let arrowX = x + r * Math.cos(endAngle);
+      let arrowY = y + r * Math.sin(endAngle);
+      if (mz >= 0) arrowY += r * 0.05 ; // adjust for CCW side
+      if (mz < 0) arrowY += r * 0.05 - 2*r ; // adjust for CCW side
 
-  // Draw arrowhead
-  g.append("path")
-    .attr("d", d3.symbol().type(d3.symbolTriangle).size(25))
-    .attr("fill", color)
-    .attr("transform", `translate(${arrowX},${arrowY}) rotate(${angleDeg})`);
+      g.append("path")
+        .attr("d", d3.symbol().type(d3.symbolTriangle).size(25))
+        .attr("fill", color)
+        .attr("transform", `translate(${arrowX},${arrowY}) rotate(${angleDeg})`);
 
-  // Label
-  g.append("text")
-    .attr("x", x + 5)
-    .attr("y", y - r +4)
-    .text(Math.abs(mz.toFixed(2)))
-    .attr("fill", color)
-    .attr("font-size", 10);
-}
-
+      g.append("text")
+        .attr("x", x + 5)
+        .attr("y", y - r + 4)
+        .text(`${Math.abs(mz.toFixed(2))} kN-m`)
+        .attr("fill", color)
+        .attr("font-size", 10);
+    }
   });
 }
 

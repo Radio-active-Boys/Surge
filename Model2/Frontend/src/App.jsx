@@ -23,7 +23,7 @@ function App() {
       <Routes>
         {/* Model Builder */}
         <Route
-          path="/"
+          path="/model"
           element={
             status === 'lite'
               ? <ModelBuilderPageLite />
@@ -33,7 +33,7 @@ function App() {
 
         {/* Analysis */}
         <Route
-          path="/analysis"
+          path="/"
           element={
             status === 'lite'
               ? <AnalysisPageLite />
