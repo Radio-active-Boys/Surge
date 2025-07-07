@@ -1,4 +1,5 @@
-Flask 
-openseespy 
-numpy 
+Flask
+flask-cors
+openseespy
+numpy
 gunicorn
