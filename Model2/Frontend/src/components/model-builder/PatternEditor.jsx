@@ -89,7 +89,7 @@ const renderParams = (tplName, params, setParams) => {
   return (
     <div className="pattern-editor-container">
       {/* Add New Pattern */}
-      <h3>Add New Pattern</h3>
+      <h3>Add New Load Pattern</h3>
       <select value={newTpl} onChange={e => setNewTpl(e.target.value)}>
         {templates.map(t => (
           <option key={t.name} value={t.name}>{t.name}</option>
@@ -108,7 +108,7 @@ const renderParams = (tplName, params, setParams) => {
         <option value="">-- select pattern --</option>
         {patterns.map(p => (
           <option key={p.id} value={p.id}>
-            {p.templateName} (id {p.id})
+            {p.templateName} ID {p.args[1]}
           </option>
         ))}
       </select>
@@ -117,9 +117,9 @@ const renderParams = (tplName, params, setParams) => {
         <div className="pattern-editor-section">
           <h4>Edit “{selectedPattern.templateName}”</h4>
           {renderParams(selectedPattern.templateName, editParams, setEditParams)}
-          <button className="pattern-editor-button" onClick={handleSavePattern}>
+          {/* <button className="pattern-editor-button" onClick={handleSavePattern}>
             💾 Save Pattern
-          </button>
+          </button> */}
           <button
             className="pattern-editor-button"
             style={{ marginLeft: 8 }}

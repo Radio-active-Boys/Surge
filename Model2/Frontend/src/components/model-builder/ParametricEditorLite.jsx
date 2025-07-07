@@ -7,35 +7,30 @@ const ParametricEditorLite = ({ category }) => {
   const [templates, setTemplates] = useState([]);
   const [selected, setSelected] = useState(null);
   const [rawParams, setRawParams] = useState({});
+  const [patternId, setPatternId] = useState(null);
+
   const addComponent = useModelStore(state => state.addComponent);
   const setModelConfig = useModelStore(state => state.setModelConfig);
   const modelConfig = useModelStore(state => state.modelConfig);
   const patterns = useModelStore(state => state.patterns);
-  const [patternId, setPatternId] = useState(null);
 
-  const [modelType, setModelType] = useState(
-    modelConfig.ndf === 3 ? 'frame' : 'truss'
-  );
-
-  useEffect(() => {
-    if (modelType === 'truss') {
-      setModelConfig({ ndm: 2, ndf: 2 });
-    } else if (modelType === 'frame') {
-      setModelConfig({ ndm: 2, ndf: 3 });
-    }
-  }, [modelType, setModelConfig]);
+  // ✅ Derive modelType directly from modelConfig
+  const modelType = modelConfig.ndf === 3 ? 'frame' : 'truss';
 
   useEffect(() => {
     if (category !== 'modelLite') {
       const tpls = getTemplates(category);
-      setTemplates(tpls);
-      if (tpls.length) {
-        setSelected(tpls[0]);
-        setRawParams(convertToRawParams(tpls[0].defaultParams));
+      const filtered = tpls.filter(t => !t.tag || t.tag === modelType);
+      setTemplates(filtered);
+
+      if (filtered.length > 0) {
+        setSelected(filtered[0]);
+        setRawParams(convertToRawParams(filtered[0].defaultParams));
       } else {
         setSelected(null);
         setRawParams({});
       }
+
       setPatternId(null);
     } else {
       setTemplates([]);
@@ -43,7 +38,7 @@ const ParametricEditorLite = ({ category }) => {
       setRawParams({});
       setPatternId(null);
     }
-  }, [category]);
+  }, [category, modelType]);
 
   const convertToRawParams = (params) => {
     return Object.fromEntries(
@@ -95,11 +90,17 @@ const ParametricEditorLite = ({ category }) => {
         <div className="button-group">
           {['truss', 'frame'].map(type => {
             const isActive = modelType === type;
-            const label = type === 'truss' ? 'Truss' : 'Frame / Beam / Column';
+            const label = type === 'truss' ? 'Truss' : 'Frame / Beam-Column';
             return (
               <button
                 key={type}
-                onClick={() => setModelType(type)}
+                onClick={() => {
+                  if (type === 'truss') {
+                    setModelConfig({ ndm: 2, ndf: 2 });
+                  } else {
+                    setModelConfig({ ndm: 2, ndf: 3 });
+                  }
+                }}
                 className={`model-type-button${isActive ? ' active' : ''}`}
               >
                 {label}
@@ -111,23 +112,23 @@ const ParametricEditorLite = ({ category }) => {
     );
   }
 
-  if (!selected) return <div className="loading">Loading...</div>;
+  if (!selected) return <div className="loading">No Need...</div>;
 
   return (
     <div className="model-param-editor">
       <div className="param-header">
-        <select
-          value={selected.name}
-          onChange={e => {
-            const tpl = templates.find(t => t.name === e.target.value);
-            setSelected(tpl);
-            setRawParams(convertToRawParams(tpl.defaultParams));
-          }}
-        >
-          {templates.map(t => (
-            <option key={t.name}>{t.name}</option>
-          ))}
-        </select>
+          {/* <select
+            value={selected.name}
+            onChange={e => {
+              const tpl = templates.find(t => t.name === e.target.value);
+              setSelected(tpl);
+              setRawParams(convertToRawParams(tpl.defaultParams));
+            }}
+          >
+            {templates.map(t => (
+              <option key={t.name}>{t.name}</option>
+            ))}
+          </select> */}
       </div>
 
       <div className="params">

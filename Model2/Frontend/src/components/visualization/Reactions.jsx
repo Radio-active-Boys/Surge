@@ -325,7 +325,7 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
       g.append("text")
         .attr("x", x + sign * len * 2.5)
         .attr("y", y - 5)
-        .text(`${Math.abs(rx.toFixed(2))} kN`)
+        .text(`${Math.abs(rx.toFixed(2))} `)
         .attr("fill", color)
         .attr("font-size", 10);
     }
@@ -343,7 +343,7 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
       g.append("text")
         .attr("x", x + 5)
         .attr("y", y + sign * len * 2)
-        .text(`${Math.abs(ry.toFixed(2))} kN`)
+        .text(`${Math.abs(ry.toFixed(2))}`)
         .attr("fill", color)
         .attr("font-size", 10);
     }
@@ -382,7 +382,7 @@ function DrawReactions(g, series, coords, xScale, yScale, ndf, ndm) {
       g.append("text")
         .attr("x", x + 5)
         .attr("y", y - r + 4)
-        .text(`${Math.abs(mz.toFixed(2))} kN-m`)
+        .text(`${Math.abs(mz.toFixed(2))}`)
         .attr("fill", color)
         .attr("font-size", 10);
     }

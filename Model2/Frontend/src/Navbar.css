@@ -1,6 +1,29 @@
-/* Navbar.css */
+/* ───────────────────── NAVBAR CONTAINER ───────────────────── */
 
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.458);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  border-bottom: 1px solid rgba(9, 7, 7, 0.203);
+  height: 60px;
+  overflow: visible;
+}
 
+.navbar-container {
+  position: relative; /* Enable absolute logo positioning */
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 20px;
+}
+
+/* ───────────────────── NAV LINKS ───────────────────── */
 
 .nav-links {
   display: flex;
@@ -26,45 +49,36 @@
   background-color: #007bff;
   color: white;
 }
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.458);
-  backdrop-filter: blur(12px);
-  border-radius: 32px;
-  border-bottom: 1px solid rgba(9, 7, 7, 0.203);
-  height: 50px;
-  overflow: hidden;
-}
 
-.navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start; /* align items to the left */
-  height: 100%;
-  position: relative;
-    padding-right: 240px;
-}
+/* ───────────────────── CENTERED LOGO ───────────────────── */
 
 .navbar-logo {
   position: absolute;
   left: 50%;
-  top: 60%;
-  transform: translate(-50%, -50%) scale(2); /* Center + Scale */
-  transform-origin: center;
-  z-index: 1;
-  height: 100%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  justify-content: center;
+  height: 100%;
+  pointer-events: none; /* Prevents blocking clicks to left/right items */
 }
 
 .navbar-logo img {
-  height: 100%;
+  height: 100px;
+  object-fit: contain;
 }
+
+/* ───────────────────── RIGHT SIDE ───────────────────── */
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  position: relative;
+  height: 50%;
+}
+
+/* ───────────────────── MODE TOGGLE ───────────────────── */
 
 .mode-toggle {
   display: flex;
@@ -72,17 +86,14 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
   overflow: hidden;
-  margin-left: auto; /* Push to right */
-  margin-right: 6%; /* Push to left */
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   width: 220px;
 }
 
-
 .mode-option {
-  flex: 1 1 50%; /* allow it to shrink and take up 50% if possible */
-  min-width: 0;  /* allow shrinking to prevent overflow */
+  flex: 1 1 50%;
+  min-width: 0;
   padding: 10px 0;
   font-size: 0.875rem;
   font-weight: 500;
@@ -92,7 +103,7 @@
   cursor: pointer;
   transition: 0.25s ease, color 0.25s ease;
   text-align: center;
-  white-space: nowrap; /* Prevent wrapping text */
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -106,3 +117,6 @@
   background-color: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
+
+/* ───────────────────── JSON PANEL ───────────────────── */
+

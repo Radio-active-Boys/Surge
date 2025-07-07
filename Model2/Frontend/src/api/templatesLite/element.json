@@ -2,12 +2,13 @@
 
   {
     "category": "element",
-    "name": "Truss Lite",
+    "name": "Truss Member",
+    "tag":"truss",
     "defaultParams": {
       "Element ID": 1,
       "Start Node":1,
       "End Node":2,
-      "A m²": 0.001,
+      "A": 0.001,
       "Material ID": 1
     },
     "command": {
@@ -17,7 +18,7 @@
         "$Element ID",
         "$Start Node",
         "$End Node",
-        "$A m²",
+        "$A",
         "$Material ID",
         "-rho", 0.0,
         "-cMass", 0,
@@ -27,13 +28,15 @@
   },
   {
     "category": "element",
-    "name": "elasticBeamColumn",
+    "name": "Elastic Beam-Column",
+    "tag":"frame",
     "defaultParams": {
       "Element ID": 1,
       "Start Node":1,
       "End Node":2,
-      "Area m²": 0.001,
-      "Elasticity N/m²": 200e9
+      "Area": 0.001,
+      "E": 200e9,
+      "Iz": 1e-6
     },
     "command": {
       "name": "element",
@@ -42,59 +45,13 @@
         "$Element ID",
         "$Start Node",
         "$End Node",
-        "$Area m²",
-        "$Elasticity N/m²",
-        1e-6,
+        "$Area",
+        "$E",
+        "$Iz",
         1,
         "-mass",  0.0,
         "-cMass",
         "-release", 0
-      ]
-    }
-  },
-
-
-  {
-    "category": "element",
-    "name": "dispBeamColumn",
-    "defaultParams": {
-      "Element ID": 1,
-      "Start Node":1,
-      "End Node":2
-    },
-    "command": {
-      "name": "element",
-      "args": [
-        "dispBeamColumn",
-        "$Element ID",
-        "$Start Node",
-        "$End Node",
-        1,
-        1,
-        "-cMass",
-        "-mass", 0.0
-      ]
-    }
-  },
-  {
-    "category": "element",
-    "name": "forceBeamColumn",
-    "defaultParams": {
-      "Element ID": 1,
-      "Start Node":1,
-      "End Node":2
-    },
-    "command": {
-      "name": "element",
-      "args": [
-         "forceBeamColumn",
-        "$Element ID",
-        "$Start Node",
-        "$End Node",
-        1,
-        1,
-        "-iter", 10, 1e-12,
-        "-mass", 0.0
       ]
     }
   }

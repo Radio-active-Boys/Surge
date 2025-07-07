@@ -139,7 +139,6 @@ const getTemplateStore = () => {
 // ✅ Get all templates of a category
 export const getTemplates = (category) => {
   const store = getTemplateStore();
-
   return store[category] || [];
 };
 
@@ -155,7 +154,6 @@ export const getTemplateByName = (category, name) => {
  */
 export const generateCommand = (template, params) => {
   const rawArgs = template.command.args;
-
   function resolveArg(argSpec) {
     if (typeof argSpec === 'string') {
       if (argSpec.startsWith('*$')) {

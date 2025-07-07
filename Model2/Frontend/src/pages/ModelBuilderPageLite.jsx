@@ -1,7 +1,7 @@
 // src/pages/ModelBuilderPage.jsx
 import { useState, useEffect } from 'react';
 import ParametricEditorLite from '../components/model-builder/ParametricEditorLite';
-import PatternEditor from '../components/model-builder/PatternEditor';
+import PatternEditorLite from '../components/model-builder/PatternEditorLite';
 import SectionEditor from '../components/model-builder/SectionEditor';
 import ModelViewer from '../components/visualization/ModelViewer';
 import { useUserTypeStore } from '../utils/storeUserType';
@@ -41,7 +41,7 @@ const ModelBuilderPageLite = () => {
       case 'timeSeries':
         return <ParametricEditorLite category="timeSeriesLite" />;
       case 'pattern':
-        return <PatternEditor />;
+        return <PatternEditorLite />;
       case 'elements':
         return <ParametricEditorLite category="elementLite" />;
       case 'integrations':

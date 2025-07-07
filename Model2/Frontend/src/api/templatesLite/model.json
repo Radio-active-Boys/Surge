@@ -1,7 +1,8 @@
 [
   {
-    "name": "BasicBuilder2D",
+    "name": "BasicBuilder Frame",
     "category": "model",
+    "tag":"frame",
     "defaultParams": {
       "ndm": 2,
       "ndf": 3
@@ -16,11 +17,12 @@
     }
   },
   {
-    "name": "BasicBuilder3D",
+    "name": "BasicBuilder Truss",
     "category": "model",
+    "tag":"truss",
     "defaultParams": {
-      "ndm": 3,
-      "ndf": 6
+      "ndm": 2,
+      "ndf": 2
     },
     "command": {
       "name": "model",

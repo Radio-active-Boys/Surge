@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import { saveAs } from "file-saver"; 
 import { usePlotParser } from "../../utils/plotParser";
 import './DeflectedShape.css'
-export default function DeflectedShape({ width = 1200, height = 430, margin = 40 }) {
+export default function DeflectedShape({ width = 1200, height = 600, margin = 40 }) {
   const svgRef = useRef(null);
   const zoomRef = useRef(null);
   const rootRef = useRef(null);
@@ -265,10 +265,12 @@ const exportPNG = () => {
 
     {deflResult && !deflError && (
       <div className="query-result">
-        {queryNodeId
-          ? `At node ${queryNodeId}: Δx=${(deflResult.dx*1000).toFixed(4)} mm, Δy=${(deflResult.dy*1000).toFixed(4)} mm`
-          : `At x=${queryXLoc.toFixed(2)} on element ${queryElId}: Δx=${(deflResult.dx*1000).toFixed(4)} mm, Δy=${(deflResult.dy*1000).toFixed(4)} mm`
-        }
+{queryNodeId
+  ? `At node ${queryNodeId}: Δx=${deflResult.dx.toExponential(3)}, Δy=${deflResult.dy.toExponential(3)}`
+  : `At x=${queryXLoc.toFixed(2)} on element ${queryElId}: Δx=${deflResult.dx.toExponential(3)}, Δy=${deflResult.dy.toExponential(3)}`
+}
+
+
       </div>
     )}
       <svg ref={svgRef} width={width} height={height} className="deflected-svg" />
@@ -785,7 +787,7 @@ function DrawNodesDeflected(g, coords, dispMap, xScale, yScale, sfac) {
     .merge(dispLabels)
       .attr("x", d => xScale(d.x) + 5)
       .attr("y", d => yScale(d.y) + 8)
-      .text(d => `Δx=${(d.dx*1000).toFixed(3)} mm, Δy=${(d.dy*1000).toFixed(3)} mm`);
+      .text(d => `Δx=${d.dx.toExponential(3)}, Δy=${d.dy.toExponential(3)}`);
 }
 
 // Draw deflected supports

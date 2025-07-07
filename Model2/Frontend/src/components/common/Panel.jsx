@@ -7,11 +7,11 @@ import { useAnalysisStore } from '../../stores/useAnalysisStore';
 import './Panel.css';
 
 const panelConfig = [
-  {
-    key: 'commandPreview',
-    label: 'Command',
-    component: (combinedJson) => <CommandPreview json={combinedJson} />,
-  },
+  // {
+  //   key: 'commandPreview',
+  //   label: 'Command',
+  //   component: (combinedJson) => <CommandPreview json={combinedJson} />,
+  // },
   {
     key: 'jsonEditor',
     label: 'Editor',
@@ -56,7 +56,7 @@ const JsonTogglePanel = () => {
             onClick={() => togglePanel(panel.key)}
             className={`panel-toggle-btn ${activePanel === panel.key ? 'active' : ''}`}
           >
-            {activePanel === panel.key ? 'Hide' : 'View'} {panel.label}
+            {activePanel === panel.key ? 'Hide' : 'Quick'} {panel.label}
           </button>
         ))}
       </div>
@@ -65,7 +65,6 @@ const JsonTogglePanel = () => {
         {panelConfig.map(panel => (
           activePanel === panel.key && (
             <div key={panel.key} className="panel-box">
-              <button className="panel-close-btn" onClick={() => togglePanel(panel.key)}>×</button>
               {panel.component(combinedJson)}
             </div>
           )

@@ -2,6 +2,7 @@
       {
     "name": "Constraint Truss",
     "category": "constraint",
+    "tag":"truss",
     "defaultParams": {
       "Node ID": 1,
       "X Constrain":1,
@@ -19,6 +20,7 @@
   {
     "name": "Constraint Frame-Beam-Column",
     "category": "constraint",
+    "tag":"frame",
     "defaultParams": {
       "Node ID": 1,
       "X Constrain":1,

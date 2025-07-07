@@ -2,72 +2,14 @@
   {
     "category": "uniaxialMaterial",
     "name": "Elastic",
+    "tag":"truss",
     "defaultParams": {
       "Material ID": 1,
-      "Elasticity N/m²": 200000000000
+      "Elasticity": 200000000000
     },
     "command": {
       "name": "uniaxialMaterial",
-      "args": [ "Elastic","$Material ID", "$Elasticity N/m²"]
+      "args": [ "Elastic","$Material ID", "$Elasticity"]
     }
-  },
-
-  {
-    "category": "uniaxialMaterial",
-    "name": "Steel01",
-    "defaultParams": {
-      "Material ID": 1,
-      "Fy": 300000000,
-      "E": 200000000000,
-      "b": 0.02
-    },
-    "command": {
-      "name": "uniaxialMaterial",
-      "args": ["Steel01","$Material ID", "$Fy", "$E", "$b"]
-    }
-  },
-  {
-    "category": "uniaxialMaterial",
-    "name": "Steel02",
-    "defaultParams": {
-        "Material ID": 3,
-        "Fy": 300000000,
-        "E0": 200000000000,
-        "b": 0.02,
-        "R0": 18,
-        "cR1": 0.925,
-        "cR2": 0.15
-    },
-    "command": {
-        "name": "uniaxialMaterial",
-        "args": [
-        "Steel02",
-        "$Material ID",
-        "$Fy",
-        "$E0",
-        "$b",
-        "$R0",
-        "$cR1",
-        "$cR2"
-        ]
-    }
-  },
-  {
-    "category": "uniaxialMaterial",
-    "name": "Concrete02",
-    "defaultParams": {
-      "Material ID": 2,
-      "fpc": -30000000,
-      "epsc0": -0.002,
-      "fpcu": -2000000,
-      "epsU": -0.01,
-      "lambda": 0.1,
-      "ft": 2000000,
-      "Ets": 2000000000
-    },
-    "command": {
-      "name": "uniaxialMaterial",
-      "args": ["Concrete02", "$Material ID", "$fpc", "$epsc0", "$fpcu", "$epsU", "$lambda", "$ft", "$Ets"]
-    }
-  }
+  } 
 ]

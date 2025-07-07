@@ -333,7 +333,7 @@ function DrawNodes(g, coords, xScale, yScale) {
 
 export default function SectionForce({
   width = 1200,
-  height = 400,
+  height = 600,
   margin = 10,
   nep = 20,
 }) {
@@ -499,7 +499,7 @@ export default function SectionForce({
           .attr("font-size", "15px")
           .attr("font-weight", "normal")
           .attr("fill", ext ? "#444" : "#666")
-        .text( `${txt} ${unit}`);
+        .text( `${txt} `);
       };
 
       // endpoints
@@ -611,7 +611,7 @@ export default function SectionForce({
       {result && !error && (
         <div className="query-result">
           <strong>At x={queryX.toFixed(2)} on Element {queryEl}:</strong>{" "}
-          N = {result.N.toFixed(2)} kN, V = {result.V.toFixed(2)} kN, M = {result.M.toFixed(2)} kN-m
+          N = {result.N.toFixed(2)} , V = {result.V.toFixed(2)} , M = {result.M.toFixed(2)} 
         </div>
       )}
 

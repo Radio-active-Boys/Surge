@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import { saveAs } from "file-saver"; 
 import { usePlotParser } from "../../utils/plotParser";
 import './Model.css'
-export default function Model({ width = 1200, height = 470, margin = 40 }) {
+export default function Model({ width = 1200, height = 600, margin = 40 }) {
   const {
     nodeCoordinates,
     elementConnectivity,
@@ -66,10 +66,10 @@ const exportPNG = () => {
        .on("dblclick.zoom", null);
 
     // 4) Layers
-    const gEleLoads   = root.append("g").attr("class", "element-loads");
     const gElements   = root.append("g").attr("class", "elements");
     const gNodes      = root.append("g").attr("class", "nodes");
     const gSupports   = root.append("g").attr("class", "supports");
+    const gEleLoads   = root.append("g").attr("class", "element-loads");
     const gNodalLoads = root.append("g").attr("class", "nodal-loads");
 
     // 5) Draw
@@ -373,7 +373,7 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
           .attr("text-anchor", "middle")
           .attr("alignment-baseline", "middle")
           .style("font-size", "10px")
-          .text(`${Math.abs(mag)} kN`);
+          .text(`${Math.abs(mag)} `);
       }
 
       if (fx !== 0) {
@@ -422,9 +422,9 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
         nodeG.append("text")
           .attr("x", arrowX + 3 )
           .attr("y", arrowY )
-          .text(`${Math.abs(mz.toFixed(2))} kN-m`)
+          .text(`${Math.abs(mz.toFixed(2))} `)
           .attr("fill", colorM)
-          .attr("font-size", 15)
+          .attr("font-size", 7)
           .attr("text-anchor", "start");
       }
     });
@@ -432,186 +432,145 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
 
 // ─── DRAW ELEMENT LOADS ──────────────────────────────────────────────────
 function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
-  function expandRange(range) {
+  // ─── Configurable constants ─────────────────────────
+  const headLen         = 2;
+  const headW           = 3;
+  const pointVisScale   = 20;   // base length (px) for point loads
+  const uniformVisScale = 20;   // base length (px) for uniform loads
+  const minVisFrac      = 0.05; // minimum fraction of full arrow length
+  const minUniformArws  = 15;    // minimum arrows on each uniform load
+  const maxUniformArws  = 50;   // maximum arrows on each uniform load
+  const spacingPx       = 10;   // target px spacing between uniform arrows
+
+  // ─── helper: expand a range to element IDs ──────────
+  function expandRange(r) {
     return elements
-      .filter(el => el.id >= range.start && el.id <= range.end)
-      .map(el => el.id);
+      .filter(e => e.id >= r.start && e.id <= r.end)
+      .map(e => e.id);
   }
 
-  g.selectAll("*").remove();
-  const sampleCount = 30;
+  // ─── prep canvas ────────────────────────────────────
+  g.selectAll('*').remove();
 
-  // ─── Compute Global Max Load Magnitude ─────────────
-  let maxLoadMag = 1;
-  eleLoads.forEach(load => {
-    if (load.type === "beamPoint") {
-      const { Py, Px } = load.params;
-      maxLoadMag = Math.max(maxLoadMag, Math.abs(Py || 0), Math.abs(Px || 0));
-    } else if (load.type === "beamUniform") {
-      const { Wy, Wy_start, Wy_end } = load.params;
-      const start = Wy_start ?? Wy ?? 0;
-      const end = Wy_end ?? Wy ?? 0;
-      maxLoadMag = Math.max(maxLoadMag, Math.abs(start), Math.abs(end));
+  // ─── find global maxima for scaling fractions ────────
+  let maxPt = 1, maxUni = 1;
+  eleLoads.forEach(ld => {
+    if (ld.type === 'beamPoint') {
+      const { Py=0, Px=0 } = ld.params;
+      maxPt  = Math.max(maxPt, Math.abs(Py), Math.abs(Px));
+    } else {
+      const { Wy=0, Wy_start=Wy, Wy_end=Wy, Wx=0 } = ld.params;
+      maxUni = Math.max(maxUni,
+                         Math.abs(Wy_start), Math.abs(Wy_end),
+                         Math.abs(Wx));
     }
   });
 
+  // ─── arrow‐drawing primitive ─────────────────────────
+  function drawArrow(x0, y0, dx, dy, color, label, frac, unit, baseScale) {
+    const length = baseScale * Math.max(frac, minVisFrac);
+    const x1 = x0 + dx * length;
+    const y1 = y0 + dy * length;
+
+    g.append('line')
+      .attr('x1', x0).attr('y1', y0)
+      .attr('x2', x1 - dx*headLen).attr('y2', y1 - dy*headLen)
+      .attr('stroke', color)
+      .attr('stroke-width', 0.7)
+      .attr('marker-end', `url(#arrow-${color})`);
+
+    const [ox, oy] = [dx, dy].map(c => c * (headLen + 4));
+    if (label) {
+      g.append('text')
+        .attr('x', x1 + ox)
+        .attr('y', y1 + oy)
+        .attr('text-anchor','middle')
+        .attr('font-size','7px')
+        .attr('fill', color)
+        .text(`${label}${unit}`);
+    }
+  }
+
+  // ─── ensure arrow‐markers defined once ───────────────
+  function ensureMarkers() {
+    const defs = g.select('defs') .empty()
+               ? g.append('defs')
+               : g.select('defs');
+    ['steelblue','gray','purple'].forEach(col => {
+      if (defs.select(`#arrow-${col}`).empty()){
+        defs.append('marker')
+          .attr('id', `arrow-${col}`)
+          .attr('markerWidth', 6)
+          .attr('markerHeight', 6)
+          .attr('refX', 0)
+          .attr('refY', 3)
+          .attr('orient','auto')
+          .append('path')
+            .attr('d','M0,0 L0,6 L6,3 Z')
+            .attr('fill', col);
+      }
+    });
+  }
+  ensureMarkers();
+
+  // ─── loop through every load ────────────────────────
   eleLoads.forEach(load => {
-    const ids = (Array.isArray(load.eleIds) && load.eleIds.length)
-      ? load.eleIds
-      : (load.range ? expandRange(load.range) : []);
+    // resolve element IDs
+    const ids = Array.isArray(load.eleIds) && load.eleIds.length
+              ? load.eleIds
+              : load.range ? expandRange(load.range) : [];
 
-    ids.forEach(eleId => {
-      const el = elements.find(e => e.id === eleId);
+    ids.forEach(id => {
+      const el = elements.find(e => e.id===id);
       if (!el) return;
+      const [p1,p2] = [coords[el.i], coords[el.j]];
+      if (!p1||!p2) return;
 
-      const p1 = coords[el.i], p2 = coords[el.j];
-      if (!p1 || !p2) return;
+      // screen coords & direction unit‐vectors
+      const x1 = xScale(p1.x), y1 = yScale(p1.y);
+      const x2 = xScale(p2.x), y2 = yScale(p2.y);
+      const dx = x2-x1, dy = y2-y1;
+      const L  = Math.hypot(dx,dy);
+      if (L<1e-3) return;
+      const ux = dx/L, uy = dy/L;
+      const nx = -uy, ny = ux;
 
-      const x1_s = xScale(p1.x), y1_s = yScale(p1.y);
-      const x2_s = xScale(p2.x), y2_s = yScale(p2.y);
-      const dx_s = x2_s - x1_s, dy_s = y2_s - y1_s;
-      const screenLen = Math.hypot(dx_s, dy_s);
-      if (!screenLen) return;
-      const ux_s = dx_s / screenLen, uy_s = dy_s / screenLen;
-      const nx_s = -uy_s, ny_s = ux_s;
-
-      const visualScale = 50; // same as ModelViewer
-      const arrowBase = visualScale; // will be scaled per load magnitude
-
-      if (load.type === "beamPoint") {
-        const { Py, xL, Px } = load.params;
-        if (xL == null) return;
-        const baseX = x1_s + ux_s * (xL * screenLen);
-        const baseY = y1_s + uy_s * (xL * screenLen);
+      if (load.type === 'beamPoint') {
+        const { Py=0, Px=0, xL } = load.params;
+        if (xL==null) return;
+        const bx = x1 + ux*(xL*L),
+              by = y1 + uy*(xL*L);
 
         if (Py) {
-          const dir = -(Math.sign(Py) || 1);
-          const mag = Math.abs(Py);
-          const scaleMag = mag / maxLoadMag;
-          const len = arrowBase * scaleMag;
-          const tipX = baseX + nx_s * len * dir;
-          const tipY = baseY + ny_s * len * dir;
-
-          g.append("line")
-            .attr("x1", baseX).attr("y1", baseY)
-            .attr("x2", tipX).attr("y2", tipY)
-            .attr("stroke", "steelblue")
-            .attr("marker-end", "url(#arrowhead-steelblue)");
-
-          g.append("text")
-            .attr("x", tipX + nx_s * 8 * dir)
-            .attr("y", tipY + ny_s * 8 * dir)
-            .attr("dy", "4")
-            .attr("text-anchor", "middle")
-            .attr("fill", "steelblue")
-            .attr("font-size", "10px")
-            .text(`${mag} kN`);
+          const sign = -Math.sign(Py);
+          drawArrow(bx, by, nx*sign, ny*sign,
+                    'steelblue', Math.abs(Py), Math.abs(Py)/maxPt, ' ', pointVisScale);
         }
-
         if (Px) {
-          const dir = -(Math.sign(Px) || 1);
-          const mag = Math.abs(Px);
-          const scaleMag = mag / maxLoadMag;
-          const len = arrowBase * scaleMag;
-          const tipXA = baseX + ux_s * len * dir;
-          const tipYA = baseY + uy_s * len * dir;
-
-          g.append("line")
-            .attr("x1", baseX).attr("y1", baseY)
-            .attr("x2", tipXA).attr("y2", tipYA)
-            .attr("stroke", "gray")
-            .attr("marker-end", "url(#arrowhead-gray)");
-
-          g.append("text")
-            .attr("x", tipXA + ux_s * 8 * dir)
-            .attr("y", tipYA + uy_s * 8 * dir)
-            .attr("dy", "4")
-            .attr("text-anchor", "middle")
-            .attr("fill", "gray")
-            .attr("font-size", "10px")
-            .text(`${mag} kN`);
+          const sign = -Math.sign(Px);
+          drawArrow(bx, by, ux*sign, uy*sign,
+                    'gray', Math.abs(Px), Math.abs(Px)/maxPt, ' ', pointVisScale);
         }
 
-      } else if (load.type === "beamUniform") {
-        const p = load.params;
-        if (p.Wy != null) {
-          p.Wy_start = p.Wy;
-          p.Wy_end = p.Wy;
-          p.Wx_start = p.Wx ?? 0;
-          p.Wx_end = p.Wx ?? 0;
-          p.aL = 0; p.bL = 1;
+      } else {  // uniform
+        const p = { ...load.params };
+        // normalize start/end fractions
+        if (p.Wy!=null) { p.Wy_start=p.Wy; p.Wy_end=p.Wy; p.aL=0; p.bL=1; }
+        if ([p.Wy_start,p.Wy_end,p.aL,p.bL].some(v=>v==null)) return;
+
+        // compute how many arrows along this element
+        const rawCount = Math.floor(L/spacingPx);
+        const nArrows = Math.max(minUniformArws, Math.min(maxUniformArws, rawCount));
+        // sample at ends + intermediate
+        for (let i=0; i<=nArrows; i++){
+          const t = p.aL + (p.bL-p.aL)*(i/nArrows);
+          const px = x1 + ux*(t*L),
+                py = y1 + uy*(t*L);
+          const mag = p.Wy_start + (p.Wy_end-p.Wy_start)*( (t-p.aL)/(p.bL-p.aL) );
+          const sign = -Math.sign(mag);
+          drawArrow(px,py, nx*sign, ny*sign,
+                    'purple', (i===0||i===nArrows)?Math.abs(mag):'', Math.abs(mag)/maxUni, ' ', uniformVisScale);
         }
-        if (
-          p.Wy_start == null || p.Wy_end == null ||
-          p.aL == null || p.bL == null
-        ) return;
-
-        const startX = x1_s + ux_s * (p.aL * screenLen);
-        const startY = y1_s + uy_s * (p.aL * screenLen);
-        const endX = x1_s + ux_s * (p.bL * screenLen);
-        const endY = y1_s + uy_s * (p.bL * screenLen);
-
-        g.append("line")
-          .attr("x1", startX).attr("y1", startY)
-          .attr("x2", endX).attr("y2", endY)
-          .attr("stroke", "purple")
-          .attr("stroke-dasharray", "4,2");
-
-        const drawUniformArrow = (x, y, mag) => {
-          const dir = -(Math.sign(mag) || 1);
-          const scale = Math.abs(mag) / maxLoadMag;
-          const len = arrowBase * scale;
-          const tipX = x + nx_s * len * dir;
-          const tipY = y + ny_s * len * dir;
-
-          g.append("line")
-            .attr("x1", x).attr("y1", y)
-            .attr("x2", tipX).attr("y2", tipY)
-            .attr("stroke", "purple")
-            .attr("marker-end", "url(#arrowhead-purple)");
-        };
-
-        for (let k = 1; k < sampleCount; k++) {
-          const tFrac = p.aL + (p.bL - p.aL) * (k / sampleCount);
-          if (tFrac <= 0 || tFrac >= 1) continue;
-
-          const baseX = x1_s + ux_s * (tFrac * screenLen);
-          const baseY = y1_s + uy_s * (tFrac * screenLen);
-          const mag = p.Wy_start + (p.Wy_end - p.Wy_start) * ((tFrac - p.aL) / (p.bL - p.aL));
-          drawUniformArrow(baseX, baseY, mag);
-        }
-
-        drawUniformArrow(startX, startY, p.Wy_start);
-        drawUniformArrow(endX, endY, p.Wy_end);
-
-        // Labels
-        const signS = -(Math.sign(p.Wy_start) || 1);
-        const signE = -(Math.sign(p.Wy_end) || 1);
-        const lenS = arrowBase * Math.abs(p.Wy_start) / maxLoadMag;
-        const lenE = arrowBase * Math.abs(p.Wy_end) / maxLoadMag;
-
-        const tipX_s = startX + nx_s * lenS * signS;
-        const tipY_s = startY + ny_s * lenS * signS;
-        const tipX_e = endX + nx_s * lenE * signE;
-        const tipY_e = endY + ny_s * lenE * signE;
-
-        g.append("text")
-          .attr("x", tipX_s + nx_s * 8 * signS)
-          .attr("y", tipY_s + ny_s * 8 * signS)
-          .attr("dy", "4")
-          .attr("text-anchor", "middle")
-          .attr("fill", "purple")
-          .attr("font-size", "10px")
-          .text(`${Math.abs(p.Wy_start)} kN/m`);
-
-        g.append("text")
-          .attr("x", tipX_e + nx_s * 8 * signE)
-          .attr("y", tipY_e + ny_s * 8 * signE)
-          .attr("dy", "4")
-          .attr("text-anchor", "middle")
-          .attr("fill", "purple")
-          .attr("font-size", "10px")
-          .text(`${Math.abs(p.Wy_end)} kN/m`);
       }
     });
   });

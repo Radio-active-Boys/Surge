@@ -77,9 +77,9 @@ initializeDefaults: () => {
       }
   else if (modelConfig.ndf === 3) {
     set({
-      section: defaultSections.map(def => ({ ...def, id: generateId() })),
+      // section: defaultSections.map(def => ({ ...def, id: generateId() })),  
       geomTransf: defaultTransformations.map(def => ({ ...def, id: generateId() })),
-      beamIntegration: defaultIntegrations.map(def => ({ ...def, id: generateId() })),
+      // beamIntegration: defaultIntegrations.map(def => ({ ...def, id: generateId() })),
       timeSeries: defaultTimeSeries.map(def => ({ ...def, id: generateId() }))
     });
   }

@@ -13,43 +13,46 @@
   {
     "category": "load",
     "name": "Truss Nodal Load",
+    "tag":"truss",
     "defaultParams": {
       "Node ID": 1,
-      "X Load (kN)": 0.0,
-      "Y Load (kN)": 0.0
+      "X Load": 0.0,
+      "Y Load": 0.0
     },
     "command": {
       "name": "load",
-      "args": ["$Node ID", "$X Load (kN)", "$Y Load (kN)"]
+      "args": ["$Node ID", "$X Load", "$Y Load"]
     }
   },
   {
     "category": "load",
     "name": "Frame Nodal Load",
+    "tag":"frame",
     "defaultParams": {
       "Node ID": 1,
-      "X Load (kN)": 0.0,
-      "Y Load (kN)": 0.0,
-      "Moment (kN-m)":0.0
+      "X Load": 0.0,
+      "Y Load": 0.0,
+      "Moment":0.0
 
     },
     "command": {
       "name": "load",
-      "args": ["$Node ID", "$X Load (kN)", "$Y Load (kN)", "$Moment (kN-m)"]
+      "args": ["$Node ID", "$X Load", "$Y Load", "$Moment"]
     }
   },
 
 
   {
     "category": "eleLoad",
-    "name": "BeamUniformLoad",
+    "name": "Uniform Load (UDL)",
+    "tag":"frame",
     "defaultParams": {
       "Element ID's": [1],
       "useRange": false,
       "eleTag1": 1,
       "eleTag2": 1,
-      "Wy (kN/m)": -5.0,
-      "Wx (kN/m)": 0.0
+      "Wy": -5.0,
+      "Wx": 0.0
     },
     "command": {
       "name": "eleLoad",
@@ -57,49 +60,52 @@
         { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
         { "cond":  "$useRange", "value": ["-range", "$Element ID 1", "$Element ID 2"] },
         "-type", "beamUniform",
-        "$Wy (kN/m)",
-        "$Wx (kN/m)"
+        "$Wy",
+        "$Wx"
       ]
     }
   },
   {
     "category": "eleLoad",
-    "name": "BeamPointLoad",
+    "name": "Point Load on Element",
+    "tag":"frame",
     "defaultParams": {
       "Element ID's": [1],
       "useRange": false,
       "eleTag1": 1,
       "eleTag2": 1,
-      "Py (kN)": -1.0,
+      "Py": -1.0,
       "Location (0 → 1)": 0.5,
-      "Px (kN)": 0.0
+      "Px": 0.0
     },
     "command": {
       "name": "eleLoad",
+      
       "args": [
         { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
         { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
         "-type", "beamPoint",
-        "$Py (kN)",
+        "$Py",
         "$Location (0 → 1)",
-        "$Px (kN)"
+        "$Px"
       ]
     }
   },
   {
     "category": "eleLoad",
-    "name": "BeamTrapezoidalLoad",
+    "name": "Trapezoidal Load (VDL)",
+    "tag":"frame",
     "defaultParams": {
       "Element ID's": [1],
       "useRange": false,
       "eleTag1": 1,
       "eleTag2": 1,
-      "Wy start (kN/m)": -2.0,
-      "Wx start (kN/m)": 0.0,
+      "Wy start": -2.0,
+      "Wx start": 0.0,
       "Starting (0 → 1)": 0.2,
       "Ending (0 → 1)": 0.9,
-      "Wy end (kN/m)": -4.0,
-      "Wx end (kN/m)": 0.0
+      "Wy end": -4.0,
+      "Wx end": 0.0
     },
     "command": {
       "name": "eleLoad",
@@ -107,12 +113,12 @@
         { "cond": "!$useRange", "value": ["-ele", "*$Element ID's"] },
         { "cond":  "$useRange", "value": ["-range", "$eleTag1", "$eleTag2"] },
         "-type", "beamUniform",
-        "$Wy start (kN/m)",
-        "$Wx start (kN/m)",
+        "$Wy start",
+        "$Wx start",
         "$Starting (0 → 1)",
         "$Ending (0 → 1)",
-        "$Wy end (kN/m)",
-        "$Wx end (kN/m)"
+        "$Wy end",
+        "$Wx end"
       ]
     }
   }

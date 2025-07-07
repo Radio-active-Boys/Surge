@@ -1,6 +1,7 @@
 [{
 "category": "node",
   "name": "Node",
+  "tag":"",
   "defaultParams": {
     "Node ID": 1,
     "X Coordinate (m)": 0,

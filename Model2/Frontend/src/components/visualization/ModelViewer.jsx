@@ -383,7 +383,7 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
           .attr("alignment-baseline", "baseline")
           .attr("font-size", 2.5)
           .attr("fill", color)
-          .text(`${Math.abs(value)} kN`);
+          .text(`${Math.abs(value)} `);
       }
 
       if (fx) drawArrow(nodeG.select(".arrow-x"), fx > 0 ? 1 : -1, 0, colorX, fx);
@@ -425,7 +425,7 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
         nodeG.append("text")
           .attr("x", arrowX + 3 )
           .attr("y", arrowY )
-          .text(`${Math.abs(mz.toFixed(2))} kN-m`)
+          .text(`${Math.abs(mz.toFixed(2))} `)
           .attr("fill", colorM)
           .attr("font-size", 2.5)
           .attr("text-anchor", "start");
@@ -435,6 +435,11 @@ function DrawLoads(g, loads, coords, xScale, yScale) {
 
 // ─── DRAW ELEMENT LOADS ──────────────────────────────────────────────────
 function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
+  // ─── Sampling Configuration ───────────────────────
+  const uniformMinSamples = 10;
+  const uniformMaxSamples = 50;
+  const uniformSpacingPx  = 5;
+
   function expandRange(range) {
     return elements
       .filter(el => el.id >= range.start && el.id <= range.end)
@@ -442,58 +447,47 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
   }
 
   g.selectAll("*").remove();
-  const sampleCount = 30;
-  const headLength = 1.5, headWidth = 2.2;
 
-  // ─── Compute Global Max Magnitude ────────────
-  let maxLoadMag = 1; // avoid division by 0
+  // ─── Compute Separate Max Magnitudes ─────────────────
+  let maxPointMag = 1;
+  let maxUniformMag = 1;
   eleLoads.forEach(load => {
     if (load.type === "beamPoint") {
-      const { Py, Px } = load.params;
-      maxLoadMag = Math.max(maxLoadMag, Math.abs(Py || 0), Math.abs(Px || 0));
+      const { Py = 0, Px = 0 } = load.params;
+      maxPointMag = Math.max(maxPointMag, Math.abs(Py), Math.abs(Px));
     } else if (load.type === "beamUniform") {
-      const { Wy, Wy_start, Wy_end } = load.params;
-      const start = Wy_start ?? Wy ?? 0;
-      const end = Wy_end ?? Wy ?? 0;
-      maxLoadMag = Math.max(maxLoadMag, Math.abs(start), Math.abs(end));
+      const { Wy = 0, Wy_start = Wy, Wy_end = Wy } = load.params;
+      maxUniformMag = Math.max(maxUniformMag, Math.abs(Wy_start), Math.abs(Wy_end));
     }
   });
 
-  // ─── Draw Arrow Helper ─────────────
-  function drawArrow(baseX, baseY, dirX, dirY, color, label, scaleMag = 1, unit = "") {
-    const visualScale = 15;
-    const arrowLen = visualScale * scaleMag;
-
+  // ─── Draw Arrow Helper ────────────────────────────
+  function drawArrow(baseX, baseY, dirX, dirY, color, label, scaleMag, unit, visualScale) {
+    const headLen = 1.5, headW = 2.2;
+    const arrowLen = visualScale * Math.max(scaleMag, 0.05);
     const tipX = baseX + dirX * arrowLen;
     const tipY = baseY + dirY * arrowLen;
 
     // Shaft
     g.append("line")
       .attr("x1", baseX).attr("y1", baseY)
-      .attr("x2", tipX - dirX * headLength).attr("y2", tipY - dirY * headLength)
-      .attr("stroke", color).attr("stroke-width", 0.5);
+      .attr("x2", tipX - dirX * headLen).attr("y2", tipY - dirY * headLen)
+      .attr("stroke", color).attr("stroke-width", 0.3);
 
     // Arrowhead
-    const baseLeftX = tipX - dirX * headLength - dirY * headWidth / 2;
-    const baseLeftY = tipY - dirY * headLength + dirX * headWidth / 2;
-    const baseRightX = tipX - dirX * headLength + dirY * headWidth / 2;
-    const baseRightY = tipY - dirY * headLength - dirX * headWidth / 2;
-
+    const leftX  = tipX - dirX * headLen - dirY * headW/2;
+    const leftY  = tipY - dirY * headLen + dirX * headW/2;
+    const rightX = tipX - dirX * headLen + dirY * headW/2;
+    const rightY = tipY - dirY * headLen - dirX * headW/2;
     g.append("path")
-      .attr("d", d3.line()([
-        [tipX, tipY],
-        [baseLeftX, baseLeftY],
-        [baseRightX, baseRightY],
-        [tipX, tipY]
-      ]))
+      .attr("d", d3.line()([ [tipX,tipY],[leftX,leftY],[rightX,rightY],[tipX,tipY] ]))
       .attr("fill", color);
 
-    // Label
-    const offset = 2.5;
     if (label !== "") {
+      const offset = 2.5;
       g.append("text")
-        .attr("x", tipX + dirX * offset)
-        .attr("y", tipY + dirY * offset)
+        .attr("x", tipX + dirX*offset)
+        .attr("y", tipY + dirY*offset)
         .attr("text-anchor", "middle")
         .attr("alignment-baseline", "middle")
         .attr("font-size", 2.5)
@@ -502,7 +496,7 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
     }
   }
 
-  // ─── Draw Each Load ─────────────
+  // ─── Iterate Loads ───────────────────────────────
   eleLoads.forEach(load => {
     const ids = Array.isArray(load.eleIds)
       ? load.eleIds
@@ -511,72 +505,46 @@ function DrawEleLoads(g, eleLoads, elements, coords, xScale, yScale) {
     ids.forEach(eleId => {
       const el = elements.find(e => e.id === eleId);
       if (!el) return;
-
       const p1 = coords[el.i], p2 = coords[el.j];
       if (!p1 || !p2) return;
 
       const x1 = xScale(p1.x), y1 = yScale(p1.y);
       const x2 = xScale(p2.x), y2 = yScale(p2.y);
-      const dx = x2 - x1, dy = y2 - y1;
-      const len = Math.hypot(dx, dy);
-      const ux = dx / len, uy = dy / len;
+      const dx = x2-x1, dy = y2-y1;
+      const pixelLen = Math.hypot(dx,dy);
+      if (pixelLen < 1e-3) return;
+      const ux = dx/pixelLen, uy = dy/pixelLen;
       const nx = -uy, ny = ux;
 
       if (load.type === "beamPoint") {
-        const { Py, Px, xL } = load.params;
-        if (xL == null) return;
-        const baseX = x1 + ux * (xL * len);
-        const baseY = y1 + uy * (xL * len);
-
-        if (Py) {
-          const dir = -(Math.sign(Py) || 1);
-          drawArrow(
-            baseX, baseY,
-            nx * dir, ny * dir,
-            "steelblue",
-            Math.abs(Py),
-            Math.abs(Py) / maxLoadMag,
-            "kN"
-          );
-        }
-        if (Px) {
-          const dir = -(Math.sign(Px) || 1);
-          drawArrow(
-            baseX, baseY,
-            ux * dir, uy * dir,
-            "gray",
-            Math.abs(Px),
-            Math.abs(Px) / maxLoadMag,
-            "kN"
-          );
-        }
+        const { Py=0, Px=0, xL } = load.params;
+        if (xL==null) return;
+        const bx = x1 + ux*(xL*pixelLen);
+        const by = y1 + uy*(xL*pixelLen);
+        const scaleP = 15;
+        if (Py) drawArrow(bx,by, nx*-Math.sign(Py), ny*-Math.sign(Py), "steelblue",
+                         Math.abs(Py), Math.abs(Py)/maxPointMag, " ", scaleP);
+        if (Px) drawArrow(bx,by, ux*-Math.sign(Px), uy*-Math.sign(Px), "gray",
+                         Math.abs(Px), Math.abs(Px)/maxPointMag, " ", scaleP);
 
       } else if (load.type === "beamUniform") {
         const p = load.params;
-        if (p.Wy != null) {
-          p.Wy_start = p.Wy;
-          p.Wy_end = p.Wy;
-          p.aL = 0;
-          p.bL = 1;
-        }
-        if ([p.Wy_start, p.Wy_end, p.aL, p.bL].some(v => v == null)) return;
+        if (p.Wy!=null) { p.Wy_start=p.Wy; p.Wy_end=p.Wy; p.aL=0; p.bL=1; }
+        if ([p.Wy_start,p.Wy_end,p.aL,p.bL].some(v=>v==null)) return;
 
-        for (let i = 0; i <= sampleCount; i++) {
-          const t = p.aL + (p.bL - p.aL) * (i / sampleCount);
-          const bx = x1 + ux * (t * len);
-          const by = y1 + uy * (t * len);
-          const mag = p.Wy_start + (p.Wy_end - p.Wy_start) * ((t - p.aL) / (p.bL - p.aL));
-          const dir = -(Math.sign(mag) || 1);
-          const scaleMag = Math.abs(mag) / maxLoadMag;
+        // Compute number of arrows using config constants
+        const rawCount = Math.floor(pixelLen / uniformSpacingPx);
+        const samples = Math.max(uniformMinSamples, Math.min(uniformMaxSamples, rawCount));
+        const scaleU = 25;
 
-          drawArrow(
-            bx, by,
-            nx * dir, ny * dir,
-            "purple",
-            (i === 0 || i === sampleCount) ? Math.abs(mag) : "",
-            scaleMag,
-            "kN/m"
-          );
+        for (let i=0; i<=samples; i++) {
+          const t = p.aL + (p.bL-p.aL)*(i/samples);
+          const bx = x1 + ux*(t*pixelLen);
+          const by = y1 + uy*(t*pixelLen);
+          const mag = p.Wy_start + (p.Wy_end-p.Wy_start)*((t-p.aL)/(p.bL-p.aL));
+          drawArrow(bx,by, nx*-Math.sign(mag), ny*-Math.sign(mag), "purple",
+                    (i===0||i===samples)?Math.abs(mag):"",
+                    Math.abs(mag)/maxUniformMag, " ", scaleU);
         }
       }
     });

@@ -1,4 +1,3 @@
-// src/Navbar.jsx
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import mainLogo from './assets/mainLogo.svg';
@@ -28,40 +27,39 @@ export default function Navbar() {
 
   return (
     <>
-    <>
       <header className="navbar">
         <div className="navbar-container">
+          <div className="nav-links">
+            <NavLink to="/model" className="nav-link">Model Builder</NavLink>
+            <NavLink to="/" className="nav-link">Analysis</NavLink>
+            <NavLink to="/recorder" className="nav-link">Results</NavLink>
+          </div>
+
           <div className="navbar-logo">
             <img src={mainLogo} alt="FrameX Logo" />
           </div>
 
-          <nav className="nav-links">
-            <NavLink to="/model" className="nav-link">Model Builder</NavLink>
-            <NavLink to="/" className="nav-link">Analysis</NavLink>
-            <NavLink to="/recorder" className="nav-link">Results</NavLink>
-          </nav>
-
-          <div className="mode-toggle">
-            <button
-              className={`mode-option ${status === 'lite' ? 'active' : ''}`}
-              onClick={() => setStatus('lite')}
-            >
-              Lite
-            </button>
-            <button
-              className={`mode-option ${status === 'advanced' ? 'active' : ''}`}
-              onClick={handleAdvancedClick}
-            >
-              Advanced
-            </button>
+          <div className="navbar-right">
+            <JsonTogglePanel />
+            <div className="mode-toggle">
+              <button
+                className={`mode-option ${status === 'lite' ? 'active' : ''}`}
+                onClick={() => setStatus('lite')}
+              >
+                Lite
+              </button>
+              <button
+                className={`mode-option ${status === 'advanced' ? 'active' : ''}`}
+                onClick={handleAdvancedClick}
+              >
+                Advanced
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-
-      <JsonTogglePanel />
-    </>
-          {showDisclaimer && (
+      {showDisclaimer && (
         <DisclaimerModal
           onConfirm={confirmSwitch}
           onCancel={cancelSwitch}

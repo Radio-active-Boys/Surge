@@ -2,6 +2,6 @@ services:
   - type: web
     name: opensees-backend
     env: python
+    rootDir: Model2/Backend
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn Backend.app:app
-    plan: free
+    startCommand: gunicorn app:app
