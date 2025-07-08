@@ -385,7 +385,7 @@ function DrawElementsDeflected(g, elements, coords, dispMap, xScale, yScale, sfa
     const uy1 = dispMap[nodeI]?.["2"] || 0;
     const ux2 = dispMap[nodeJ]?.["1"] || 0;
     const uy2 = dispMap[nodeJ]?.["2"] || 0;
-
+console.log("el type",el.type)
     // Handle truss elements
     if (trussTypes.includes(el.type)) {
       const x1d = p1.x + ux1 * sfac;

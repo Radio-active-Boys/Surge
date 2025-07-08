@@ -28,7 +28,7 @@
   },
   {
     "category": "element",
-    "name": "Elastic Beam-Column",
+    "name": "elasticBeamColumn",
     "tag":"frame",
     "defaultParams": {
       "Element ID": 1,
