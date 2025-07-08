@@ -2,7 +2,7 @@
 
   {
     "category": "element",
-    "name": "Truss Member",
+    "name": "Truss",
     "tag":"truss",
     "defaultParams": {
       "Element ID": 1,
