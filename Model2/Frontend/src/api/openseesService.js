@@ -1,7 +1,7 @@
  // api/openseesService.js
 import axios from 'axios';
 
-const API_URL = 'https://surge-0i1z.onrender.com';
+const API_URL = 'http://127.0.0.1:5000';
 
 export const runAnalysis = async (modelData) => {
   console.log("Data send to backend",modelData)
@@ -18,4 +18,3 @@ export const runAnalysis = async (modelData) => {
 export const cleanupOutput = async (outputDir) => {
   return axios.post(`${API_URL}/cleanup-output`, { output_dir: outputDir });
 };
-

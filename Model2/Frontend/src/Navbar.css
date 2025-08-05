@@ -8,26 +8,33 @@
   backdrop-filter: blur(12px);
   border-radius: 32px;
   border-bottom: 1px solid rgba(9, 7, 7, 0.203);
-  height: 60px;
+  height: auto;
   overflow: visible;
 }
 
+
+
+/* Enable flex wrap and spacing */
 .navbar-container {
-  position: relative; /* Enable absolute logo positioning */
+  position: relative;
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
+  gap: 10px;
   padding: 0 20px;
+  height: auto;
 }
 
 /* ───────────────────── NAV LINKS ───────────────────── */
 
 .nav-links {
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
 }
 
 .nav-link {
@@ -38,6 +45,7 @@
   padding: 6px 14px;
   border-radius: 6px;
   transition: 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -53,17 +61,18 @@
 /* ───────────────────── CENTERED LOGO ───────────────────── */
 
 .navbar-logo {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  flex: 1;
   display: flex;
+  justify-content: center;
   align-items: center;
-  height: 100%;
-  pointer-events: none; /* Prevents blocking clicks to left/right items */
+  pointer-events: none;
+  min-width: 0;
 }
 
 .navbar-logo img {
-  height: 100px;
+  max-height: 80px;
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 
@@ -73,9 +82,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-  position: relative;
-  height: 50%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
 }
 
 /* ───────────────────── MODE TOGGLE ───────────────────── */
@@ -88,7 +98,10 @@
   overflow: hidden;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  width: 220px;
+  width: auto;
+  min-width: 120px;
+  max-width: 100%;
+  flex: 1 1 auto;
 }
 
 .mode-option {
@@ -118,5 +131,29 @@
   color: #ffffff;
 }
 
-/* ───────────────────── JSON PANEL ───────────────────── */
+/* ───────────────────── RESPONSIVE MEDIA QUERY ───────────────────── */
 
+@media (max-width: 600px) {
+  .navbar-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 10px 16px;
+  }
+
+  .navbar-logo {
+    order: -1; /* Move logo to top */
+    justify-content: center;
+  }
+
+  .nav-links,
+  .navbar-right {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .mode-toggle {
+    width: 100%;
+  }
+}
